@@ -25,10 +25,17 @@ helpFunction(){
     (-*)
       case "${1}" in
         (""|"-h"|"-help"|"--help") helpFunction ;;
-        ("-default") IFS=$'\n' deploy_list=("${stacks_default[@]}") ;;
-        ("-listed") IFS=$'\n' deploy_list=("${stacks_listed[@]}") ;;
+        ("-default") IFS=$'\n'; deploy_list=("${stacks_default[@]}") ;;
+        ("-listed") IFS=$'\n'; deploy_list=("${stacks_listed[@]}") ;;
         ("-all")
           if [[ "${bounce_list[@]}" = "" ]]; then
+            # IFS=$'\n' configs_folder_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') );
+            # for stack in "${!configs_folder_list[@]}"; do
+            #   if [[ "${configs_folder_list[stack]}" = "." ]]; then unset configs_folder_list[stack]; fi # remove '.' folder name from printed list
+            #   if [[ -f "${swarm_configs}"/"${configs_folder_list[stack]}"/"${configs_folder_list[stack]}${compose}.yml" ]];
+            #   then deploy_list="${configs_list} ${configs_folder_list[stack]}"
+            #   fi
+            # done
             IFS=$'\n' deploy_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') );
             for stack in "${!deploy_list[@]}"; do
               if [[ "${deploy_list[stack]}" = "." ]]; then unset deploy_list[stack]; fi
@@ -37,9 +44,9 @@ helpFunction(){
               fi
             done
             unset deploy_list IFS
-            IFS=$'\n' deploy_list=("${configs_list[@]}");
+            IFS=$'\n'; deploy_list=("${configs_list[@]}");
             unset configs_list IFS
-          else IFS=$'\n' deploy_list=("${bounce_list[@]}");
+          else IFS=$'\n'; deploy_list=("${bounce_list[@]}");
           fi
           ;;
         (*) echo -e "${YLW} >> INVALID OPTION SYNTAX -- USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1 ;;

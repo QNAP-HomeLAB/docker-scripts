@@ -20,17 +20,22 @@ helpFunction(){
   exit 1 # Exit script after printing help
   }
 
-# Command header
-  # echo -e "${blu}[-> DOCKER SWARM STACK REMOVAL SCRIPT <-]${def}"
-
 # determine script output according to option entered
   case "${1}" in 
     (-*)
       case "${1}" in
         (""|"-h"|"-help"|"--help") helpFunction ;;
-        ("-all") IFS=$'\n'; remove_list=( "$(docker stack ls --format {{.Name}})" ) ;;
-        ("-listed") IFS=$'\n'; remove_list=( "${stacks_listed[@]}" ) ;;
-        ("-default") IFS=$'\n'; remove_list=( "${stacks_default[@]}" ) ;;
+        ("-all") # IFS=$'\n'; remove_list=("$(docker stack ls --format {{.Name}})") ;;
+          IFS=$'\n' configs_folder_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') );
+          for stack in "${!configs_folder_list[@]}"; do
+            if [[ "${configs_folder_list[stack]}" = "." ]]; then unset configs_folder_list[stack]; fi # remove '.' folder name from printed list
+            if [[ -f "${swarm_configs}"/"${configs_folder_list[stack]}"/"${configs_folder_list[stack]}${compose}.yml" ]];
+            then remove_list="${configs_list} ${configs_folder_list[stack]}"
+            fi
+          done
+          ;;        
+        ("-listed") IFS=$'\n'; remove_list=("${stacks_listed[@]}") ;;
+        ("-default") IFS=$'\n'; remove_list=("${stacks_default[@]}") ;;
         (*) echo -e "${YLW} >> INVALID OPTION SYNTAX -- USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1 ;;
       esac
     ;;
@@ -40,31 +45,28 @@ helpFunction(){
 
 # # Define which stack to remove using command options
 #   if [[ $1 = "" ]] || [[ $1 = "-h" ]] || [[ $1 = "-help" ]] ; then helpFunction
-#   elif [[ $1 = "-all" ]]; then IFS=$'\n' remove_list=( "$(docker stack ls --format {{.Name}})" ); 
-#   elif [[ $1 = "-listed" ]]; then IFS=$'\n' remove_list=( "${stacks_listed[@]}" );
-#   elif [[ $1 = "-default" ]]; then IFS=$'\n' remove_list=( "${stacks_default[@]}" );
+#   elif [[ $1 = "-all" ]]; then IFS=$'\n' remove_list=("$(docker stack ls --format {{.Name}})"); 
+#   elif [[ $1 = "-listed" ]]; then IFS=$'\n' remove_list=("${stacks_listed[@]}");
+#   elif [[ $1 = "-default" ]]; then IFS=$'\n' remove_list=("${stacks_default[@]}");
 #   else remove_list=("$@")
 #   fi
 
 # Remove indicated stacks
   # echo -e "${blu}[-> REMOVING LISTED STACK(S) <-]${def}"
   # de-duplicate remove_list entries
-  remove_list=(`for stack in "${remove_list[@]}" ; do echo "$stack" ; done | sort -u`)
-  # echo " -> ${remove_list[@]}"
-  # echo
+  remove_list=(`for stack in "${remove_list[@]}"; do echo "${stack}"; done | sort -u`)
+  # echo " -> ${remove_list[@]}"; echo
 
 # Remove indicated stack(s)
   for stack in "${remove_list[@]}"; do
     if [ ! "$(docker service ls --filter label=com.docker.stack.namespace=$stack -q)" ];
-      then echo -e " ${red}ERROR: ${YLW}STACK NAME${DEF} '${CYN}$stack${DEF}' ${YLW}NOT FOUND${DEF} ";
-      # echo; exit 1
-    else
-      # echo -e "${CYN} -> REMOVE '${cyn}$stack${CYN}' STACK <-${DEF}";
+    then echo -e " ${red}ERROR: ${YLW}STACK NAME${DEF} '${CYN}$stack${DEF}' ${YLW}NOT FOUND${DEF} "; # echo; exit 1
+    else # echo -e "${CYN} -> REMOVE '${cyn}$stack${CYN}' STACK <-${DEF}";
       docker stack rm "$stack"
-      [[ -f ${swarm_configs}/${stack}/.env ]] && rm -f ${swarm_configs}/${stack}/.env
+      [ -f "${swarm_configs}/${stack}/.env" ] && rm -f "${swarm_configs}/${stack}/.env"
       # Pause until stack is removed
       while [ "$(docker service ls --filter label=com.docker.stack.namespace=$stack -q)" ] || [ "$(docker network ls --filter label=com.docker.stack.namespace=$stack -q)" ]; 
-        do sleep 1; 
+      do sleep 1; 
       done
       echo -e "${RED} -- '${cyn}$stack${RED}' STACK ${red}REMOVED${RED} -- ${DEF}"; echo
     fi
