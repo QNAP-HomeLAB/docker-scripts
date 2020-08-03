@@ -14,16 +14,15 @@ helpFunction(){
   echo -e "SYNTAX: # dls ${cyn}stackname${def}"
   echo -e "SYNTAX: # dls ${cyn}stackname${def} -${cyn}option${def}"
   echo -e "  VALID OPTION(S):"
-  echo -e "    -ps   Displays '${CYN}docker stack ps --no-trunc ${cyn}stackname${def}' output with non-truncated entries and select columns."
-  echo -e "    -sv   Displays '${CYN}docker stack services ${cyn}stackname${def}' output with custom selected columns."
+  echo -e "    -${cyn}ps${def} │ Displays '${CYN}docker stack ps --no-trunc ${cyn}stackname${def}' output with non-truncated entries and select columns."
+  echo -e "    -${cyn}sv${def} │ Displays '${CYN}docker stack services ${cyn}stackname${def}' output with custom selected columns."
   echo
   exit 1 # Exit script after printing help
   }
 
 # determine script output according to option entered
   case "${1}" in 
-    ("")
-      echo -e "${blu}[-> LISTING CURRENT DOCKER SWARM STACKS <-]${DEF} "
+    ("") echo -e "${blu}[-> LISTING CURRENT DOCKER SWARM STACKS <-]${DEF} "
       if [ ! "$(docker stack ls)" = "NAME                SERVICES" ];
       then docker stack ls
       else echo -e "${YLW} -> no current docker stacks exist${DEF} ";

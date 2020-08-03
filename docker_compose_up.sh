@@ -53,5 +53,6 @@ helpFunction(){
   # sleep 1
   deploy_list=(`for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u`)
   for stack in "${!deploy_list[@]}"; do
-    docker-compose -f /share/docker/compose/configs/"${deploy_list[stack]}"/"${deploy_list[stack]}"-compose.yml up -d
+    # docker-compose -f /share/docker/compose/configs/"${deploy_list[stack]}"/"${deploy_list[stack]}"-compose.yml up -d
+    docker-compose -f "${compose_configs}"/"${deploy_list[stack]}"/"${deploy_list[stack]}"-compose.yml up -d
   done

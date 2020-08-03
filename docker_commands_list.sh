@@ -7,7 +7,7 @@
 helpFunction() {
   echo -e "${blu}[-> Custom bash commands created to manage a QNAP based Docker Swarm <-]${DEF}"
   echo
-  echo -e "  ${BLU}COMMAND        │ SCRIPT FILE NAME      │ COMMAND DESCRIPTION${DEF}"
+  echo -e "  ${BLU}COMMAND${DEF}        │ ${BLU}SCRIPT FILE NAME${DEF}      │ ${BLU}COMMAND DESCRIPTION${DEF}"
   echo -e "  ${cyn}dlist${DEF}          │ ${ylw}docker_commands_list${DEF}  │ lists the custom Docker Swarm commands created for managing a QNAP Docker Swarm"
   echo -e "  ${cyn}dcd${DEF}            │ ${ylw}docker_compose_dn${DEF}     │ stops (brings 'down') a docker-compose container"
   echo -e "  ${cyn}dcu${DEF}            │ ${ylw}docker_compose_up${DEF}     │ starts (brings 'up') a docker-compose container"
