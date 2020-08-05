@@ -53,6 +53,7 @@ helpFunction() {
   echo -e "  ${cyn}dvlogs${DEF}  │ ${ylw}dvl${DEF}              │ custom command alias"
   echo -e "  ${cyn}dwinit${DEF}  │ ${ylw}dwin traefik${DEF}     │ custom command alias"
   echo -e "  ${cyn}dwclr${DEF}   │ ${ylw}dwlv -all${DEF}        │ custom command alias"
+  echo -e "  ${cyn}dcmd${DEF}    │ ${ylw}dlist${DEF}            │ custom command alias"
   echo
   exit 1
   }
@@ -73,7 +74,7 @@ helpFunction() {
   alias dklf='docker logs -f'
   alias dkrm='docker rm `docker ps --no-trunc -aq`'
   alias dkrmi='docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
-  alias dkt='docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"'
+  alias dkt='docker stats --format "table {{.Name}}\t{{.CPUPerc}}  {{.MemPerc}}\t{{.MemUsage}}\t{{.NetIO}}"'
   alias dkps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
 
   alias dc='docker-compose'
@@ -83,6 +84,10 @@ helpFunction() {
 
   # docker_commands_list -- lists the below custom docker commands
   dlist(){ sh /share/docker/scripts/docker_commands_list.sh "$1"; }
+  alias dcmd='dlist'
+  # docker_system_stats == displays resources used by current docker stacks/containers
+  dstats(){ sh /share/docker/scripts/docker_system_stats.sh "${1}"; }
+  alias dtop='docker stats --format "table {{.Container}}\t{{.Name}}\t{{.CPUPerc}}  {{.MemPerc}}  {{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"'
   # docker_compose_dn -- stops the entered container
   dcd(){ sh /share/docker/scripts/docker_compose_dn.sh "$1"; }
   # docker_compose_up -- starts the entered container using preconfigured docker_compose files
