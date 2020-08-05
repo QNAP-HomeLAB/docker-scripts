@@ -25,7 +25,7 @@ helpFunction(){
     (-*)
       case "${1}" in
         (""|"-h"|"-help"|"--help") helpFunction ;;
-        ("-all") IFS=$'\n' remove_list=("$(docker stack ls --format {{.Name}})") ;;
+        ("-all") IFS=$'\n'; remove_list=("$(docker stack ls --format {{.Name}})") ;;
         ("-listed") IFS=$'\n'; remove_list=("${stacks_listed[@]}") ;;
         ("-default") IFS=$'\n'; remove_list=("${stacks_default[@]}") ;;
         (*) echo -e "${YLW} >> INVALID OPTION SYNTAX -- USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1 ;;
@@ -41,19 +41,23 @@ helpFunction(){
   # echo " -> ${remove_list[@]}"; echo
 
 # Remove indicated stack(s)
-  for stack in "${remove_list[@]}"; do
-    if [ ! "$(docker service ls --filter label=com.docker.stack.namespace=$stack -q)" ];
-    then echo -e " ${red}ERROR: ${YLW}STACK NAME${DEF} '${cyn}$stack${DEF}' ${YLW}NOT FOUND${DEF} "; # echo; exit 1
-    else # echo -e "${CYN} -> REMOVE '${cyn}$stack${CYN}' STACK <-${DEF}";
-      docker stack rm "$stack"
-      [ -f "${swarm_configs}/${stack}/.env" ] && rm -f "${swarm_configs}/${stack}/.env"
-      # Pause until stack is removed
-      while [ "$(docker service ls --filter label=com.docker.stack.namespace=$stack -q)" ] || [ "$(docker network ls --filter label=com.docker.stack.namespace=$stack -q)" ]; 
-      do sleep 1; 
-      done
-      echo -e "${RED} -- '${cyn}$stack${RED}' STACK ${red}REMOVED${RED} -- ${DEF}"; echo
-    fi
-  done
+  if [[ ! "${remove_list}" ]]; 
+  then echo -e "${YLW} -> no docker stacks to remove${DEF} "; 
+  else
+    for stack in "${remove_list[@]}"; do
+      if [ ! "$(docker service ls --filter label=com.docker.stack.namespace=$stack -q)" ];
+      then echo -e " ${red}ERROR: ${YLW}STACK NAME${DEF} '${cyn}$stack${DEF}' ${YLW}NOT FOUND${DEF} "; # echo; exit 1
+      else # echo -e "${CYN} -> REMOVE '${cyn}$stack${CYN}' STACK <-${DEF}";
+        docker stack rm "$stack"
+        [ -f "${swarm_configs}/${stack}/.env" ] && rm -f "${swarm_configs}/${stack}/.env"
+        # Pause until stack is removed
+        while [ "$(docker service ls --filter label=com.docker.stack.namespace=$stack -q)" ] || [ "$(docker network ls --filter label=com.docker.stack.namespace=$stack -q)" ]; 
+        do sleep 1; 
+        done
+        echo -e "${RED} -- '${cyn}$stack${RED}' STACK ${red}REMOVED${RED} -- ${DEF}"; echo
+      fi
+    done
+  fi
 
 # Print script complete message
   # echo -e "${GRN}[>> STACK REMOVE SCRIPT COMPLETE <<]${DEF}"
