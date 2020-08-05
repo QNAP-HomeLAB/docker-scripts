@@ -1,6 +1,6 @@
 #!/bin/bash
 # Load config variables from file
-  source /share/docker/scripts/.bash-colors.env
+  source /share/docker/scripts/.bash_colors.env
   source /share/docker/scripts/.docker_vars.env
 
 # Help message for script

@@ -1,15 +1,15 @@
 #!/bin/bash
 # Load config variables from file
-  source /share/docker/scripts/.bash-colors.env
+  source /share/docker/scripts/.bash_colors.env
   source /share/docker/scripts/.docker_vars.env
 
 # Perform prune operation with/without '-f' option
   case "${1}" in 
-    "-h"|"-help"|"--help") helpFunction ;;
+    # "-h"|"-help"|"--help") helpFunction ;;
     "-f"|"-force")
       echo -e "${blu}[-> PRUNING THE DOCKER SYSTEM <-]${DEF}"
-        docker system prune -f
-        echo
+      docker system prune -f
+      echo
       ;;
     *)
     echo -e "${blu} -> REMOVE UNUSED DOCKER ${CYN}VOLUMES${DEF} "

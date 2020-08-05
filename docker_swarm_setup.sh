@@ -1,19 +1,19 @@
 #!/bin/bash
 # Load config variables from file
-  source /share/docker/scripts/.bash-colors.env
+  source /share/docker/scripts/.bash_colors.env
   source /share/docker/scripts/.docker_vars.env
 
 # Help message for script
 helpFunction(){
   echo -e "${blu}[-> This script performs Docker Swarm initialization tasks on QNAP Container Station architecture. <-]${DEF}"
   echo
-  echo -e " SYNTAX: # dwup"
-  echo -e " SYNTAX: # dwup -${cyn}option${DEF}"
-  echo -e "   VALID OPTIONS:"
-  echo -e "     -${cyn}all${DEF}     │ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
-  echo -e "     -${cyn}listed${DEF}  │ Creates the Docker Swarm, then deploys the 'listed' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-  echo -e "     -${cyn}default${DEF} │ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-  echo -e "     -${cyn}help${DEF}    │ Displays this help message."
+  echo -e "  SYNTAX: # dwup"
+  echo -e "  SYNTAX: # dwup -${cyn}option${DEF}"
+  echo -e "    VALID OPTIONS:"
+  echo -e "      -${cyn}all${DEF}       │ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
+  echo -e "      -${cyn}listed${DEF}    │ Creates the Docker Swarm, then deploys the 'listed' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+  echo -e "      -${cyn}default${DEF}   │ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+  echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
   echo
   exit 1 # Exit script after printing help
   }

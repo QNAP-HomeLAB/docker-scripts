@@ -1,6 +1,6 @@
 #!/bin/bash
 # Load config variables from file
-  source /share/docker/scripts/.bash-colors.env
+  source /share/docker/scripts/.bash_colors.env
 
 # Listing the currently active docker networks
   echo -e "${blu}[-> LISTING UNUSED DOCKER VOLUMES <-]${def}"

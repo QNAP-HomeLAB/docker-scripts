@@ -1,8 +1,8 @@
 #!/bin/bash
 # Load config variables from file
-  source /share/docker/scripts/.bash-colors.env
+  source /share/docker/scripts/.bash_colors.env
   source /share/docker/scripts/.docker_vars.env
-  source /share/docker/vars/swarm_stacks.conf
+  source /share/docker/swarm/swarm_stacks.conf
   unset configs_folder_list IFS
   unset configs_list IFS
   unset configs_path IFS
