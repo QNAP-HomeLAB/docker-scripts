@@ -74,11 +74,11 @@ helpFunction(){
       # check for required traefik files, create if missing
       if [[ "${stack}" = [tT][rR][aA][eE][fF][iI][kK] ]]; then
         # create required letsencrypt certificate file if not already made
-        if [[ ! -f ${docker_folder}/certs/acme.json ]]; then
+        if [[ ! -f ${swarm_appdata}/traefik/acme.json ]]; then
           echo -e "  -> ${YLW}Required cert file${DEF} not found! Creating..."
-          mkdir -p ${docker_folder}/certs
-          touch ${docker_folder}/certs/acme.json
-          chmod 600 ${docker_folder}/certs/acme.json
+          mkdir -p ${swarm_appdata}/traefik
+          touch ${swarm_appdata}/traefik/acme.json
+          chmod 600 ${swarm_appdata}/traefik/acme.json
         fi
         # check if required log files exist, create if missing
         if [[ ! -f "${swarm_appdata}"/"${stack}"/access.log || ! -f "${swarm_appdata}"/"${stack}"/"${stack}".log ]]; then
