@@ -1,60 +1,58 @@
 #!/bin/bash
-# Load config variables from file
+# external variable sources
   source /share/docker/scripts/.bash_colors.env
   source /share/docker/scripts/.docker_vars.env
 
+# function definitions
+  fnc_help(){
+    echo -e "${blu}[-> This script prunes (removes) '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${blu} and ${CUR}unused${def} ${cyn}networks${blu} <-]${def} "
+    echo
+    echo -e "  SYNTAX: # dprn"
+    echo -e "  SYNTAX: # dprn -${cyn}option${def}"
+    echo -e "    VALID OPTION(S):"
+    echo -e "      -a │ --all    Stops all containers then removes all '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${def} and ${CUR}unused${def} ${cyn}networks${def}"
+    echo -e "      -h │ --help   Displays this help message"
+    echo
+    exit 1 # Exit script after printing help
+    }
+  fnc_prune(){ docker system prune --all --force --volumes; }
+  fnc_container_list(){ docker container ls --all --quiet; }
+  fnc_container_stop(){ docker stop $(fnc_container_list); }
+  fnc_nothing_to_do(){ echo -e " - ${YLW}nothing to prune from the docker environment${DEF}"; }
+
+# Script start notification
+  echo -e "${blu}[-> PRUNING THE DOCKER SYSTEM <-]${DEF}"
+
 # Perform prune operation with/without '-f' option
   case "${1}" in 
-    # "-h"|"-help"|"--help") helpFunction ;;
-    "-f"|"-force")
-      echo -e "${blu}[-> PRUNING THE DOCKER SYSTEM <-]${DEF}"
-      docker system prune -f
-      echo
+    (-*)
+      case "${1}" in
+        (""|"-h"|"-help"|"--help") fnc_help ;;
+        ("-a"|"--all")
+          # if [[ "$(docker container ls --all --quiet)" ]];
+          # then docker stop $(docker container ls --all --quiet) && docker system prune --all --force --volumes
+          # else echo -e " - ${YLW}no docker containers to stop and prune${DEF}";
+          if [[ "$(fnc_container_list)" ]]
+          then fnc_container_stop && echo && fnc_prune
+          else fnc_nothing_to_do
+          fi
+          ;;
+        (*) echo -e "${YLW} >> INVALID OPTION SYNTAX -- USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1 ;;
+      esac
       ;;
-    *)
-    echo -e "${blu} -> REMOVE UNUSED DOCKER ${CYN}VOLUMES${DEF} "
-      #docker volume ls -qf dangling=true | xargs -r docker volume rm
-      VOLUMES_DANGLING=$(docker volume ls -qf dangling=true)
-      if [[ ! ${VOLUMES_DANGLING} = "" ]];
-      then docker volume rm ${NETWORKS_DANGLING}
-      else echo -e " - ${YLW}No dangling volumes to remove.${DEF}"
+    (*)
+      # if [[ ! "$(docker system prune --all --force --volumes)" == "Total reclaimed space: 0B" ]];
+      # then docker system prune --all --force --volumes
+      # else echo -e " - ${YLW}nothing to prune from the docker environment${DEF}"
+      # fi
+      if [[ ! "$(fnc_prune)" == "Total reclaimed space: 0B" ]]
+      then fnc_prune;
+      else fnc_nothing_to_do
       fi
-      echo
-    #echo -e "${blu} -> REMOVE UNUSED DOCKER ${CYN}NETWORKS${DEF} "
-    #  #docker network ls | grep "bridge"
-    #  NETWORKS_BRIDGED="$(docker network ls | grep "bridge" | awk '/ / { print $1 }')"
-    #  if [[ ! ${NETWORKS_BRIDGED} = "" ]];
-    #  then docker network rm ${NETWORKS_BRIDGED}
-    #  else echo -e " - No disconnected, bridged networks to remove."
-    #  fi
-    #  echo
-    echo -e "${blu} -> REMOVE UNUSED DOCKER ${CYN}IMAGES${DEF}"
-      #docker images
-      #IMAGES_DANGLING=$(docker images --filter "dangling=true" -q --no-trunc)
-      IMAGES_DANGLING="$(docker images --filter "dangling=false" -q)"
-      if [[ ! ${IMAGES_DANGLING} = "" ]]
-      then docker rmi ${IMAGES_DANGLING}
-      else echo -e " - ${YLW}No dangling images to remove.${DEF}"
-      fi
-      #docker images | grep "none"
-      IMAGES_NONE=$(docker images | grep "none" | awk '/ / { print $3 }')
-      if [[ ! ${IMAGES_NONE} = "" ]];
-      then docker rmi ${IMAGES_NONE}
-      else echo -e " - No unassigned images to remove."
-      fi
-      echo
-    echo -e "${blu} -> REMOVE UNUSED DOCKER ${CYN}CONTAINERS${DEF}"
-      #docker ps
-      #docker ps -a
-      CONTAINERS_EXITED=$(docker ps -qa --no-trunc --filter "status=exited")
-      if [[ ! ${CONTAINERS_EXITED} = "" ]];
-      then docker rm ${CONTAINERS_EXITED}
-      else echo -e " - ${YLW}No exited containers to remove.${DEF}"
-      fi
-      echo
     ;;
   esac
 
 # Script completion notice
-  echo -e "${GRN}[-- DOCKER SYSTEM PRUNE COMPLETE --]${DEF}"
   echo
+  # echo -e "${GRN}[-- DOCKER SYSTEM PRUNE COMPLETE --]${DEF}"
+  # echo

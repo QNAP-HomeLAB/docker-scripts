@@ -1,25 +1,25 @@
 #!/bin/bash
-# Load config variables from file
+# external variable sources
   source /share/docker/scripts/.bash_colors.env
   source /share/docker/scripts/.docker_vars.env
 
-# Help message for script
-helpFunction(){
-  echo -e "${blu}[-> This script performs Docker Swarm initialization tasks on QNAP Container Station architecture. <-]${DEF}"
-  echo
-  echo -e "  SYNTAX: # dwup"
-  echo -e "  SYNTAX: # dwup -${cyn}option${DEF}"
-  echo -e "    VALID OPTIONS:"
-  echo -e "      -${cyn}all${DEF}       │ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
-  echo -e "      -${cyn}listed${DEF}    │ Creates the Docker Swarm, then deploys the 'listed' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-  echo -e "      -${cyn}default${DEF}   │ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-  echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
-  echo
-  exit 1 # Exit script after printing help
-  }
+# function definitions
+  fnc_help(){
+    echo -e "${blu}[-> This script performs Docker Swarm initialization tasks on QNAP Container Station architecture. <-]${DEF}"
+    echo
+    echo -e "  SYNTAX: # dwup"
+    echo -e "  SYNTAX: # dwup -${cyn}option${DEF}"
+    echo -e "    VALID OPTIONS:"
+    echo -e "      -${cyn}all${DEF}       │ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
+    echo -e "      -${cyn}listed${DEF}    │ Creates the Docker Swarm, then deploys the 'listed' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e "      -${cyn}default${DEF}   │ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
+    echo
+    exit 1 # Exit script after printing help
+    }
 
 # Stack deployment confirmation query
-  if [[ "$1" = "-h" ]] || [[ "$1" = "-help" ]] || [[ "$1" = "--help" ]] ; then helpFunction; fi
+  if [[ "$1" = "-h" ]] || [[ "$1" = "-help" ]] || [[ "$1" = "--help" ]] ; then fnc_help; fi
 
 # Command header
   echo -e "${blu}[-> DOCKER SWARM INITIALIZATION SCRIPT <-]${DEF}"
@@ -87,19 +87,19 @@ helpFunction(){
   if [[ "$1" = "" ]]; then
     case "${input}" in
       ([yY]|[yY][eE][sS])
-        . "${docker_scripts}"/docker_stack_deploy.sh -default
+        . "${docker_scripts}"/docker_stack_start.sh -default
         ;;
       ([nN]|[nN][oO])
         case "${confirm}" in 
           ([yY]|[yY][eE][sS])
-            . "${docker_scripts}"/docker_stack_deploy.sh traefik
+            . "${docker_scripts}"/docker_stack_start.sh traefik
           ;;
           (*) echo -e " >> ${YLW}DOCKER SWARM STACKS WILL NOT BE DEPLOYED${DEF} << " ;;
         esac
         ;;
     esac
   else
-    . "${docker_scripts}"/docker_stack_deploy.sh "$1"
+    . "${docker_scripts}"/docker_stack_start.sh "$1"
   fi
 
 # Script completion message

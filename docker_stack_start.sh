@@ -1,32 +1,34 @@
 #!/bin/bash
-# Load config variables from file
+# external variable sources
   source /share/docker/scripts/.bash_colors.env
   source /share/docker/scripts/.docker_vars.env
   source /share/docker/swarm/swarm_vars.env
   source /share/docker/swarm/swarm_stacks.conf
+
+# script variable definitions
   unset configs_list IFS
   unset deploy_list IFS
 
-# Help message for script
-helpFunction(){
-  echo -e "${blu}[-> This script deploys a single stack or a pre-defined list of Docker Swarm stack <-]${DEF}"
-  echo
-  echo -e "  SYNTAX: # dsd ${cyn}stack_name${DEF}"
-  echo -e "  SYNTAX: # dsd -${cyn}option${DEF}"
-  echo -e "    VALID OPTIONS:"
-  echo -e "      -${cyn}all${DEF}       │ Deploys all stacks with a corresponding .yml config file inside the '${YLW}${swarm_configs}/${DEF}' path."
-  echo -e "      -${cyn}listed${DEF}    │ Deploys the '${cyn}listed${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-  echo -e "      -${cyn}default${DEF}   │ Deploys the '${cyn}default${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-  echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
-  echo
-  exit 1 # Exit script after printing help
-  }
+# function definitions
+  fnc_help(){
+    echo -e "${blu}[-> This script deploys a single stack or a pre-defined list of Docker Swarm stack <-]${DEF}"
+    echo
+    echo -e "  SYNTAX: # dsd ${cyn}stack_name${DEF}"
+    echo -e "  SYNTAX: # dsd -${cyn}option${DEF}"
+    echo -e "    VALID OPTIONS:"
+    echo -e "      -${cyn}all${DEF}       │ Deploys all stacks with a corresponding .yml config file inside the '${YLW}${swarm_configs}/${DEF}' path."
+    echo -e "      -${cyn}listed${DEF}    │ Deploys the '${cyn}listed${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e "      -${cyn}default${DEF}   │ Deploys the '${cyn}default${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
+    echo
+    exit 1 # Exit script after printing help
+    }
 
 # determine script output according to option entered
   case "${1}" in 
     (-*)
       case "${1}" in
-        (""|"-h"|"-help"|"--help") helpFunction ;;
+        (""|"-h"|"-help"|"--help") fnc_help ;;
         ("-all")
           if [[ "${bounce_list[@]}" = "" ]]; then
             IFS=$'\n' deploy_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') );

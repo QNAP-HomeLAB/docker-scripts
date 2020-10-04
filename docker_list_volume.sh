@@ -1,5 +1,5 @@
 #!/bin/bash
-# Load config variables from file
+# external variable sources
   source /share/docker/scripts/.bash_colors.env
 
 # Listing the currently active docker networks
@@ -8,8 +8,6 @@
     docker volume ls
     # docker volume ls -qf dangling=true
   else
-    #prnt " -> ${YLW}no 'dangling' volumes exist${NC}"
     echo -e "${ylw} -> no volumes exist${def}"
-    # pYLW " -> no 'dangling' volumes exist"
   fi
   echo
