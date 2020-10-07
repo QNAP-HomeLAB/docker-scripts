@@ -10,7 +10,7 @@ fnc_help() {
   echo -e "  NOTE: Commands have 'options' which can be listed using the '-help' flag after the command, e.g. ${cyn}dls -help${def} "
   echo
   echo -e "  ${blu}COMMAND${DEF}       │ ${blu}SCRIPT FILE NAME${DEF}       │ ${blu}COMMAND DESCRIPTION${DEF}"
-  echo -e "  ────────────────┼────────────────────────┼────────────────────────────"
+  echo -e "  ──────────────┼────────────────────────┼────────────────────────"
   echo -e "  ${cyn}dlist${DEF}         │ ${ylw}docker_commands_list${DEF}   │ lists the custom Docker Swarm commands created for managing a QNAP Docker Swarm"
   echo -e "  ${blu}DOCKER_LIST COMMANDS${DEF}"
   echo -e "  ${cyn}dlc${DEF}           │ ${ylw}docker_list_container${DEF}  │ lists currently deployed docker containers and/or services"
@@ -65,18 +65,8 @@ fnc_help() {
   # echo -e "  ${cyn}dwclr${DEF}   │ ${ylw}dwlv -all${DEF}        │ custom command alias"
   # echo -e "  ${cyn}dcmd${DEF}    │ ${ylw}dlist${DEF}            │ custom command alias"
   # echo
-  exit 1
+  # exit 1
   }
-
-# logical action check
-  case "${1}" in 
-    ("-x"|"-execute") ;; # register docker aliases and custom commands for qnap devices
-    (*) fnc_help ;;
-  esac
-
-# create shortcut to 'entware-std' created profile file
-  [ ! -e /share/docker/scripts/profile.sh ] && ln -s /opt/etc/profile /share/docker/scripts/profile.sh
-
 fnc_create_aliases(){
   # docker alias list
     alias dk='docker'
@@ -197,15 +187,22 @@ fnc_create_aliases(){
     # docker_system_prune -- prunes the docker system (removes unused images and containers and networks and volumes)
     dprune(){ sh /share/docker/scripts/docker_system_prune.sh $1; }
     alias dyp="dprune";
-    alias dyprn="dprune";
     alias dprn="dprune";
 
     # docker_system_stats -- displays resources used by current docker stacks/containers
     dstats(){ sh /share/docker/scripts/docker_system_stats.sh "${1}"; }
-    alias dys="dstats -live";
+    alias dys="dstats";
     alias dtop="dstats -live";
-    alias dstat="dstats";
+    alias dstat="dstats -live";
 
   # echo -e "${blu} >> Docker aliases for QNAP devices imported${def}"
 }
 
+# logical action check
+  case "${1}" in 
+    ("-x"|"-execute") fnc_create_aliases ;; # register docker aliases and custom commands for qnap devices
+    (*) fnc_help ;;
+  esac
+
+# create shortcut to 'entware-std' created profile file
+  [ ! -e /share/docker/scripts/profile.sh ] && ln -s /opt/etc/profile /share/docker/scripts/profile.sh
