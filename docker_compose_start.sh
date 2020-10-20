@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.bash_colors.env
-  source /share/docker/scripts/.docker_vars.env
+  source /share/docker/secrets/.docker_vars.env
 
 # script variable definitions
   conftype="-compose"
@@ -55,9 +55,9 @@
 # perform script main function
   deploy_list=(`for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u`)
   for stack in "${!deploy_list[@]}"; do
+    docker-compose -f ${compose_configs}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml up -d --remove-orphans
     # create '.env' file redirect if used
-    # ln -sf "${docker_vars}"/"${variables_file}" "${compose_configs}"/"${stack}"/.env
-    # sleep 1
-    # docker-compose -f /share/docker/compose/configs/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml up -d
-    docker-compose -f ${compose_configs}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml up -d
+    # [ ! -e ${compose_configs}/${stack}/.env ] && ln -s ${variables_file} ${compose_configs}/${stack}/.env
+    ln -sf ${variables_file} ${compose_configs}/${deploy_list[stack]}/.env
+    sleep 1
   done

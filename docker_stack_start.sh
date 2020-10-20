@@ -1,12 +1,11 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.bash_colors.env
-  source /share/docker/scripts/.docker_vars.env
-  source /share/docker/swarm/swarm_vars.env
-  source /share/docker/swarm/swarm_stacks.conf
+  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/secrets/.docker_swarm_stacks.conf
 
 # script variable definitions
-  unset configs_list IFS
+  unset config_list IFS
   unset deploy_list IFS
 
 # function definitions
@@ -17,12 +16,26 @@
     echo -e "  SYNTAX: # dsd -${cyn}option${DEF}"
     echo -e "    VALID OPTIONS:"
     echo -e "      -${cyn}all${DEF}       │ Deploys all stacks with a corresponding .yml config file inside the '${YLW}${swarm_configs}/${DEF}' path."
-    echo -e "      -${cyn}listed${DEF}    │ Deploys the '${cyn}listed${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e "      -${cyn}preset${DEF}    │ Deploys the '${cyn}preset${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
     echo -e "      -${cyn}default${DEF}   │ Deploys the '${cyn}default${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
     echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
     echo
     exit 1 # Exit script after printing help
-    }
+  }
+  fnc_deploy_all(){ IFS=$'\n'; deploy_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') ); }
+  fnc_deploy_bounce(){ IFS=$'\n'; deploy_list=("${bounce_list[@]}"); }
+  fnc_deploy_preset(){ IFS=$'\n'; deploy_list=("${stacks_preset[@]}"); }
+  fnc_deploy_default(){ IFS=$'\n'; deploy_list=("${stacks_default[@]}"); }
+  fnc_deploy_list_cleanup(){ 
+    if [[ ! "${bounce_list[@]}" ]]; then fnc_deploy_all
+      for stack in "${!deploy_list[@]}"; do
+        if [[ "${deploy_list[stack]}" = "." ]]; then unset deploy_list[stack]; fi
+        if [[ -f "${swarm_configs}"/"${deploy_list[stack]}"/"${deploy_list[stack]}${conftype}.yml" ]]; then config_list="${config_list} ${deploy_list[stack]}"; fi
+      done
+      unset deploy_list IFS; IFS=$'\n'; deploy_list=("${config_list[@]}"); unset config_list IFS
+    else fnc_deploy_bounce
+    fi;
+  }
 
 # determine script output according to option entered
   case "${1}" in 
@@ -31,21 +44,21 @@
         (""|"-h"|"-help"|"--help") fnc_help ;;
         ("-all")
           if [[ "${bounce_list[@]}" = "" ]]; then
-            IFS=$'\n' deploy_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') );
+            IFS=$'\n'; deploy_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') );
             for stack in "${!deploy_list[@]}"; do
               if [[ "${deploy_list[stack]}" = "." ]]; then unset deploy_list[stack]; fi
-              if [[ -f "${swarm_configs}"/"${deploy_list[stack]}"/"${deploy_list[stack]}${compose}.yml" ]];
-                then configs_list="${configs_list} ${deploy_list[stack]}"
+              if [[ -f "${swarm_configs}"/"${deploy_list[stack]}"/"${deploy_list[stack]}${conftype}.yml" ]];
+                then config_list="${config_list} ${deploy_list[stack]}"
               fi
             done
             unset deploy_list IFS
-            IFS=$'\n'; deploy_list=("${configs_list[@]}");
-            unset configs_list IFS
-          else IFS=$'\n'; deploy_list=("${bounce_list[@]}");
+            IFS=$'\n'; deploy_list=("${config_list[@]}");
+            unset config_list IFS
+          else fnc_deploy_bounce
           fi
           ;;
-        ("-listed") IFS=$'\n'; deploy_list=("${stacks_listed[@]}") ;;
-        ("-default") IFS=$'\n'; deploy_list=("${stacks_default[@]}") ;;
+        ("-preset") fnc_deploy_preset ;;
+        ("-default") fnc_deploy_default ;;
         (*) echo -e "${YLW} >> INVALID OPTION SYNTAX -- USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1 ;;
       esac
       ;;

@@ -19,26 +19,34 @@
     echo
     exit 1 # Exit script after printing help
     }
-  # to list possible --format tags, type 'docker command --format='((json .}}''
   fnc_script_intro(){ echo -e "${blu}[-> LIST OF CURRENT DOCKER SWARM STACKS <-]${DEF} "; }
+  fnc_script_error(){ echo -e "${blu}[-> LIST OF DOCKER SWARM STACK ${red}ERRORS${blu} <-]${DEF} "; }
   fnc_nothing_to_do(){ echo -e "${YLW} -> no current docker swarm stacks exist${DEF}"; }
-  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE '${DEF}--${cyn}help${YLW}' OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
-  fnc_list_services(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Ports}}"; }
-  fnc_list_service_errors(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
-  fnc_list_stacks(){ docker stack ls; }
-  fnc_list_stack_services(){ docker stack services "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Replicas}}\t{{.Image}}\t{{.CurrentState}}\t{{.Ports}}"; }
-  fnc_list_stack_errors(){ docker stack ps --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}" "${1}"; }
-  fnc_list_container_network(){ docker container ls --format "table {{.ID}} ~ {{.Names}}\t{{.Networks}}\t{{.Ports}}\t{{.Status}}"; }
-  fnc_list_container_volumes(){ docker container ls --format "table {{.ID}} ~ {{.Names}}\t{{.LocalVolumes}}\t{{.Mounts}}\t{{.Status}}"; }
-  fnc_list_container_errors(){ docker container ps --no-trunc --format "table {{.ID}} ~ {{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}" "${1}"; }
+  fnc_not_swarm_node(){ echo -e "${YLW} -> this docker node is not a swarm manager ${DEF}"; }
+  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE '${DEF}--${cyn}help${YLW}' OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; }
+  # to list possible --format tags, type 'docker command --format='((json .}}''
+  fnc_stack_lst(){ docker stack ls; }
+  fnc_stack_svc(){ docker stack services "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Replicas}}\t{{.Image}}\t{{.Ports}}"; }
+  fnc_stack_err(){ docker stack ps --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}" "${1}"; }
+  fnc_error_check(){ docker stack ps --no-trunc --format "{{.Error}}" "${1}"; }
+  fnc_service_lst(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Ports}}"; }
+  fnc_service_err(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
+
+  # fnc_check_errors(){ docker service ps "${1}" --format "{{.Error}}"; }
+  # fnc_list_service_all(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Ports}}"; }
+  # fnc_list_service_err(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
+  # fnc_list_container_err(){ docker service ps --no-trunc --format "table {{.Node}}\t{{.ID}}\t{{.Names}}\t{{.Error}}" "${1}"; }
+  # fnc_docker_node_list(){ docker node ps $(docker node ls -q) --format "table {{.Node}}\t{{.Name}}\t{{.CurrentState}}" --filter desired-state=Running | uniq; }
 
 # determine script output according to option entered
   case "${1}" in 
-    ("") fnc_script_intro;
-      if [ ! "$(docker stack ls)" = "NAME                SERVICES" ];
-      then fnc_list_stacks;
-      else fnc_nothing_to_do;
-      fi
+    ("") fnc_script_intro; 
+      case "$(docker stack ls)" in
+        ("NAME                SERVICES") fnc_nothing_to_do ;;
+        # Error*) fnc_not_swarm_node ;;
+        ("Error response from daemon: This node is not a swarm manager. Use \"docker swarm init\" or \"docker swarm join\" to connect this node to swarm and try again.") fnc_not_swarm_node ;;
+        (*) fnc_stack_lst ;;
+      esac
       ;;
     (-*)
       case "${1}" in
@@ -46,18 +54,58 @@
         (*) fnc_invalid_syntax ;;
       esac
       ;;
-    (*) fnc_script_intro;
+    (*) 
       case "${2}" in
-        ("") fnc_list_stack_services ;;
         (-*)
           case "${2}" in
-            ("-sv") fnc_list_stack_services ;;
-            ("-er"|"--errors") fnc_list_stack_errors ;;
+            ("-sv"|"--services") fnc_script_intro; fnc_stack_svc ;;
+            ("-er"|"--errors") fnc_script_error; fnc_stack_err ${1} ${2} ;;
             (*) fnc_invalid_syntax ;;
           esac
           ;;
-        (*) fnc_invalid_syntax ;;
+        (*) 
+          case fnc_error_check in 
+            ("") fnc_script_intro; fnc_stack_svc ${1} ${2} ;;
+            (*) fnc_script_error; fnc_stack_err ${1} ${2} ;; 
+          esac
+          ;;
       esac
       ;;
   esac
   echo
+
+# docker container --format='{{json .}}'
+# {{.Command}}
+# {{.CreatedAt}}
+# {{.ID}}
+# {{.Image}}
+# {{.Labels}}
+# {{.LocalVolumes}}
+# {{.Mounts}}
+# {{.Names}}
+# {{.Networks}}
+# {{.Ports}}
+# {{.RunningFor}}
+# {{.Size}}
+# {{.Status}}
+
+
+# ONLY WITH SWARM
+
+# docker stack services traefik --format='{{json .}}'
+# {{.ID}}
+# {{.Image}}
+# {{.Mode}}
+# {{.Name}}
+# {{.Ports}}
+# {{.Replicas}}
+
+# docker service ps traefik_app --format='{{json .}}'
+# {{.CurrentState}}
+# {{.DesiredState}}
+# {{.Error}}
+# {{.ID}}
+# {{.Image}}
+# {{.Name}}
+# {{.Node}}
+# {{.Ports}}

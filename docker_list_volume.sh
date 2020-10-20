@@ -4,7 +4,7 @@
 
 # Listing the currently active docker networks
   echo -e "${blu}[-> LISTING UNUSED DOCKER VOLUMES <-]${def}"
-  if [ ! "$(docker volume ls -qf dangling=true)" = "" ]; then
+  if [ "$(docker volume ls -qf dangling=true)" ]; then
     docker volume ls
     # docker volume ls -qf dangling=true
   else

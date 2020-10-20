@@ -20,10 +20,10 @@
     exit 1 # Exit script after printing help
     }
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
-  fnc_service_status(){ docker service ps "${1}"; }
-  fnc_service_status_check(){ docker service ps "${1}" --format "{{.Error}}"; }
-  fnc_service_status_short(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Ports}}"; }
-  fnc_service_status_error(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
+  fnc_service_basic(){ docker service ps "${1}"; }
+  fnc_service_check(){ docker service ps "${1}" --format "{{.Error}}"; }
+  fnc_service_short(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Ports}}"; }
+  fnc_service_error(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
 
 # determine script output according to option entered
   case "${1}" in 
@@ -35,11 +35,11 @@
     ;;
     (*)
       case "${2}" in
-        ("-l"|"-long") fnc_service_status ;;
+        ("-l"|"-long") fnc_service_basic ;;
         (*)
-          if [[ ! fnc_service_status_check ]]
-          then fnc_service_status_short
-          else fnc_service_status_error
+          if [[ ! fnc_service_check ]]
+          then fnc_service_short
+          else fnc_service_error
           fi
         ;;
       esac

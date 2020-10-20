@@ -2,7 +2,7 @@
 # external variable sources
   source /share/docker/scripts/.bash_colors.env
   source /share/docker/secrets/.docker_vars.env
-  source /share/docker/secrets/.docker_swarm_stacks.conf
+  source /share/docker/secrets/.docker_compose_stacks.conf
 
 # script variable definitions
   unset bounce_list IFS
@@ -14,9 +14,9 @@
     echo -e "SYNTAX: # dsb ${cyn}stack_name${DEF}"
     echo -e "SYNTAX: # dsb -${cyn}option${DEF}"
     echo -e "  VALID OPTIONS:"
-    echo -e "        -${cyn}all${DEF}        │ Bounces all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
-    echo -e "        -${cyn}preset${DEF}     │ Bounces the 'preset' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e "        -${cyn}default${DEF}    │ Bounces the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e "        -${cyn}all${DEF}        │ Bounces all stacks with a corresponding folder inside the '${YLW}${compose_configs}/${DEF}' path."
+    echo -e "        -${cyn}preset${DEF}     │ Bounces the 'preset' array of stacks defined in '${YLW}${docker_vars}/${cyn}compose_stacks.conf${DEF}'"
+    echo -e "        -${cyn}default${DEF}    │ Bounces the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}compose_stacks.conf${DEF}'"
     echo -e "        -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
     echo
     exit 1 # Exit script after printing help

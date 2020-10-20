@@ -25,6 +25,7 @@
 
 # determine script output according to option entered
   case "${1}" in 
+    ("") fnc_invalid_syntax ;;
     (-*)
       case "${1}" in
         (""|"-h"|"-help"|"--help") fnc_help ;;

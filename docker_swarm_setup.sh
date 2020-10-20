@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.bash_colors.env
-  source /share/docker/scripts/.docker_vars.env
+  source /share/docker/secrets/.docker_vars.env
 
 # function definitions
   fnc_help(){

@@ -1,8 +1,8 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.bash_colors.env
-  source /share/docker/scripts/.docker_vars.env
-  source /share/docker/swarm/swarm_stacks.conf
+  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/secrets/.docker_swarm_stacks.conf
 
 # script variable definitions
   unset remove_list IFS
@@ -15,7 +15,7 @@
     echo -e "  SYNTAX: # dsr -${cyn}option${DEF}"
     echo -e "    VALID OPTIONS:"
     echo -e "      -${cyn}all${DEF}       │ ${YLW}CAUTION${DEF}: Removes ${BLD}all${DEF} stacks currently listed with 'docker stack ls' command."
-    echo -e "      -${cyn}listed${DEF}    │ Removes the '${cyn}listed${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e "      -${cyn}preset${DEF}    │ Removes the '${cyn}preset${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
     echo -e "      -${cyn}default${DEF}   │ Removes the '${cyn}default${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
     echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
     echo
@@ -40,7 +40,7 @@
       case "${1}" in
         (""|"-h"|"-help"|"--help") fnc_help ;;
         ("-all") IFS=$'\n'; remove_list=("$(docker stack ls --format {{.Name}})") ;;
-        ("-listed") IFS=$'\n'; remove_list=("${stacks_listed[@]}") ;;
+        ("-preset") IFS=$'\n'; remove_list=("${stacks_preset[@]}") ;;
         ("-default") IFS=$'\n'; remove_list=("${stacks_default[@]}") ;;
         (*) fnc_invalid_syntax ;;
       esac

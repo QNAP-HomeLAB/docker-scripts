@@ -11,7 +11,7 @@
 1. Install nano or vi, whichever you are more comfortable with (only one needed)
    - **RUN**: `opkg install nano`
    - **RUN**: `opkg install vim`
-   - ***NOTE***: You must have installed the `entware-std` package as detailed in Section-2 Step-8 to be able to use the "opkg" installer.
+   - ***NOTE***: You must have installed the `entware-std` package as detailed in Section-2, Step-8 to be able to use the "opkg" installer.
 
 1. Type the below lines into the QNAP command line:
    ```bash
@@ -32,7 +32,7 @@
    source /share/docker/scripts/docker_commands_list.sh -x
    ```
    - ***NOTE***: If you want to to be notified each time the scripts load, use this line of code instead:
-   ```bash
-   source /share/docker/scripts/docker_commands_list.sh -x && echo " >> '.../docker_commands_list.sh' successfully loaded" || echo " -- ERROR: could not import '.../docker_commands_list.sh'"
-   ```
-   - ***NOTE***: You will need to restart your ssh or cli session in order to make the profile changes effective.
+      ```bash
+      source /share/docker/scripts/docker_commands_list.sh -x && echo " >> '.../docker_commands_list.sh' successfully loaded" || echo " -- ERROR: could not import '.../docker_commands_list.sh'"
+      ```
+   - ***NOTE***: You will need to restart your ssh / cli session, or execute the `profile` alias (a shortcut to the docker commands file), in order to make the profile changes effective.
