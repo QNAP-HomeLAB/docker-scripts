@@ -1,22 +1,25 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script creates Docker configuration folders using the schema created by ${CYN}Drauku${blu} <-]${DEF}"
-    echo -e "      ${blu}(modified from ${CYN}gkoerk's (RIP)${blu} famously awesome folder structure for stacks)${DEF}"
-    echo
-    echo -e "  Enter up to nine(9) container_names in a single command, separated by a 'space' character: "
-    echo -e "    SYNTAX: dcf ${cyn}compose_file1${DEF} ${cyn}compose_file2${DEF} ... ${cyn}compose_file9${DEF}"
-    echo -e "    SYNTAX: dcf -${cyn}option${DEF}"
-    echo -e "      VALID OPTIONS:"
-    echo -e "        -${cyn}h${DEF} │ --${cyn}help${DEF}   Displays this help message."
-    echo
-    echo -e "    The below folder structure is created for each 'compose_file' entered with this command:"
-    echo -e "        ${YLW}${compose_appdata}/${cyn}compose_file${DEF}"
-    echo -e "        ${YLW}${compose_configs}/${cyn}compose_file${DEF}"
+    echo -e " -     ${blu}(modified from ${CYN}gkoerk's (RIP)${blu} famously awesome folder structure for stacks)${DEF}"
+    echo -e " -"
+    echo -e " - Enter up to nine(9) container_names in a single command, separated by a 'space' character: "
+    echo -e " -   SYNTAX: dcf ${cyn}compose_file1${DEF} ${cyn}compose_file2${DEF} ... ${cyn}compose_file9${DEF}"
+    echo -e " -   SYNTAX: dcf ${cyn}-option${DEF}"
+    echo -e " -     VALID OPTIONS:"
+    # echo -e " -       ${cyn}-d │ --delete ${DEF}│ ${red}Deletes${def} all sub-folders and files in ${YLW}${compose_appdata}/${cyn}compose_stack${DEF} & ${YLW}${compose_configs}/${cyn}compose_stack${DEF}"
+    # echo -e " -       ${cyn}-r │ --reset  ${DEF}│ ${red}Deletes${def} all files contained in ${YLW}${compose_appdata}/${cyn}compose_stack${DEF}"
+    echo -e " -       ${cyn}-h │ --help   ${DEF}| Displays this help message."
+    echo -e " -"
+    echo -e " -   NOTE: The below folder structure is created for each 'compose_file' entered with this command:"
+    echo -e " -       ${YLW}${compose_appdata}/${cyn}compose_file${DEF}"
+    echo -e " -       ${YLW}${compose_configs}/${cyn}compose_file${DEF}"
+    # echo -e " -       ${YLW}${compose_runtime}/${cyn}compose_stack${DEF}"
+    # echo -e " -       ${YLW}/share/compose/secrets/${cyn}compose_stack${DEF}"
     echo
     exit 1 # Exit script after printing help
     }

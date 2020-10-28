@@ -1,18 +1,17 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script leaves a Docker Swarm environment and removes a list of stacks on QNAP Container Station architecture. <-]${def}"
-    echo
-    echo -e "SYNTAX: # dwlv"
-    echo -e "SYNTAX: # dwlv ${cyn}-option${def}"
-    echo -e "  VALID OPTIONS:"
-    echo -e "        -${cyn}all${def}          │ ${YLW}CAUTION${DEF}: Removes ${BLD}all${DEF} stacks currently listed with ${cyn}'docker stack ls'${def} command, then laves the Swarm."
-    echo -e "        -${cyn}keep${def} | ${cyn}-none${def} │ Leaves the Docker Swarm, but Does ${BLD}*NOT*${DEF} remove any currently deployed stacks."
-    echo -e "        -${cyn}h${def} | ${cyn}-help${def}    │ Displays this help message."
+    echo -e " -"
+    echo -e " - SYNTAX: # dwlv"
+    echo -e " - SYNTAX: # dwlv ${cyn}-option${def}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}-a | --all  ${def}│ ${YLW}CAUTION${DEF}: Removes ${BLD}all${DEF} stacks currently listed with ${cyn}'docker stack ls'${def} command, then laves the Swarm."
+    echo -e " -     ${cyn}-n | --none ${def}│ Leaves the Docker Swarm, but Does ${BLD}*NOT*${DEF} remove any currently deployed stacks."
+    echo -e " -     ${cyn}-h | --help ${def}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
@@ -33,8 +32,8 @@
     (-*)
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
-        ("-all") input="yes" ;;
-        ("-keep"|"-none") input="no" ;;
+        ("-a"|"--all") input="yes" ;;
+        ("-n"|"--none") input="no" ;;
         (*) fnc_invalid_syntax ;;
       esac
       ;;

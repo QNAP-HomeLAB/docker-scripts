@@ -1,16 +1,17 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
+  source /share/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script displays system resources used by current docker stacks/containers. <-]${def} "
-    echo
-    echo -e "  SYNTAX: # dls"
-    echo -e "  SYNTAX: # dls -${cyn}option${def}"
-    echo -e "    VALID OPTION(S):"
-    echo -e "      ${CYN}-h${def} | ${CYN}-help${def} │ Displays this help message."
-    echo -e "      ${CYN}-p${def} | ${CYN}-part${def} │ Displays a resource usage table for current docker services."
+    echo -e " -"
+    echo -e " - SYNTAX: # dls"
+    echo -e " - SYNTAX: # dls ${cyn}-option${def}"
+    echo -e " -   VALID OPTION(S):"
+    echo -e " -     ${cyn}-l | --live ${def}│ Displays a live-updating resource usage table for current docker services."
+    echo -e " -     ${cyn}-p | --part ${def}│ Displays a resource usage table for current docker services."
+    echo -e " -     ${cyn}-h | --help ${def}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
@@ -23,8 +24,9 @@
     ("") fnc_stats_part ;; 
     (-*)
       case "${1}" in
-        (""|"-h"|"-help"|"--help") fnc_help ;;
-        ("-s"|"-short") fnc_stats_part ;; 
+        ("-h"|"-help"|"--help") fnc_help ;;
+        ("-l"|"--live") fnc_stats_full ;; 
+        ("-p"|"--part") fnc_stats_part ;; 
         (*) fnc_invalid_syntax ;;
       esac
       ;;

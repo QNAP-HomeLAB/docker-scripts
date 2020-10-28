@@ -1,38 +1,37 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script creates Docker configuration folders using the schema created by ${CYN}Drauku${blu} <-]${DEF}"
-    echo -e "    ${blu}(modified from ${CYN}gkoerk's (RIP)${blu} famously awesome folder structure for stacks)${DEF}"
-    echo
-    echo -e "  NOTE: stack_names must NOT contain spaces, but MUST be separated by a 'space' character: "
+    echo -e " - ${blu}(modified from ${CYN}gkoerk's (RIP)${blu} famously awesome folder structure for stacks)${DEF}"
+    echo -e " -"
+    echo -e " -NOTE: stack_names must NOT contain spaces, but MUST be separated by a 'space' character: "
   }
   fnc_help_compose(){
     fnc_help
-    echo -e "    SYNTAX: dcf ${cyn}stack_name1${DEF} ${cyn}stack_name2${DEF} etc etc"
-    echo -e "    SYNTAX: dcf -${cyn}option${DEF}"
-    echo -e "      VALID OPTIONS:"
-    echo -e "        -${cyn}h${DEF} │ --${cyn}help${DEF}   Displays this help message."
-    echo
-    echo -e "    The below folder structure is created for each 'stack_name' entered with this command:"
-    echo -e "        ${YLW}/share/docker/${ylw}compose${YLW}/appdata/${cyn}stack_name${DEF}"
-    echo -e "        ${YLW}/share/docker/${ylw}compose${YLW}/configs/${cyn}stack_name${DEF}"
+    echo -e " - SYNTAX: dcf ${cyn}stack_name1${DEF} ${cyn}stack_name2${DEF} etc etc"
+    echo -e " - SYNTAX: dcf ${cyn}-option${DEF}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}-h │ --help ${DEF}| Displays this help message."
+    echo -e " -"
+    echo -e " - The below folder structure is created for each 'stack_name' entered with this command:"
+    echo -e " -     ${YLW}/share/docker/${ylw}compose${YLW}/appdata/${cyn}stack_name${DEF}"
+    echo -e " -     ${YLW}/share/docker/${ylw}compose${YLW}/configs/${cyn}stack_name${DEF}"
     echo
     exit 1 # Exit script after printing help
   }
   fnc_help_swarm(){
     fnc_help
-    echo -e "    SYNTAX: dsf || dwf ${cyn}stack_name1${DEF} ${cyn}stack_name2${DEF} etc etc"
-    echo -e "    SYNTAX: dsf || dwf -${cyn}option${DEF}"
-    echo -e "      VALID OPTIONS:"
-    echo -e "        -${cyn}h${DEF} │ --${cyn}help${DEF}   Displays this help message."
-    echo
-    echo -e "    The below folder structure is created for each 'stack_name' entered with this command:"
-    echo -e "        ${YLW}/share/docker/${ylw}swarm${YLW}/appdata/${cyn}stack_name${DEF}"
-    echo -e "        ${YLW}/share/docker/${ylw}swarm${YLW}/configs/${cyn}stack_name${DEF}"
+    echo -e " - SYNTAX: dsf || dwf ${cyn}stack_name1${DEF} ${cyn}stack_name2${DEF} etc etc"
+    echo -e " - SYNTAX: dsf || dwf ${cyn}-option${DEF}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}-h │ --help ${DEF}| Displays this help message."
+    echo -e " -"
+    echo -e " - The below folder structure is created for each 'stack_name' entered with this command:"
+    echo -e " -     ${YLW}/share/docker/${ylw}swarm${YLW}/appdata/${cyn}stack_name${DEF}"
+    echo -e " -     ${YLW}/share/docker/${ylw}swarm${YLW}/configs/${cyn}stack_name${DEF}"
     echo
     exit 1 # Exit script after printing help
   }

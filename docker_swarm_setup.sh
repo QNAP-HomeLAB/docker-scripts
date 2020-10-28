@@ -1,19 +1,18 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script performs Docker Swarm initialization tasks on QNAP Container Station architecture. <-]${DEF}"
-    echo
-    echo -e "  SYNTAX: # dwup"
-    echo -e "  SYNTAX: # dwup -${cyn}option${DEF}"
-    echo -e "    VALID OPTIONS:"
-    echo -e "      -${cyn}all${DEF}       │ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
-    echo -e "      -${cyn}listed${DEF}    │ Creates the Docker Swarm, then deploys the 'listed' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e "      -${cyn}default${DEF}   │ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
+        echo -e " -"
+    echo -e " - SYNTAX: # dwup"
+    echo -e " - SYNTAX: # dwup ${cyn}-option${DEF}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}-a | --all     ${DEF}│ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
+    echo -e " -     ${cyn}-d | --default ${DEF}│ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e " -     ${cyn}-p | --preset  ${DEF}│ Creates the Docker Swarm, then deploys the 'preset' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e " -     ${cyn}-h │ --help    ${DEF}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
@@ -62,13 +61,13 @@
     if [[ $increment -gt 10 ]]; then # max 10 seconds wait for network to be created
       docker network ls
       echo
-      echo -e " >> THE ABOVE LIST MUST INCLUDE THE '${cyn}docker_gwbridge${DEF}' AND '${cyn}traefik_public${DEF}' NETWORKS"
-      echo -e " >> IF EITHER OF THOSE NETWORKS ARE NOT LISTED, YOU MUST LEAVE, THEN RE-INITIALIZE THE SWARM"
-      echo -e " >> IF YOU HAVE ALREADY ATTEMPTED TO RE-INITIALIZE, ASK FOR HELP HERE: ${mgn} https://discord.gg/KekSYUE ${def}"
+      echo -e " ->> THE ABOVE LIST MUST INCLUDE THE '${cyn}docker_gwbridge${DEF}' AND '${cyn}traefik_public${DEF}' NETWORKS"
+      echo -e " ->> IF EITHER OF THOSE NETWORKS ARE NOT LISTED, YOU MUST LEAVE, THEN RE-INITIALIZE THE SWARM"
+      echo -e " ->> IF YOU HAVE ALREADY ATTEMPTED TO RE-INITIALIZE, ASK FOR HELP HERE: ${mgn} https://discord.gg/KekSYUE ${def}"
       echo
-      echo -e " >> ${YLW}DOCKER SWARM STACKS WILL NOT BE DEPLOYED${DEF} << "
+      echo -e " ->> ${YLW}DOCKER SWARM STACKS WILL NOT BE DEPLOYED${DEF} << "
       echo
-      echo -e " -- ${RED}ERROR${DEF}: DOCKER SWARM SETUP WAS ${YLW}NOT SUCCESSFUL${DEF} -- "
+      echo -e " --- ${RED}ERROR${DEF}: DOCKER SWARM SETUP WAS ${YLW}NOT SUCCESSFUL${DEF} -- "
       exit 1 # Exit script here
     fi
   done

@@ -1,8 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
-  source /share/docker/secrets/.docker_swarm_stacks.conf
+  source /share/docker/scripts/.script_vars.conf
+  source /share/docker/secrets/.swarm_stacks.conf
 
 # script variable definitions
   unset config_list IFS
@@ -11,17 +10,17 @@
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script deploys a single stack or a pre-defined list of Docker Swarm stack <-]${DEF}"
-    echo
-    echo -e "  SYNTAX: # dsd ${cyn}stack_name${DEF}"
-    echo -e "  SYNTAX: # dsd -${cyn}option${DEF}"
-    echo -e "    VALID OPTIONS:"
-    echo -e "      -${cyn}all${DEF}       │ Deploys all stacks with a corresponding .yml config file inside the '${YLW}${swarm_configs}/${DEF}' path."
-    echo -e "      -${cyn}preset${DEF}    │ Deploys the '${cyn}preset${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e "      -${cyn}default${DEF}   │ Deploys the '${cyn}default${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
+    echo -e " -"
+    echo -e " - SYNTAX: # dsd ${cyn}stack_name${DEF}"
+    echo -e " - SYNTAX: # dsd ${cyn}-option${DEF}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}-a │ --all     ${DEF}│ Deploys all stacks with a corresponding .yml config file inside the '${YLW}${swarm_configs}/${DEF}' path."
+    echo -e " -     ${cyn}-d │ --default ${DEF}│ Deploys the '${cyn}default${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e " -     ${cyn}-p │ --preset  ${DEF}│ Deploys the '${cyn}preset${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e " -     ${cyn}-h │ --help    ${DEF}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
-  }
+    }
   fnc_deploy_all(){ IFS=$'\n'; deploy_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') ); }
   fnc_deploy_bounce(){ IFS=$'\n'; deploy_list=("${bounce_list[@]}"); }
   fnc_deploy_preset(){ IFS=$'\n'; deploy_list=("${stacks_preset[@]}"); }
@@ -35,14 +34,14 @@
       unset deploy_list IFS; IFS=$'\n'; deploy_list=("${config_list[@]}"); unset config_list IFS
     else fnc_deploy_bounce
     fi;
-  }
+    }
 
 # determine script output according to option entered
   case "${1}" in 
     (-*)
       case "${1}" in
-        (""|"-h"|"-help"|"--help") fnc_help ;;
-        ("-all")
+        ("-h"|"-help"|"--help") fnc_help ;;
+        ("-a"|"--all")
           if [[ "${bounce_list[@]}" = "" ]]; then
             IFS=$'\n'; deploy_list=( $(cd "${swarm_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') );
             for stack in "${!deploy_list[@]}"; do
@@ -57,8 +56,8 @@
           else fnc_deploy_bounce
           fi
           ;;
-        ("-preset") fnc_deploy_preset ;;
-        ("-default") fnc_deploy_default ;;
+        ("-p"|"--preset") fnc_deploy_preset ;;
+        ("-d"|"--default") fnc_deploy_default ;;
         (*) echo -e "${YLW} >> INVALID OPTION SYNTAX -- USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1 ;;
       esac
       ;;
@@ -83,21 +82,21 @@
       # echo -e "${CYN} -> DEPLOY '${cyn}${stack}${CYN}' STACK <-${DEF}"
       # check if required folders exist, create if missing
       if [[ ! -d "${swarm_appdata}"/"${stack}" || ! -d "${swarm_configs}"/"${stack}" ]]; then
-        echo -e "  -> ${YLW}Required folders${DEF} not found! Creating..."
+        echo -e "Creating ${YLW}Required folders${DEF}"
         . ${docker_scripts}/docker_stack_folders.sh "${stack}"
       fi
       # check for required traefik files, create if missing
       if [[ "${stack}" = [tT][rR][aA][eE][fF][iI][kK] ]]; then
         # create required letsencrypt certificate file if not already made
         if [[ ! -f ${swarm_appdata}/traefik/acme.json ]]; then
-          echo -e "  -> ${YLW}Required cert file${DEF} not found! Creating..."
+          echo -e "Creating ${YLW}Required cert file${DEF}"
           mkdir -p ${swarm_appdata}/traefik
           touch ${swarm_appdata}/traefik/acme.json
           chmod 600 ${swarm_appdata}/traefik/acme.json
         fi
         # check if required log files exist, create if missing
         if [[ ! -f "${swarm_appdata}"/"${stack}"/access.log || ! -f "${swarm_appdata}"/"${stack}"/"${stack}".log ]]; then
-          echo -e "  -> ${YLW}Required log file(s)${DEF} not found! Creating..."
+          echo -e "Creating ${YLW}Required log file(s)${DEF}"
           touch "${swarm_appdata}"/"${stack}"/{access.log,"${stack}".log}
           chmod 600 "${swarm_appdata}"/"${stack}"/{access.log,"${stack}".log}
         fi
