@@ -1,7 +1,6 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # script variable definitions
   conftype="-compose"
@@ -9,13 +8,13 @@
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script STOPS (bring 'down') a single Docker container using a pre-written compose file <-]${DEF}"
-    echo
-    echo -e "SYNTAX: # dcd | dcr | dcp"
-    echo -e "SYNTAX: # dcd ${cyn}stack_name${DEF}"
-    echo -e "SYNTAX: # dcd -${cyn}option${DEF}"
-    echo -e "  VALID OPTIONS:"
-    echo -e "        -${cyn}h${DEF} │ -${cyn}help${DEF}   Displays this help message."
-    echo -e "        -${cyn}all${DEF}          Brings down all docker containers shown with the 'docker ps' command."
+    echo -e " -"
+    echo -e " - SYNTAX: # dcd | dcr | dcp"
+    echo -e " - SYNTAX: # dcd ${cyn}stack_name${DEF}"
+    echo -e " - SYNTAX: # dcd ${cyn}-option${DEF}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}-h │ --help ${DEF}| Displays this help message."
+    echo -e " -     ${cyn}-a | --all  ${DEF}| Brings down all docker containers shown with the 'docker ps' command."
     echo
     exit 1 # Exit script after printing help
     }
@@ -34,7 +33,7 @@
     (-*) # validate entered option exists
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
-        ("-all") fnc_configs_list_all ;;
+        ("-a"|"--all") fnc_configs_list_all ;;
         (*) fnc_invalid_syntax ;;
       esac
       ;;

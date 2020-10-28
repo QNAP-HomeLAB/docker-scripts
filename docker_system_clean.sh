@@ -1,17 +1,16 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script cleans (removes) '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${def} and ${CUR}unused${def} ${cyn}networks${def} <-]${def} "
-    echo
-    echo -e "  SYNTAX: # dclean"
-    echo -e "  SYNTAX: # dclean -${cyn}option${def}"
-    echo -e "    VALID OPTION(S):"
-    echo -e "      -a │ --all    Stops all containers then removes all '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${def} and ${CUR}unused${def} ${cyn}networks${def}"
-    echo -e "      -h │ --help   Displays this help message"
+    echo -e " -"
+    echo -e " - SYNTAX: # dclean"
+    echo -e " - SYNTAX: # dclean ${cyn}-option${def}"
+    echo -e " -   VALID OPTION(S):"
+    echo -e " -     ${cyn}-a │ --all  ${def}│ Stops all containers then removes all '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${def} and ${CUR}unused${def} ${cyn}networks${def}"
+    echo -e " -     ${cyn}-h │ --help ${def}│ Displays this help message"
     echo
     exit 1 # Exit script after printing help
     }

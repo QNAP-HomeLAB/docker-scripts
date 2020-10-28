@@ -1,17 +1,16 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script prunes (removes) '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${blu} and ${CUR}unused${def} ${cyn}networks${blu} <-]${def} "
-    echo
-    echo -e "  SYNTAX: # dprn"
-    echo -e "  SYNTAX: # dprn -${cyn}option${def}"
-    echo -e "    VALID OPTION(S):"
-    echo -e "      -a │ --all    Stops all containers then removes all '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${def} and ${CUR}unused${def} ${cyn}networks${def}"
-    echo -e "      -h │ --help   Displays this help message"
+    echo -e " -"
+    echo -e " - SYNTAX: # dprn"
+    echo -e " - SYNTAX: # dprn ${cyn}-option${def}"
+    echo -e " -   VALID OPTION(S):"
+    echo -e " -     ${cyn}-a │ --all  ${def}│ Stops all containers then removes all '${CYN}container${blu}' ${cyn}images${def}, ${cyn}volumes${def} and ${CUR}unused${def} ${cyn}networks${def}"
+    echo -e " -     ${cyn}-h │ --help ${def}│ Displays this help message"
     echo
     exit 1 # Exit script after printing help
     }
@@ -32,7 +31,7 @@
   case "${1}" in 
     (-*)
       case "${1}" in
-        (""|"-h"|"-help"|"--help") fnc_help ;;
+        ("-h"|"-help"|"--help") fnc_help ;;
         ("-a"|"--all")
           if [[ "$(fnc_container_list)" ]]
           then 

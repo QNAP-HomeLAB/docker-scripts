@@ -1,7 +1,6 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # script variable definitions
   unset deploy_list IFS
@@ -9,15 +8,15 @@
 # function definitions
   fnc_help(){
     echo -e "${blu}[-> This script performs Docker Swarm initialization tasks on QNAP Container Station architecture. <-]${DEF}"
-    echo
-    echo -e "  SYNTAX: # dwinit"
-    echo -e "  SYNTAX: # dwinit -${cyn}option${DEF}"
-    echo -e "    VALID OPTIONS:"
-    echo -e "      ${cyn}stackname${DEF}  │ Creates the Docker Swarm, then deploys the '${cyn}stackname${DEF}' swarm stack if a config file exists."
-    echo -e "      -${cyn}all${DEF}       │ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
-    echo -e "      -${cyn}listed${DEF}    │ Creates the Docker Swarm, then deploys the 'listed' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e "      -${cyn}default${DEF}   │ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e "      -${cyn}h${DEF} │ -${cyn}help${DEF} │ Displays this help message."
+    echo -e " -"
+    echo -e " - SYNTAX: # dwinit"
+    echo -e " - SYNTAX: # dwinit ${cyn}-option${DEF}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}stackname      ${DEF}│ Creates the Docker Swarm, then deploys the '${cyn}stackname${DEF}' swarm stack if a config file exists."
+    echo -e " -     ${cyn}-a | --all     ${DEF}│ Creates the Docker Swarm, then deploys all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
+    echo -e " -     ${cyn}-d | --default ${DEF}│ Creates the Docker Swarm, then deploys the 'default' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e " -     ${cyn}-p | --preset  ${DEF}│ Creates the Docker Swarm, then deploys the 'preset' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
+    echo -e " -     ${cyn}-h │ --help    ${DEF}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
@@ -76,8 +75,10 @@
     case "${1}" in 
       (-*) # confirm entered option switch is valid
         case "${1}" in
-          (""|"-h"|"-help"|"--help") fnc_help ;;
-          ("-all"|"-listed"|"-default") deploy_list="${1}" ;;
+          ("-h"|"-help"|"--help") fnc_help ;;
+          ("-a"|"--all") deploy_list="${1}" ;;
+          ("-d"|"--default") deploy_list="${1}" ;;
+          ("-p"|"--preset") deploy_list="${1}" ;;
           (*) fnc_invalid_syntax ;;
         esac
         ;;

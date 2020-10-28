@@ -1,22 +1,21 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.bash_colors.env
-  source /share/docker/secrets/.docker_vars.env
+  source /share/docker/scripts/.script_vars.conf
 
 # script variable definitions
   conftype="-compose"
 
 # function definitions
   fnc_help(){
-    echo -e "${blu}[-> This script STARTS 'up' a single Docker container using a pre-written compose file <-]${DEF}"
-    echo
-    echo -e "SYNTAX: # dcu | dcs | dct"
-    echo -e "SYNTAX: # dcu ${cyn}stack_name${DEF}"
-    echo -e "SYNTAX: # dcu -${cyn}option${DEF}"
-    echo -e "  VALID OPTIONS:"
-    echo -e "        -${cyn}h${DEF} │ -${cyn}help${DEF}   Displays this help message."
-    echo -e "        -${cyn}all${DEF}          Deploys all stacks with a config file inside the '${YLW}${compose_configs}/${DEF}' path."
-    echo -e "                        NOTE: config files must follow this naming format: '${cyn}stackname${CYN}-compose.yml${def}'"
+    echo -e " - ${blu}[-> This script STARTS 'up' a single Docker container using a pre-written compose file <-]${DEF}"
+    echo -e " -"
+    echo -e " - SYNTAX: # dcu | dcs | dct"
+    echo -e " - SYNTAX: # dcu ${cyn}stack_name${DEF}"
+    echo -e " - SYNTAX: # dcu ${cyn}-option${DEF}"
+    echo -e " -   VALID OPTIONS:"
+    echo -e " -     ${cyn}-h │ --help ${DEF}| Displays this help message."
+    echo -e " -     ${cyn}-a | --all  ${DEF}| Deploys all stacks with a config file inside the '${YLW}${compose_configs}/${DEF}' path."
+    echo -e " -                         NOTE: config files must follow this naming format: '${cyn}stackname${CYN}-compose.yml${def}'"
     echo
     exit 1 # Exit script after printing help
     }
@@ -26,7 +25,7 @@
     (-*) # validate entered option exists
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
-        ("-all")
+        ("-a"|"--all")
           if [[ "${bounce_list[@]}" = "" ]]; then
             # populate list of configuration folders
             IFS=$'\n'; configs_folder_list=( $(cd "${compose_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') )
