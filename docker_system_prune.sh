@@ -33,8 +33,7 @@
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
         ("-a"|"--all")
-          if [[ "$(fnc_container_list)" ]]
-          then 
+          if [[ "$(fnc_container_list)" ]]; then 
             fnc_query_remove_all
             while read -r -p " [(Y)es/(N)o] " input; do
               case "${input}" in 
@@ -49,12 +48,7 @@
         (*) fnc_invalid_syntax ;;
       esac
       ;;
-    (*)
-      if [[ ! "$(fnc_prune)" == "Total reclaimed space: 0B" ]]
-      then fnc_prune
-      else fnc_nothing_to_do
-      fi
-    ;;
+    (*) fnc_prune ;;
   esac
 
 # Script completion notice

@@ -26,17 +26,19 @@
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
   fnc_nothing_to_do(){ echo -e " >> ${YLW}SWARM STACKS WILL NOT BE DEPLOYED${DEF} << "; echo; }
   fnc_deploy_query(){ printf "Do you want to deploy the '-${cyn}default${DEF}' list of Docker Swarm stacks?"; }
-  fnc_deploy_stack(){ sh "${docker_scripts}"/docker_stack_start.sh "${deploy_list}"; }
+  fnc_deploy_stack(){ if [ ! "${deploy_list}" ] || [ "${deploy_list}" = "-n" ]; then fnc_nothing_to_do; else sh "${docker_scripts}"/docker_stack_start.sh "${deploy_list}"; fi; }
   fnc_traefik_query(){ printf " - Should ${cyn}traefik${DEF} still be installed (${YLW}recommended${DEF})?"; }
-  fnc_folder_creation(){ mkdir -pm 600 "${docker_folder}"/{scripts,secrets,swarm/{appdata,configs},compose/{appdata,configs}}; }
-  fnc_folder_ownership(){ chown -R ${var_user}:${var_group} ${swarm_folder}; echo "FOLDER OWNERSHIP UPDATED"; echo; }
+  fnc_folder_creation(){ if [[ ! -d "${docker_folder}/{scripts,secrets,swarm,compose}" ]]; then mkdir -pm 600 "${docker_folder}"/{scripts,secrets,swarm/{appdata,configs},compose/{appdata,configs}}; fi; }
+  fnc_folder_owner(){ chown -R ${var_user}:${var_group} ${swarm_folder}; echo "FOLDER OWNERSHIP UPDATED"; echo; }
+  fnc_folder_auth(){ chmod -R 600 ${swarm_folder}; echo "FOLDER PERMISSIONS UPDATED"; echo; }
   fnc_network_init(){ docker network create --driver=overlay --subnet=172.1.1.0/22 --attachable ${var_traefik_network}; }
-  fnc_network_check(){ [[ "$(fnc_network_check_traefik)" = "" ]] || [[ "$(fnc_network_check_gwbridge)" = "" ]]; }
   fnc_network_check_traefik(){ docker network ls --filter name=${var_traefik_network} -q; }
   fnc_network_check_gwbridge(){ docker network ls --filter name=docker_gwbridge -q; }
-  fnc_network_created(){ echo -e " ++ '${cyn}docker_gwbridge${DEF}' AND '${cyn}${var_traefik_network}${DEF}' NETWORKS ${GRN}CREATED${DEF} ++ "; }
+  fnc_network_verify(){ unset increment IFS; while [[ ! "$(fnc_network_check_traefik)" ]] || [[ ! "$(fnc_network_check_gwbridge)" ]]; do sleep 1; increment=$(($increment+1)); if [[ $increment -gt 10 ]]; then fnc_swarm_error; fi; done; }
+  fnc_network_success(){ echo; echo -e " ++ ${grn}CREATED '${cyn}docker_gwbridge${grn}' AND '${cyn}${var_traefik_network}${grn}' NETWORKS${DEF} ++ "; }
   fnc_swarm_init(){ docker swarm init --advertise-addr "${var_nas_ip}"; }
-  fnc_swarm_check(){ while [[ "$(docker stack ls)" != "NAME                SERVICES" ]]; do sleep 1; done; }
+  fnc_swarm_verify(){ while [[ "$(docker stack ls)" != "NAME                SERVICES" ]]; do sleep 1; done; }
+  # fnc_swarm_check(){ while [[ ! "$(docker stack ls --format "{{.Name}}")" ]]; do sleep 1; done; }
   fnc_swarm_success(){ echo; echo -e " >> ${grn}DOCKER SWARM INITIALIZED SUCCESSFULLY${DEF} << "; echo; }
   fnc_swarm_error(){ 
     docker network ls
@@ -52,68 +54,51 @@
     }
 
 # determine script output according to option entered
-  if [ "${1}" == "" ]; then # confirm possible stacks to be deployed with swarm initialization
-    # fnc_script_intro
-    fnc_deploy_query
-    while read -r -p " [(Y)es/(N)o] " input; do
-      case "${input}" in 
-        ([yY]|[yY][eE][sS]) deploy_list="-default"; break ;;
-        ([nN]|[nN][oO]) fnc_traefik_query
-          while read -r -p " [(Y)es/(N)o] " confirm; do
-            case "${confirm}" in 
-              ([yY]|[yY][eE][sS]) deploy_list="traefik"; break ;;
-              ([nN]|[nN][oO]) break ;;
-              (*) fnc_invalid_input ;;
-            esac
-          done
-          break ;;
-        (*) fnc_invalid_input ;;
-      esac
-    done
-    echo
-  else
-    case "${1}" in 
-      (-*) # confirm entered option switch is valid
-        case "${1}" in
-          ("-h"|"-help"|"--help") fnc_help ;;
-          ("-a"|"--all") deploy_list="${1}" ;;
-          ("-d"|"--default") deploy_list="${1}" ;;
-          ("-p"|"--preset") deploy_list="${1}" ;;
-          (*) fnc_invalid_syntax ;;
+  case "${1}" in 
+    ("") fnc_deploy_query
+      while read -r -p " [(Y)es/(N)o] " input; do
+        case "${input}" in 
+          ([yY]|[yY][eE][sS]) deploy_list="--default"; break ;;
+          ([nN]|[nN][oO]) fnc_traefik_query
+            while read -r -p " [(Y)es/(N)o] " confirm; do
+              case "${confirm}" in 
+                ([yY]|[yY][eE][sS]) deploy_list="traefik"; break ;;
+                ([nN]|[nN][oO]) break ;;
+                (*) fnc_invalid_input ;;
+              esac
+            done
+            break ;;
+          (*) fnc_invalid_input ;;
         esac
-        ;;
-      (*) deploy_list=("$@") ;;
-    esac
-  fi
+      done
+      echo
+      ;;
+    (-*) # confirm entered option switch is valid
+      case "${1}" in
+        ("-h"|"-help"|"--help") fnc_help ;;
+        ("-a"|"--all") deploy_list="${1}" ;;
+        ("-d"|"--default") deploy_list="${1}" ;;
+        ("-p"|"--preset") deploy_list="${1}" ;;
+        ("-n"|"--none") deploy_list="-n" ;;
+        (*) fnc_invalid_syntax ;;
+      esac
+      ;;
+    (*) deploy_list=("$@") ;;
+  esac
 
-if [[ ! -f "${docker_folder}/{scripts,secrets,swarm,compose}" ]];
-then fnc_folder_creation
-fi
-# fnc_folder_ownership
+fnc_folder_creation
+# fnc_folder_owner
+# fnc_folder_auth
 
 fnc_swarm_init
-fnc_network_init
-# while [[ "$(docker network ls --filter name=${var_traefik_network} -q)" = "" ]] || [[ "$(docker network ls --filter name=docker_gwbridge -q)" = "" ]]; do sleep 1; done;
-increment=0; # reset the increment variable
-# while [[ "$(docker network ls --filter name=traefik -q)" = "" ]] || [[ "$(docker network ls --filter name=gwbridge -q)" = "" ]]; do 
-while [[ "$(fnc_network_check_traefik)" = "" ]] || [[ "$(fnc_network_check_gwbridge)" = "" ]]; do
-  sleep 1;
-  increment=$(($increment+1));
-  if [[ $increment -gt 10 ]]; # max 10 seconds wait for network to be created
-  then fnc_swarm_error
-  fi
-done
-echo
-fnc_network_created;
+fnc_swarm_verify
 
-fnc_swarm_check
+fnc_network_init
+fnc_network_verify
+fnc_network_success
+
 fnc_swarm_success
 
-# stack deployment
-  if [ ! "${deploy_list}" ];
-  then fnc_nothing_to_do;
-  else fnc_deploy_stack;
-  fi
+fnc_deploy_stack
 
-# Script completion message
-  fnc_script_outro
+fnc_script_outro
