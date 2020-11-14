@@ -27,26 +27,20 @@
   fnc_stack_lst(){ docker stack ls; }
   fnc_stack_svc(){ docker stack services "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Image}}\t{{.Ports}}"; }
   fnc_stack_err(){ docker stack ps --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}" "${1}"; }
-  fnc_error_check(){ docker stack ps --no-trunc --format "{{.Error}}" "${1}"; }
-  fnc_service_lst(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Ports}}"; }
-  fnc_service_err(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
+  fnc_stack_chk(){ docker stack ps --no-trunc --format "{{.Error}}" "${1}"; }
 
-  # fnc_check_errors(){ docker service ps "${1}" --format "{{.Error}}"; }
-  # fnc_list_service_all(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Ports}}"; }
-  # fnc_list_service_err(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
-  # fnc_list_container_err(){ docker service ps --no-trunc --format "table {{.Node}}\t{{.ID}}\t{{.Names}}\t{{.Error}}" "${1}"; }
-  # fnc_docker_node_list(){ docker node ps $(docker node ls -q) --format "table {{.Node}}\t{{.Name}}\t{{.CurrentState}}" --filter desired-state=Running | uniq; }
+  # fnc_node_lst(){ docker node ps $(docker node ls -q) --format "table {{.Node}}\t{{.Name}}\t{{.CurrentState}}" --filter desired-state=Running | uniq; }
 
 # determine script output according to option entered
   case "${1}" in 
     ("") fnc_script_intro; 
-      case "$(docker stack ls)" in
+      case "$(fnc_stack_lst)" in
         ("NAME                SERVICES") fnc_nothing_to_do ;;
         ("Error response from daemon: This node is not a swarm manager. Use \"docker swarm init\" or \"docker swarm join\" to connect this node to swarm and try again.") fnc_not_swarm_node ;;
         (*) fnc_stack_lst ;;
       esac
       ;;
-    (-*)
+    (-*) # confirm entered option is valid
       case "${1}" in
         ("-"|"-h"|"-help"|"--help") fnc_help ;;
         (*) fnc_invalid_syntax ;;
@@ -54,17 +48,17 @@
       ;;
     (*) 
       case "${2}" in
-        (-*)
+        (-*) # confirm entered option is valid
           case "${2}" in
             ("-e"|"--errors") fnc_script_error; fnc_stack_err ${1} ${2} ;;
             ("-s"|"--services") fnc_script_intro; fnc_stack_svc ${1} ${2} ;;
             (*) fnc_invalid_syntax ;;
           esac
           ;;
-        (*) 
-          case "$(fnc_error_check)" in 
-            ("") fnc_script_intro; fnc_stack_svc ${1} ${2} ;;
-            (*) fnc_script_error; fnc_stack_err ${1} ${2} ;; 
+        (*) fnc_script_intro;
+          case "$(fnc_stack_chk ${1} ${2})" in 
+            ("") fnc_stack_svc ${1} ${2} ;;
+            (*) fnc_stack_err ${1} ${2} ;; 
           esac
           ;;
       esac
@@ -91,3 +85,8 @@
 # {{.Name}}
 # {{.Node}}
 # {{.Ports}}
+
+  # fnc_service_lst(){ docker service ps "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Image}}\t{{.Node}}\t{{.CurrentState}}"; }
+  # fnc_service_err(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
+  # fnc_container_lst(){ docker service ps --no-trunc --format "table {{.Node}}\t{{.ID}}\t{{.Names}}\t{{.Error}}" "${1}"; }
+  # fnc_container_err(){ docker service ps --no-trunc --format "table {{.Node}}\t{{.ID}}\t{{.Names}}\t{{.Error}}" "${1}"; }
