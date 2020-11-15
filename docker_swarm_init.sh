@@ -31,11 +31,6 @@
   fnc_folder_creation(){ if [[ ! -d "${docker_folder}/{scripts,secrets,swarm,compose}" ]]; then mkdir -pm 600 "${docker_folder}"/{scripts,secrets,swarm/{appdata,configs},compose/{appdata,configs}}; fi; }
   fnc_folder_owner(){ chown -R ${var_user}:${var_group} ${swarm_folder}; echo "FOLDER OWNERSHIP UPDATED"; echo; }
   fnc_folder_auth(){ chmod -R 600 ${swarm_folder}; echo "FOLDER PERMISSIONS UPDATED"; echo; }
-  fnc_network_init(){ docker network create --driver=overlay --subnet=172.1.1.0/22 --attachable ${var_traefik_network}; }
-  fnc_network_check_traefik(){ docker network ls --filter name=${var_traefik_network} -q; }
-  fnc_network_check_gwbridge(){ docker network ls --filter name=docker_gwbridge -q; }
-  fnc_network_verify(){ unset increment IFS; while [[ ! "$(fnc_network_check_traefik)" ]] || [[ ! "$(fnc_network_check_gwbridge)" ]]; do sleep 1; increment=$(($increment+1)); if [[ $increment -gt 10 ]]; then fnc_swarm_error; fi; done; }
-  fnc_network_success(){ echo; echo -e " ++ ${grn}CREATED '${cyn}docker_gwbridge${grn}' AND '${cyn}${var_traefik_network}${grn}' NETWORKS${DEF} ++ "; }
   fnc_swarm_init(){ docker swarm init --advertise-addr "${var_nas_ip}"; }
   fnc_swarm_verify(){ while [[ "$(docker stack ls)" != "NAME                SERVICES" ]]; do sleep 1; done; }
   # fnc_swarm_check(){ while [[ ! "$(docker stack ls --format "{{.Name}}")" ]]; do sleep 1; done; }
@@ -52,6 +47,13 @@
     echo -e " -- ${RED}ERROR${DEF}: DOCKER SWARM SETUP WAS ${YLW}NOT SUCCESSFUL${DEF} -- "
     exit 1 # Exit script here
     }
+  fnc_network_init(){ docker network create --driver=overlay --subnet=172.1.1.0/22 --attachable ${var_traefik_network}; }
+  fnc_network_check_traefik(){ docker network ls --filter name=${var_traefik_network} -q; }
+  fnc_network_check_gwbridge(){ docker network ls --filter name=docker_gwbridge -q; }
+  fnc_network_verify(){ unset increment IFS; while [[ ! "$(fnc_network_check_traefik)" ]] || [[ ! "$(fnc_network_check_gwbridge)" ]]; do sleep 1; increment=$(($increment+1)); if [[ $increment -gt 10 ]]; then fnc_swarm_error; fi; done; }
+  fnc_network_success(){ echo; echo -e " ++ ${grn}CREATED '${cyn}docker_gwbridge${grn}' AND '${cyn}${var_traefik_network}${grn}' NETWORKS${DEF} ++ "; }
+
+# fnc_script_intro
 
 # determine script output according to option entered
   case "${1}" in 
