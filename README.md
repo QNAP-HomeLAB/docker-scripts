@@ -114,11 +114,9 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
    - ***NOTE***: Adding the above lines to your `profile` automates the loading of the custom helper-scripts in the `/share/docker/scripts/` sub-folder.
 
 1. ***OPTIONAL***: The below steps accomplish the same thing as above, but add notification messages whenever you reload or log into the qnap cli.
-   - ***NOTE***: If you use a Windows client to save the profile (or the scripts below), they will be saved with CR LF and will error.
-     - **You MUST set the end of line format to UNIX (LF) in order for the profile and scripts to work correctly.**
-
    - **EDIT** the `profile` via `nano /opt/etc/profile` or `vi /opt/etc/profile`
    - **NOTE** I prefer to use VSCodium to edit this file as it provides syntax highlighting.
+   - ***NOTE***: If you use a Windows text editor to save the profile (or the scripts below), they will be saved with CR LF and will error. ***You MUST set the end of line format to UNIX (LF) in order for `profile` and scripts to work correctly.*** <p align="left"><figure><img align="center" width="400" src="https://i.imgur.com/oGWEvCO.png"></p><figcaption>VSCodium EOL Settings</figcaption></figure>
    - If you prefer to enter the text manually, this is the line that needs to go at the bottom of the `profile` file.
       ```bash
       source /share/docker/scripts/docker_commands_list.sh -x
@@ -127,19 +125,25 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
       ```bash
       source /share/docker/scripts/docker_commands_list.sh -x && echo " >> '.../docker_commands_list.sh' successfully loaded" || echo " -- ERROR: could not import '.../docker_commands_list.sh'"
       ```
-   - ***NOTE***: You will need to restart your ssh / cli session, or execute the `profile` alias (a shortcut to the docker commands file), in order to make the profile changes effective.
+   - ***NOTE***: You will need to restart your ssh / cli session, or *execute* the `profile` alias created earlier (a shortcut to the docker commands file), in order to make the profile changes effective.
 
-1. Once the `profile` and `/share/docker/scripts` are set up, use the below section as a reference for Docker shortcut commands.
+1. Next you will need to download the `script` files in this repository and place them in the `/share/docker/scripts` folder path on your QNAP. This can be accomplished several ways, but my preferred method is outlined here. 
+   - Connect to your QNAP using [WinSCP](https://winscp.net/eng/download.php). <p align="left"><img align="center" width="400" src="https://i.imgur.com/3LaKSMB.png"></p>
+   - You can then directly download the scripts from the [QNAP-HomeLAB/Docker-Scripts](https://github.com/QNAP-HomeLAB/Docker-Scripts/archive/master.zip) repository.
+   - Once the `.zip` is downloaded, extract the files and copy them to the QNAP at this folder path: `/share/docker/scripts/`
+   - This is the docker folder hierarchy and the scripts folder with scripts populated:  <p align="left"><img align="center" width="400" src="https://i.imgur.com/2VA8Jgw.png"></p>
+
+2. Once the `profile` and `/share/docker/scripts` are set up, use the below section as a reference for Docker shortcut commands.
 
    - In general, this is the scheme for how the shortcut acronyms are composed:
       - `dc...` refers to `Docker Compose` commands, for use outside of a swarm setup
       - `dl...` refers to `Docker List` commands (i.e. docker processes, docker networks, etc)
-      - `ds...` refers to `Docker Stack` commands (groupls of containers in a swarm setup)
+      - `ds...` refers to `Docker Stack` commands (groups of containers in a swarm setup)
       - `dv...` refers to `Docker serVice` commands (mostly error and logs related)
       - `dy...` refers to `Docker sYstem` commands for showing info and cleaning remnants
       - `dw...` refers to `Docker sWarm` initialization/removal commands (the whole swarm)
 
-   - Individual script descriptions have been removed from this `readme.md`. 
+   - **NOTE**: Individual script descriptions have been removed from this `readme.md`. 
    - Please refer to the [docker_commands_list.sh](https://github.com/QNAP-HomeLAB/Docker-Scripts/blob/master/docker_commands_list.sh) file for an updated list with descriptions.
 
 ## 4. Docker general config steps

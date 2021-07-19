@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.script_vars.conf
-  source /share/docker/secrets/.swarm_stacks.conf
+  source /share/docker/swarm/.swarm_stacks.conf
 
 # script variable definitions
   unset remove_list IFS
