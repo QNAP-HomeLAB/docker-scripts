@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.script_vars.conf
-  source /share/docker/secrets/.compose_stacks.conf
+  source /share/docker/compose/.compose_stacks.conf
 
 # script variable definitions
   unset bounce_list IFS
