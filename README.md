@@ -56,11 +56,11 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
 1. Modify these ports as follows to ensure there will be no port conflicts with docker stacks:
    - ***Change* default *System* ports:** In QNAP Web GUI
       - `Control Panel >> System >> General Settings`
-      - Change the default HTTP port to `8880`, and the default HTTPS port to `8443`.
+      - Change the default HTTP port to `8480`, and the default HTTPS port to `8443`.
       - **NOTE:** This *will* change the LAN address from which you access your QTS web-gui, requiring you to add the port at the end of your NAS LAN IP (e.g. https://192.168.1.100:8443)
    - ***Change* default *Web Application* ports:** In QNAP Web GUI
       - `Control Panel >> Applications >> Web Server`
-      - Change the default HTTP port to `9880`, and the default HTTPS port to `9443`.
+      - Change the default HTTP port to `9480`, and the default HTTPS port to `9443`.
       - **TIP:** Unless currently in use, consider disabling the MySQL application in the QNAP GUI Settings.
       - **WARNING:** *DO NOT* disable the **Web Server** application, leave this active on the new port. There is a bug in QTS where the Web Server will re-acquire the default port if it is disabled.
 1. **Ports 80 and 443 must be forwarded from your router to your NAS**. 
@@ -72,11 +72,11 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
 
    **Ports Overview:**
    - QTS System ports should be:
-      - HTTP : `8880`
+      - HTTP : `8480`
       - HTTPS: `8443`
    <br>
    - QTS Web Server application ports should be:
-      - HTTP : `9880`
+      - HTTP : `9480`
       - HTTPS: `9443`
 
 ### 2. Docker user account
@@ -144,46 +144,49 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
 
 ### 2. Docker folder creation
 
-1. This section is a continuation of the QNAP QTS folder creation steps from the previous section. Here we will create the sub-folders required for `scripts`, `swarm`, `compose`, and `secrets` files.
+  1. This section is a continuation of the QNAP QTS folder creation steps from the previous section. Here we will create the sub-folders required for `scripts`, `swarm`, `compose`, and `secrets` files.
 
-   - These folders should **all** be created using this example terminal command:
-      ```bash
-      mkdir -pm 600 /share/docker/scripts
-      ```
-      - `/share/docker/swarm` - this is the "docker swarm" config files folder
+     - These folders should **all** *individually* be created using this example terminal command:
+       ```bash
+       mkdir -pm 600 /share/docker/scripts
+       ```
+       ***OR*** create all the below listed folders using a single command:
+       ```bash
+       mkdir -pm 600 /share/docker/{common,scripts,secrets,compose/{appdata,configs,runtime},swarm/{appdata,configs,runtime}}
+       ```
+       - `/share/docker/swarm` - this is the "docker swarm" config files folder
          - `/share/docker/swarm/appdata`
            - Here we will add folders named `< stack name >`. This is where your application files live... libraries, artifacts, internal application configuration, etc. Think of this directory much like a combination of `C:\Windows\Program Files` and `C:\Users\<UserName>\AppData` in Windows.
          - `/share/docker/swarm/configs`
            - Here we will also add folders named `< stack name >`. Inside this folder, we will keep our actual _stack_name.yml_ files and any other necessary config files used to configure the docker stacks and images we want to run. This folder makes an excellent GitHub repository.
-           NOTE: Do not save sensitive information in your `.yml` files if you are sharing this folder as a git repository.
+            NOTE: Do not save sensitive information in your `.yml` files if you are sharing this folder as a git repository.
          - `/share/docker/swarm/runtime`
            - This is a shared folder on a volume that does not get backed up. It is where living DB files and transcode files reside, so it would appreciate running on the fastest storage group you have or in cache mode or in Qtier (if you use it). Think of this like the `C:\Temp\` in Windows.
-         - `/share/docker/swarm/secrets`
-           - This folder contains secret (sensitive) configuration data that should _NOT_ be shared publicly. This could be stored in a _PRIVATE_ Git repository, but should never be publicized or made available to anyone you don't implicitly trust with passwords, auth tokens, etc.
-<br><br>
-      - `/share/docker/compose`- this is the "docker-compose" config files folder
+           <br><br>
+       - `/share/docker/compose`- this is the "docker-compose" config files folder
          - `/share/docker/compose/appdata`
            - Here we will add folders named `< stack name >`. This is where your application files live... libraries, artifacts, internal application configuration, etc. Think of this directory much like a combination of `C:\Windows\Program Files` and `C:\Users\<UserName>\AppData` in Windows.
          - `/share/docker/compose/configs`
            - Here we will also add folders named `< stack name >`. Inside this folder, we will keep our actual _stack_name.yml_ files and any other necessary config files used to configure the docker stacks and images we want to run. This folder makes an excellent GitHub repository.
-           NOTE: Do not save sensitive information in your `.yml` files if you are sharing this folder as a git repository.
+              NOTE: Do not save sensitive information in your `.yml` files if you are sharing this folder as a git repository.
          - `/share/docker/compose/runtime`
            - This is a shared folder on a volume that does not get backed up. It is where living DB files and transcode files reside, so it would appreciate running on the fastest storage group you have or in cache mode or in Qtier (if you use it). Think of this like the `C:\Temp\` in Windows.
-<br><br>
+           <br><br>
        - `/share/docker/secrets`
          - This folder contains secret (sensitive) configuration data that should _NOT_ be shared publicly. This could be stored in a _PRIVATE_ Git repository, but should never be publicized or made available to anyone you don't implicitly trust with passwords, auth tokens, etc.
-<br><br>
-      - `/share/docker/common` - This is where you can store general config files, or shared files both `compose` and `swarm` mode containers might use.
-<br><br>
-   - Once all required folders are created, you must update ownership and permissions so the `dockeruser` account has the proper access level for Docker operations:
-      ```bash
-      chown dockuser:dockgroup -cR /share/docker && chmod 600 -cR /share/docker
-      ```
-   - This is what your folder heirarchy should look like after creating the above folder structure:
-   
-      ![docker folder structure](https://i.imgur.com/dbm5fp9.png)
+         <br><br>
+       - `/share/docker/common` - This is where you can store general config files, or shared files both `compose` and `swarm` mode containers might use.
+       <br><br>
+     - Once all required folders are created, you must update ownership and permissions so the `dockeruser` account has the proper access level for Docker operations:
+       ```bash
+       chown dockuser:dockgroup -cR /share/docker && chmod 600 -cR /share/docker
+       ```
+     - This is what your folder heirarchy should look similar to after creating the above folder structure:
 
-1. Next you need to download the custom *scripts* from the [QNAP HomeLAB Docker Scripts](https://gitlab.com/qnap-homelab/docker-scripts) repository to your `/share/docker/scripts/` directory.
+       ![docker folder structure](https://i.imgur.com/dbm5fp9.png)
+       <br><br>
+
+1. Next you need to download the custom ` docker scripts` from the [QNAP HomeLAB Docker Scripts](https://gitlab.com/qnap-homelab/docker-scripts) repository to your `/share/docker/scripts/` directory.
 
    - ~~Alternatively, if you trust my installation script to run as root on your system, you can run this `curl` command that will automatically download and install the scripts for you:~~ This feature is not finished, please download and install the scripts manually.
    - ***TIP:*** Read through and understand what a script does before executing possibly malicious code on any device.
@@ -191,7 +194,7 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
       # install the docker_scripts_setup.sh using wget without downloading the file
       wget -sO - https://raw.githubusercontent.com/QNAP-HomeLAB/Docker-Scripts/master/docker_scripts_setup.sh | sh
       ```
-      ***OR***
+      ***OR***<br><br>
       ```bash
       # download and install the docker_scripts_setup.sh using cURL
       curl -fsSL https://gitlab.com/qnap-homelab/docker-scripts/docker_scripts_setup.sh | sh
@@ -213,7 +216,7 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
       ```
 
 1. ***OPTIONAL:*** The below steps accomplish the same thing as above, but add notification messages whenever you reload or log into the qnap cli.
-   - ***NOTE:*** If you use a Windows client to save the profile (or the scripts below), they will be saved with the `CR LF` end of line sequence, and will error. **You MUST set the end of line sequence to UNIX `LF` in order for the profile and scripts to work correctly.** <p align="left"><figure><img align="center" width="400" src="https://i.imgur.com/oGWEvCO.png"><br><figcaption>VSCodium EOL Settings</figcaption></figure></p>
+   - ***NOTE:*** If you use a Windows client to save the profile (or the scripts below), they will be saved with the `CR LF` end of line sequence, and will error. **You MUST set the end of line sequence to UNIX `LF` in order for the profile and scripts to work correctly.** <p align="left"><figure><img align="center" width="400" src="https://i.imgur.com/oGWEvCO.png"><figcaption>VSCodium EOL Settings</figcaption></figure></p>
 
    - **EDIT** the `profile` file via `nano /opt/etc/profile` or `vi /opt/etc/profile`
    - **NOTE:** I prefer to use VSCodium to edit this file as it provides syntax highlighting.
@@ -232,10 +235,9 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
       - `dl...` refers to "**D**ocker **L**ist" commands (i.e. docker processes, docker networks, etc)
       - `ds...` refers to "**D**ocker **S**tack" commands (groupls of containers in a swarm setup)
       - `dv...` refers to "**D**ocker ser**V**ice" commands (mostly error and logs related)
-      - `dy...` refers to "**D**ocker s**Y**stem" commands for showing info and cleaning remnants
       - `dw...` refers to "**D**ocker s**W**arm" initialization/removal commands (the whole swarm)
-   - ***NOTE:*** Individual script descriptions have been removed from this `readme.md`. 
-     - Please refer to the [docker_commands_list.sh](https://github.com/QNAP-HomeLAB/Docker-Scripts/blob/master/docker_commands_list.sh) file for an updated list with descriptions.
+      - `dy...` refers to "**D**ocker s**Y**stem" commands for showing info and cleaning remnants
+   - ***NOTE:*** Individual script descriptions have been removed from this `readme.md`. Please refer to the [docker_commands_list.sh](https://github.com/QNAP-HomeLAB/Docker-Scripts/blob/master/docker_commands_list.sh) file for an updated list with descriptions.
 
 ## 3. Docker general config steps
 
@@ -278,4 +280,4 @@ If you have questions or issues, please join the community here: [QNAP Unofficia
   * **WARNING:** This guide is incomplete, and as such ***will*** probably contain errors.
   * **NOTE:** Effort has been made to provide accurate instructions tailored for QNAP NAS devices, but no guarantee can be made that this guide will work on your specific device.
   * **YOU** accept all liability for loss or damage or inconvenience arising from using the information contained in this guide.
-  * **YOU** accept all responsibility and risk when following the steps in this guide.
+    * All responsibility and risk for properly verifying the validity of anything written in this guide lies with the user. Contributors have composed the steps contained herin to the best of their ability, but nobody is infallible nor can all situations be accounted for. If you have questions or concerns, please join us on the [QNAP Unofficial Discord](https://discord.gg/rnxUPMd) community and request help.
