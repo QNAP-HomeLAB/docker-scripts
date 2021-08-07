@@ -14,6 +14,10 @@
 
 Please read the [disclaimer](#disclaimer) at the end of this document.
 
+Thanks for checking out this guide. If it ends up being useful for your setup, please consider donating!
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W64AIOZ)
+
 **PREREQUISITES:**
    - A QNAP device that supports the Container Station application. We have not yet figured out how to manually install Docker on a QNAP device, therefore must still rely on the default installation of Docker.
    - A desire to learn Docker and some basic Terminal commands.
