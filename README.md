@@ -75,11 +75,11 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
       - https://www.howtogeek.com/66214/how-to-forward-ports-on-your-router
 
    **Ports Overview:**
-   - QTS System ports should be:
+   - QTS **System ports** should be:
       - HTTP : `8480`
       - HTTPS: `8443`
    <br><br>
-   - QTS Web Server application ports should be:
+   - QTS **Web Server application** ports should be:  
       - HTTP : `9480`
       - HTTPS: `9443`
 
