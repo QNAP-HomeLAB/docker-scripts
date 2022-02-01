@@ -78,7 +78,7 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
    - QTS **System ports** should be:
       - HTTP : `8480`
       - HTTPS: `8443`
-
+   <br><br>
    - QTS **Web Server application** ports should be:  
       - HTTP : `9480`
       - HTTPS: `9443`
@@ -190,7 +190,7 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
        ![docker folder structure](https://i.imgur.com/dbm5fp9.png)
        <br><br>
 
-1. Next you need to download the custom ` docker scripts` from the [QNAP HomeLAB Docker Scripts](https://gitlab.com/qnap-homelab/docker-scripts) repository to your `/share/docker/scripts/` directory.
+1. Next you need to download the custom `docker scripts` from the [QNAP HomeLAB Docker Scripts](https://gitlab.com/qnap-homelab/docker-scripts) repository to your `/share/docker/scripts/` directory.
 
    - ~~Alternatively, if you trust my installation script to run as root on your system, you can run this `curl` command that will automatically download and install the scripts for you:~~ This feature is not finished, please download and install the scripts manually.
    - ***TIP:*** Read through and understand what a script does before executing possibly malicious code on any device.
