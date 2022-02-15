@@ -208,10 +208,10 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
 
 1. Type the below lines into the QNAP command line:
    ```bash
-   printf "alias profile='source /opt/etc/profile'" >> /opt/etc/profile
+   printf "\nalias profile='source /opt/etc/profile'" >> /opt/etc/profile
    ```
    ```bash
-   printf "source /share/docker/scripts/docker_commands_list.sh -x" >> /opt/etc/profile
+   printf "\nsource /share/docker/scripts/docker_commands_list.sh -x" >> /opt/etc/profile
    ```
    - ***NOTE:*** Adding the above lines to your `profile` automates the loading of the custom helper-scripts in the `/share/docker/scripts/` sub-folder.
    - If you prefer to enter the text manually, this is the line that needs to go at the bottom of the `profile` file:
