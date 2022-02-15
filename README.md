@@ -208,7 +208,7 @@ Consider joining and contributing to the [QNAP Unofficial Discord](https://disco
 
 1. Type the below lines into the QNAP command line:
    ```bash
-   printf "alias profile='source /opt/etc/profile" >> /opt/etc/profile
+   printf "alias profile='source /opt/etc/profile'" >> /opt/etc/profile
    ```
    ```bash
    printf "source /share/docker/scripts/docker_commands_list.sh -x" >> /opt/etc/profile
