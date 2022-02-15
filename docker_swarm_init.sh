@@ -32,7 +32,7 @@
   fnc_folder_owner(){ chown -R ${var_user}:${var_group} ${swarm_folder}; echo "FOLDER OWNERSHIP UPDATED"; echo; }
   fnc_folder_auth(){ chmod -R 600 ${swarm_folder}; echo "FOLDER PERMISSIONS UPDATED"; echo; }
   fnc_swarm_init(){ docker swarm init --advertise-addr "${var_nas_ip}"; }
-  fnc_swarm_verify(){ while [[ "$(docker stack ls)" != "NAME                SERVICES" ]]; do sleep 1; done; }
+  fnc_swarm_verify(){ while [[ "$(docker stack ls)" != "NAME                SERVICES   ORCHESTRATOR" ]]; do sleep 1; done; }
   # fnc_swarm_check(){ while [[ ! "$(docker stack ls --format "{{.Name}}")" ]]; do sleep 1; done; }
   fnc_swarm_success(){ echo; echo -e " >> ${grn}DOCKER SWARM INITIALIZED SUCCESSFULLY${DEF} << "; echo; }
   fnc_swarm_error(){ 
