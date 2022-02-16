@@ -42,17 +42,14 @@
     for stack in "${folder_list[@]}"; do 
       if [ ! -d "${compose_appdata}/${stack}" ]; 
       then install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_appdata}/${stack}"; 
-        # echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE APPDATA FOLDER ${ylw}CREATED ${DEF}";
       else echo -e "  > ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
       fi;
       if [ ! -d "${compose_configs}/${stack}" ]; 
       then install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_configs}/${stack}"; 
-        # echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE CONFIGS FOLDER ${ylw}CREATED ${DEF}";
       else echo -e "  > ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
       fi;
       if [ ! -f "${compose_configs}/${stack}/${stack}-compose.yml" ]; 
-      then install -o ${var_usr} -g ${var_grp} -m 664 "${compose_folder}/compose-template.yml" "${compose_configs}/${stack}/${stack}-compose.yml"; 
-        # echo -e "${ylw}  > ${CYN}${compose_appdata}/${cyn}"${stack}"/"${stack}"-compose.yml ${ylw}created${DEF}"; 
+      then install -m 664 "${compose_folder}/template-compose.yml" "${compose_configs}/${stack}/${stack}-compose.yml"; 
       else echo -e "${ylw}  > ${CYN}${compose_appdata}/${cyn}"${stack}"/"${stack}"-compose.yml ${ylw}already exists${DEF}"; 
       fi;
       [ $exist == "0" ] && echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE FOLDER SET ${ylw}CREATED ${DEF}";
