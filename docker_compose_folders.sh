@@ -31,28 +31,31 @@
   fnc_script_intro(){ echo -e "${blu}[-  CREATE DOCKER-COMPOSE FOLDER STRUCTURE FOR LISTED STACKS  -]${def}"; }
   fnc_script_outro(){ echo -e "${GRN} -  COMPOSE FOLDER STRUCTURE CREATED${DEF}"; echo; exit 1; }
   fnc_nothing_to_do(){ echo -e "${YLW} >> A valid option and container name(s) must be entered for this command to work (use ${cyn}--help ${YLW}for info)${DEF}"; }
+  fnc_invalid_input(){ echo -e "${YLW} >> INVALID INPUT${DEF}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE ${cyn}-help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; echo; exit 1; }
-  fnc_invalid_input(){ echo -e "${YLW}INVALID INPUT${DEF}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
-  fnc_query_remove_all(){ printf "Are you sure you want to ${red}REMOVE${def} listed containers folders and/or files?"; }
+  fnc_confirm_remove(){ printf "Are you sure you want to ${red}REMOVE${def} files and/or folders for the listed container?"; }
   fnc_array_cleanup(){ folder_list=(`for index in "${!args_list[@]}"; do echo -e "${args_list[$index + 1]}"; done` ); }
-  fnc_file_search() { [[ $(find ./"${@}" -type f) ]]; }
-
+  # fnc_file_search() { [[ $(find ./"${@}" -type f) ]]; }
   fnc_folder_create(){ 
     echo; exist=0;
     for stack in "${folder_list[@]}"; do 
-      if [ ! -d "${compose_appdata}/${stack}" ]; 
-      then install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_appdata}/${stack}"; 
+      if [ ! -d "${compose_appdata}/${stack}" ]; then
+        install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_appdata}/${stack}"; 
+        install -m 660 "${var_template_file}" "${compose_appdata}/${stack}/${stack}-logs.yml"; 
+        if [ "${stack}" = [tT][rR][aA][eE][fF][iI][kK] ] && [ ! -f "${compose_appdata}/${stack}/certs/acme.json" ]; 
+        then touch "${compose_appdata}/${stack}/certs/acme.json" && chmod 600 "${compose_appdata}/${stack}/acme.json";
+        fi;
       else echo -e "  > ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
       fi;
-      if [ ! -d "${compose_configs}/${stack}" ]; 
-      then install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_configs}/${stack}"; 
+      if [ ! -d "${compose_configs}/${stack}" ]; then 
+        install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_configs}/${stack}"; 
       else echo -e "  > ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
       fi;
-      if [ ! -f "${compose_configs}/${stack}/${stack}-compose.yml" ]; 
-      then install -m 664 "${compose_folder}/template-compose.yml" "${compose_configs}/${stack}/${stack}-compose.yml"; 
+      if [ ! -f "${compose_configs}/${stack}/${stack}-compose.yml" ]; then 
+        install -m 664 "${var_template_file}" "${compose_configs}/${stack}/${stack}-compose.yml"; 
       else echo -e "${ylw}  > ${CYN}${compose_appdata}/${cyn}"${stack}"/"${stack}"-compose.yml ${ylw}already exists${DEF}"; 
       fi;
-      [ $exist == "0" ] && echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE FOLDER SET ${ylw}CREATED ${DEF}";
+      [ "${exist}" == "0" ] && echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE FOLDER SET ${ylw}CREATED ${DEF}";
     done
   }
 
@@ -63,15 +66,15 @@
         ([yY]|[yY][eE][sS]) 
           echo;
           for stack in "${folder_list[@]}"; do 
-            if [ -f "${compose_appdata}/${stack}/*" ]; 
-            then rm -rf "${compose_appdata}/${stack}/*";
-            else echo -e "  > ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}NO FILES FOUND ${DEF}"; exist=0;
+            if [ -f "${compose_appdata}/${stack}/*" ]; then 
+              rm -rf "${compose_appdata}/${stack}/*"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE APPDATA FILES ${ylw}REMOVED ${DEF}";
+            else echo -e "  > ${ylw}NO FILES FOUND IN  ${CYN}"${compose_appdata}${cyn}/${stack}"  ${DEF}"; exist=0;
             fi 
-            if [ -f "${compose_configs}/${stack}/*" ]; 
-            then rm -rf "${compose_configs}/${stack}/*";
-            else echo -e "  > ${CYN}"${compose_configs}${cyn}/${stack}/*"   ${ylw}NO FILES FOUND ${DEF}"; exist=0;
+            if [ -f "${compose_configs}/${stack}/*" ]; then 
+              rm -rf "${compose_configs}/${stack}/*"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE CONFIGS FILES ${ylw}REMOVED ${DEF}";
+            else echo -e "  > ${ylw}NO FILES FOUND IN  ${CYN}"${compose_configs}${cyn}/${stack}/*"  ${DEF}"; exist=0;
             fi
-            [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${YLW}CONTAINER FILES ${ylw}CLEANED ${DEF}";
+            [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${def}CONTAINER FILES ${ylw}CLEANED ${DEF}";
           done
           break
         ;;
@@ -84,34 +87,34 @@
   fnc_folder_delete(){ 
     echo; exist=1;
     for stack in "${folder_list[@]}"; do 
-      if [ -d "${compose_appdata}/${stack}" ]; 
-      then rmdir "${compose_appdata}/${stack}"; # echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE APPDATA FOLDER ${ylw}DELETED ${DEF}";
-      else echo -e "  > ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
+      if [ -d "${compose_appdata}/${stack}" ]; then 
+        rmdir "${compose_appdata}/${stack}"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE APPDATA FOLDER ${ylw}DELETED ${DEF}";
+      else echo -e "  -- ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
       fi; 
-      if [ -d "${compose_configs}/${stack}" ]; 
-      then rmdir "${compose_configs}/${stack}"; # echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE CONFIGS FOLDER ${ylw}DELETED ${DEF}";
-      else echo -e "  > ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
+      if [ -d "${compose_configs}/${stack}" ]; then 
+        rmdir "${compose_configs}/${stack}"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE CONFIGS FOLDER ${ylw}DELETED ${DEF}";
+      else echo -e "  -- ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
       fi; 
-      [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE FOLDER SET ${ylw}REMOVED ${DEF}";
+      [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE FOLDER SET ${ylw}REMOVED ${DEF}";
     done
   }
 
   fnc_folder_remove(){ 
-    exist=1; fnc_query_remove_all; 
+    exist=1; fnc_confirm_remove; 
     while read -r -p " [(Y)es/(N)o] " input; do
       case "${input}" in 
         ([yY]|[yY][eE][sS]) 
           echo;
           for stack in "${folder_list[@]}"; do 
-            if [ -d "${compose_appdata}/${stack}" ]; 
-            then rm -rf "${compose_appdata}/${stack}"; # echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE APPDATA FOLDER AND FILES ${ylw}REMOVED ${DEF}";
-            else echo -e "  > ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
+            if [ -d "${compose_appdata}/${stack}" ]; then 
+              rm -rf "${compose_appdata}/${stack}"; # && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE APPDATA FOLDER AND FILES ${ylw}REMOVED ${DEF}";
+            else echo -e "  -- ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
             fi 
-            if [ -d "${compose_configs}/${stack}" ]; 
-            then rm -rf "${compose_configs}/${stack}"; # echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE CONFIGS FOLDER AND FILES ${ylw}REMOVED ${DEF}";
-            else echo -e "  > ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
+            if [ -d "${compose_configs}/${stack}" ]; then 
+              rm -rf "${compose_configs}/${stack}"; # && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE CONFIGS FOLDER AND FILES ${ylw}REMOVED ${DEF}";
+            else echo -e "  -> ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
             fi
-            [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE FOLDER SET AND FILES ${ylw}REMOVED ${DEF}";
+            [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE FOLDER SET AND FILES ${ylw}REMOVED ${DEF}";
           done
           break
         ;;
@@ -125,16 +128,17 @@
   case "${1}" in 
     ("") fnc_nothing_to_do ;;
     (-*) # validate and perform option
+      fnc_array_cleanup "${args_list}"; 
       case "${1}" in
         ("-h"|"--help"|"-help") fnc_help ;;
-        ("-c"|"--create") fnc_array_cleanup "${args_list}"; fnc_folder_create "${folder_list}"; echo ;;
-        ("-d"|"--delete") fnc_array_cleanup "${args_list}"; fnc_folder_delete "${folder_list}"; echo ;;
-        ("-r"|"--remove") fnc_array_cleanup "${args_list}"; fnc_folder_remove "${folder_list}"; echo ;;
+        ("-c"|"--create") fnc_folder_create "${folder_list}" ;;
+        ("-d"|"--delete") fnc_folder_delete "${folder_list}" ;;
+        ("-r"|"--remove") fnc_folder_remove "${folder_list}" ;;
         (*) fnc_invalid_syntax ;;
       esac
     ;;
     (*) # default to create folder structure
-      folder_list=("${@}"); fnc_folder_create "${folder_list}"; echo ;;
+      folder_list=("${@}"); fnc_folder_create "${folder_list}" ;;
   esac
-
+  echo
   # fnc_script_outro

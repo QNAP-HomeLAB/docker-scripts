@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.script_vars.conf
-  source /share/docker/swarm/.swarm_stacks.conf
+  source /share/docker/swarm/stackslist-swarm.conf
 
 # script variable definitions
   unset bounce_list IFS
@@ -14,8 +14,8 @@
     echo -e " - SYNTAX: # dsb ${cyn}-option${DEF}"
     echo -e " -   VALID OPTIONS:"
     echo -e " -     ${cyn}-a | --all     ${DEF}│ Bounces all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
-    echo -e " -     ${cyn}-d | --default ${DEF}│ Bounces the 'default' array of stacks defined in '${YLW}${docker_secrets}/${cyn}.swarm_stacks.conf${DEF}'"
-    echo -e " -     ${cyn}-p | --preset  ${DEF}│ Bounces the 'preset' array of stacks defined in '${YLW}${docker_secrets}/${cyn}.swarm_stacks.conf${DEF}'"
+    echo -e " -     ${cyn}-d | --default ${DEF}│ Bounces the 'default' array of stacks defined in '${YLW}${docker_secrets}/${cyn}stackslist-swarm.conf${DEF}'"
+    echo -e " -     ${cyn}-p | --preset  ${DEF}│ Bounces the 'preset' array of stacks defined in '${YLW}${docker_secrets}/${cyn}stackslist-swarm.conf${DEF}'"
     echo -e " -     ${cyn}-h │ --help    ${DEF}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help

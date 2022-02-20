@@ -54,9 +54,8 @@
 # perform script main function
   deploy_list=(`for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u`)
   for stack in "${!deploy_list[@]}"; do
-    docker-compose -f ${compose_configs}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml up -d --remove-orphans
     # create '.env' file redirect if used
-    # [ ! -e ${compose_configs}/${stack}/.env ] && ln -s ${variables_file} ${compose_configs}/${stack}/.env
-    ln -sf ${variables_file} ${compose_configs}/${deploy_list[stack]}/.env
+    ln -sf ${var_script_vars} ${compose_configs}/${deploy_list[stack]}/.env
+    docker-compose -f ${compose_configs}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml up -d --remove-orphans
     sleep 1
   done

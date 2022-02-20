@@ -93,6 +93,8 @@
     alias dkrmi='docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
     alias dkt='docker stats --format "table {{.Name}}\t{{.CPUPerc}}  {{.MemPerc}}\t{{.MemUsage}}\t{{.NetIO}}"'
     alias dkps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
+    # alias dkex='docker exec -it $(docker ps -f name=${1} --format "{{.ID}}") /bin/sh'
+    # alias dkex='docker ps -f name=${1}'
 
     alias dkc='docker-compose'
 
@@ -122,6 +124,12 @@
     # # alias dcf='dkfolders -c "$1"';
     # # alias dsf='dkfolders -w "$1"';
     # # alias dwf='dkfolders -w "$1"';
+
+    # docker_compose_bounce -- stops then re-creates the listed containers or '-all' container-stacks with config files in the folder structure
+    dcbounce(){ sh /share/docker/scripts/docker_compose_bounce.sh "${@}"; }
+    alias dcb="dcbounce";
+    alias dcb="dcbounce";
+    alias cbounce="dcbounce --all";
 
     # docker_compose_folders -- creates the folder structure required for each listed compose stack name (up to 9 per command)
     # dcfolders(){ sh /share/docker/scripts/docker_compose_folders.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"; }
