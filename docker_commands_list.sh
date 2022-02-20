@@ -152,6 +152,10 @@
     dclogs(){ sh /share/docker/scripts/docker_compose_logs.sh "${@}"; }
     alias dcl="dclogs";
 
+    # docker_compose_networks -- creates required networks for docker-compose container manipulation via scripts
+    dcnet(){ sh /share/docker/scripts/docker_compose_networks.sh; }
+    alias dcn="dcnet";
+
     # docker_list_configs -- lists existing stack config files for either swarm or compose filepaths
     dlconfigs(){ sh /share/docker/scripts/docker_list_configs.sh "${1}"; }
     alias dlg="dlconfigs";
