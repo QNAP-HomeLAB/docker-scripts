@@ -277,7 +277,7 @@
     ("-f"|"--functions") fnc_list_syntax; fnc_list_scripts; fnc_list_aliases ;;
     ("-x"|"--execute"|"--exe") 
       fnc_create_aliases # register docker aliases and custom commands for qnap devices
-      [ ! -e /share/docker/scripts/profile.sh ] && ln -s /opt/etc/profile /share/docker/scripts/profile.sh # create shortcut to 'entware-std' profile
+      # [ ! -e /share/docker/scripts/profile.sh ] && ln -s /opt/etc/profile /share/docker/scripts/profile.sh # create shortcut to 'entware-std' profile
       ;;
     (*) fnc_list_syntax ;;
   esac
