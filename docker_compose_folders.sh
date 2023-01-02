@@ -1,10 +1,10 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.script_vars.conf
 
 # script variable definitions
-  unset folder_list args_list IFS; 
-  args_list=("${@}");
+  unset folder_list IFS; folder_list=("${@}");
+  # unset args_list IFS; args_list=("${@}");
 
 # function definitions
   fnc_help(){
@@ -15,14 +15,14 @@
     echo -e " -   SYNTAX: dcf ${cyn}compose_file1${DEF} ${cyn}compose_file2${DEF} ... ${cyn}compose_file9${DEF}"
     echo -e " -   SYNTAX: dcf ${cyn}-option${DEF}"
     echo -e " -     VALID OPTIONS:"
-    echo -e " -       ${cyn}-c │ --create ${DEF}│ ${grn}Creates${def} ${YLW}{compose_appdata,compose_configs}/${cyn}compose_stack${DEF}"
-    echo -e " -       ${cyn}-d │ --delete ${DEF}│ ${ylw}Deletes${def} ${YLW}{compose_appdata,compose_configs}/${cyn}compose_stack${DEF} & ${ylw}contents${DEF}"
-    echo -e " -       ${cyn}-r │ --remove ${DEF}│ ${red}Removes${def} all sub-folders and files in ${YLW}{compose_appdata,compose_configs}/${cyn}compose_stack${DEF}"
+    echo -e " -       ${cyn}-c │ --create ${DEF}│ ${grn}Creates${def} ${YLW}{docker_appdata,docker_compose}/${cyn}compose_stack${DEF}"
+    echo -e " -       ${cyn}-d │ --delete ${DEF}│ ${ylw}Deletes${def} ${YLW}{docker_appdata,docker_compose}/${cyn}compose_stack${DEF} & ${ylw}contents${DEF}"
+    echo -e " -       ${cyn}-r │ --remove ${DEF}│ ${red}Removes${def} all sub-folders and files in ${YLW}{docker_appdata,docker_compose}/${cyn}compose_stack${DEF}"
     echo -e " -       ${cyn}-h │ --help   ${DEF}| Displays this help message."
     echo -e " -"
     echo -e " -   NOTE: The below folder structure is created for each 'compose_file' entered with this command:"
-    echo -e " -       ${YLW}${compose_appdata}/${cyn}compose_file${DEF}"
-    echo -e " -       ${YLW}${compose_configs}/${cyn}compose_file${DEF}"
+    echo -e " -       ${YLW}${docker_appdata}/${cyn}compose_file${DEF}"
+    echo -e " -       ${YLW}${docker_compose}/${cyn}compose_file${DEF}"
     # echo -e " -       ${YLW}${compose_runtime}/${cyn}compose_stack${DEF}"
     # echo -e " -       ${YLW}/share/compose/secrets/${cyn}compose_stack${DEF}"
     echo
@@ -33,48 +33,56 @@
   fnc_nothing_to_do(){ echo -e "${YLW} >> A valid option and container name(s) must be entered for this command to work (use ${cyn}--help ${YLW}for info)${DEF}"; }
   fnc_invalid_input(){ echo -e "${YLW} >> INVALID INPUT${DEF}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE ${cyn}-help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; echo; exit 1; }
-  fnc_confirm_remove(){ printf "Are you sure you want to ${red}REMOVE${def} files and/or folders for the listed container?"; }
-  fnc_array_cleanup(){ folder_list=(`for index in "${!args_list[@]}"; do echo -e "${args_list[$index + 1]}"; done` ); }
+  fnc_confirm_remove(){ echo -e "${ylw}Are you sure you want to ${red}REMOVE${ylw} files and/or folders for the listed container?${def}"; }
+  # fnc_array_cleanup(){ folder_list=( $(for index in "${!args_list[@]}"; do echo -e "${args_list[$index + 1]}"; done) ); }
+  # fnc_array_cleanup(){ while IFS=$'\n' read -r line; do folder_list+=("${line}"); done < <(for index in "${!args_list[@]}"; do echo -e "${args_list[${index} + 1]}"; done); }
   # fnc_file_search() { [[ $(find ./"${@}" -type f) ]]; }
-  fnc_folder_create(){ 
+  fnc_folder_create(){
     echo; exist=0;
-    for stack in "${folder_list[@]}"; do 
-      if [ ! -d "${compose_appdata}/${stack}" ]; then
-        install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_appdata}/${stack}"; 
-        install -m 660 "${var_template_file}" "${compose_appdata}/${stack}/${stack}-logs.yml"; 
-        if [ "${stack}" = [tT][rR][aA][eE][fF][iI][kK] ] && [ ! -f "${compose_appdata}/${stack}/certs/acme.json" ]; 
-        then touch "${compose_appdata}/${stack}/certs/acme.json" && chmod 600 "${compose_appdata}/${stack}/acme.json";
-        fi;
-      else echo -e "  > ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
+    for stack in "${folder_list[@]}"; do
+      if [ ! -d "${docker_appdata}/${stack}/" ];
+        then install -o "${var_usr}" -g "${var_grp}" -m 664 -d "${docker_appdata}/${stack}";
+        else echo -e "  > ${CYN}${docker_appdata}${cyn}/${stack}  ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
       fi;
-      if [ ! -d "${compose_configs}/${stack}" ]; then 
-        install -o ${var_usr} -g ${var_grp} -m 664 -d "${compose_configs}/${stack}"; 
-      else echo -e "  > ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
+      if [ ! -f "${docker_appdata}/${stack}/${stack}-logs.yml" ];
+        then install -m 660 "${var_template_file}" "${docker_appdata}/${stack}/${stack}-logs.yml";
+        else echo -e "  > ${CYN}${docker_appdata}/${cyn}${stack}/${stack}-logs.yml ${ylw}ALREADY EXISTS${DEF}";
       fi;
-      if [ ! -f "${compose_configs}/${stack}/${stack}-compose.yml" ]; then 
-        install -m 664 "${var_template_file}" "${compose_configs}/${stack}/${stack}-compose.yml"; 
-      else echo -e "${ylw}  > ${CYN}${compose_appdata}/${cyn}"${stack}"/"${stack}"-compose.yml ${ylw}already exists${DEF}"; 
+      # if [[ "${stack}" = "[tT][rR][aA][eE][fF][iI][kK]" ]] && [ ! -f "${docker_appdata}/${stack}/certs/acme.json" ];
+      #   then touch "${docker_appdata}/${stack}/certs/acme.json" && chmod 600 "${docker_appdata}/${stack}/acme.json";
+      #   else echo -e "  > ${CYN}${docker_appdata}/${cyn}${stack}/certs/acme.json ${ylw}ALREADY EXISTS${DEF}";
+      # fi;
+      if [ ! -d "${docker_compose}/${stack}/" ];
+        then install -o "${var_usr}" -g "${var_grp}" -m 664 -d "${docker_compose}/${stack}";
+        else echo -e "  > ${CYN}${docker_compose}${cyn}/${stack}   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
       fi;
-      [ "${exist}" == "0" ] && echo -e "  > ${cyn}"${stack}" ${YLW}COMPOSE FOLDER SET ${ylw}CREATED ${DEF}";
+      if [ ! -f "${docker_compose}/${stack}/${stack}-compose.yml" ];
+        then install -m 664 "${var_template_file}" "${docker_compose}/${stack}/${stack}-compose.yml";
+          { printf "# '%s' docker config file created for the homelab described here https://github.com/qnap-homelab\n---\n" "${stack}";
+            # printf "---\n";
+          } >> "${docker_compose}/${stack}/${stack}-compose.yml";
+        else echo -e "  > ${CYN}${docker_compose}/${cyn}${stack}/${stack}-compose.yml ${ylw}ALREADY EXISTS${DEF}";
+      fi;
+      [ "${exist}" == "0" ] && echo -e "  > ${cyn}${stack} ${YLW}COMPOSE FOLDER SET ${ylw}CREATED ${DEF}";
     done
-  }
+    }
 
-  fnc_folder_clean(){
-    echo; exist=0;
+  fnc_folder_remove(){
+    exist=1; fnc_confirm_remove;
     while read -r -p " [(Y)es/(N)o] " input; do
-      case "${input}" in 
-        ([yY]|[yY][eE][sS]) 
+      case "${input}" in
+        ([yY]|[yY][eE][sS])
           echo;
-          for stack in "${folder_list[@]}"; do 
-            if [ -f "${compose_appdata}/${stack}/*" ]; then 
-              rm -rf "${compose_appdata}/${stack}/*"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE APPDATA FILES ${ylw}REMOVED ${DEF}";
-            else echo -e "  > ${ylw}NO FILES FOUND IN  ${CYN}"${compose_appdata}${cyn}/${stack}"  ${DEF}"; exist=0;
-            fi 
-            if [ -f "${compose_configs}/${stack}/*" ]; then 
-              rm -rf "${compose_configs}/${stack}/*"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE CONFIGS FILES ${ylw}REMOVED ${DEF}";
-            else echo -e "  > ${ylw}NO FILES FOUND IN  ${CYN}"${compose_configs}${cyn}/${stack}/*"  ${DEF}"; exist=0;
+          for stack in "${folder_list[@]}"; do
+            if [ -d "${docker_appdata}/${stack}" ]; then
+              rm -rf "${docker_appdata:?}/${stack:?}"; # && echo -e "  > ${cyn}${stack} ${def}COMPOSE APPDATA FOLDER AND FILES ${ylw}REMOVED ${DEF}";
+            else echo -e "  -- ${CYN}${docker_appdata}${cyn}/${stack}   ${ylw}NOT FOUND ${DEF}"; exist=0;
             fi
-            [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${def}CONTAINER FILES ${ylw}CLEANED ${DEF}";
+            if [ -d "${docker_compose}/${stack}" ]; then
+              rm -rf "${docker_compose:?}/${stack:?}"; # && echo -e "  > ${cyn}${stack} ${def}COMPOSE CONFIGS FOLDER AND FILES ${ylw}REMOVED ${DEF}";
+            else echo -e "  -> ${CYN}${docker_compose}${cyn}/${stack}   ${ylw}NOT FOUND ${DEF}"; exist=0;
+            fi
+            [ "${exist}" == "1" ] && echo -e "  > ${cyn}${stack} ${def}COMPOSE FOLDER SET AND FILES ${ylw}REMOVED ${DEF}";
           done
           break
         ;;
@@ -82,63 +90,44 @@
         (*) fnc_invalid_input ;;
       esac
     done
-  }
+    }
 
-  fnc_folder_delete(){ 
-    echo; exist=1;
-    for stack in "${folder_list[@]}"; do 
-      if [ -d "${compose_appdata}/${stack}" ]; then 
-        rmdir "${compose_appdata}/${stack}"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE APPDATA FOLDER ${ylw}DELETED ${DEF}";
-      else echo -e "  -- ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
-      fi; 
-      if [ -d "${compose_configs}/${stack}" ]; then 
-        rmdir "${compose_configs}/${stack}"; # && echo -e "  - ${cyn}"${stack}" ${def}COMPOSE CONFIGS FOLDER ${ylw}DELETED ${DEF}";
-      else echo -e "  -- ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
-      fi; 
-      [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE FOLDER SET ${ylw}REMOVED ${DEF}";
-    done
-  }
-
-  fnc_folder_remove(){ 
-    exist=1; fnc_confirm_remove; 
+  fnc_folders_clean(){
+    unset removed_content IFS;
+    fnc_confirm_remove;
     while read -r -p " [(Y)es/(N)o] " input; do
-      case "${input}" in 
-        ([yY]|[yY][eE][sS]) 
+      case "${input}" in
+        ([yY]|[yY][eE][sS])
           echo;
-          for stack in "${folder_list[@]}"; do 
-            if [ -d "${compose_appdata}/${stack}" ]; then 
-              rm -rf "${compose_appdata}/${stack}"; # && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE APPDATA FOLDER AND FILES ${ylw}REMOVED ${DEF}";
-            else echo -e "  -- ${CYN}"${compose_appdata}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
-            fi 
-            if [ -d "${compose_configs}/${stack}" ]; then 
-              rm -rf "${compose_configs}/${stack}"; # && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE CONFIGS FOLDER AND FILES ${ylw}REMOVED ${DEF}";
-            else echo -e "  -> ${CYN}"${compose_configs}${cyn}/${stack}"   ${ylw}NOT FOUND ${DEF}"; exist=0;
-            fi
-            [ $exist == "1" ] && echo -e "  > ${cyn}"${stack}" ${def}COMPOSE FOLDER SET AND FILES ${ylw}REMOVED ${DEF}";
-          done
-          break
-        ;;
+          case "${folder_list[0]}" in
+            ("-a") rm -rf "${docker_appdata:?}/${stack:?}"/* && removed_content="CONTAINER APPDATA" ;;
+            ("-g") rm -rf "${docker_compose:?}/${stack:?}"/* && removed_content="CONTAINER CONFIGS" ;;
+            ("-w") rm -rf "${docker_swarm:?}/${stack:?}"/* && removed_content="SWARM CONFIGS" ;;
+          esac
+          [ ! "${removed_content}" == "" ] && echo -e "  > ${cyn}${stack} ${def}${removed_content} ${ylw}CLEANED ${DEF}";
+          ;;
         ([nN]|[nN][oO]) break ;;
         (*) fnc_invalid_input ;;
       esac
     done
-  }
+    }
 
 # output determination logic
-  case "${1}" in 
+  case "${1}" in
     ("") fnc_nothing_to_do ;;
     (-*) # validate and perform option
-      fnc_array_cleanup "${args_list}"; 
       case "${1}" in
         ("-h"|"--help"|"-help") fnc_help ;;
-        ("-c"|"--create") fnc_folder_create "${folder_list}" ;;
-        ("-d"|"--delete") fnc_folder_delete "${folder_list}" ;;
-        ("-r"|"--remove") fnc_folder_remove "${folder_list}" ;;
+        ("-c"|"--create") unset "folder_list[0]"; fnc_folder_create "${folder_list[*]}" ;;
+        ("-d"|"--delete"|"-r"|"--remove") unset "folder_list[0]"; fnc_folder_remove "${folder_list[*]}" ;;
+        ("-a"|"--appdata") unset "folder_list[0]"; fnc_folders_clean -a "${folder_list[*]}" ;;
+        ("-g"|"--configs") unset "folder_list[0]"; fnc_folders_clean -g "${folder_list[*]}" ;;
+        ("-w"|"--swarm") unset "folder_list[0]"; fnc_folders_clean -w "${folder_list[*]}" ;;
         (*) fnc_invalid_syntax ;;
       esac
     ;;
     (*) # default to create folder structure
-      folder_list=("${@}"); fnc_folder_create "${folder_list}" ;;
+      folder_list=("${@}"); fnc_folder_create "${folder_list[*]}" ;;
   esac
   echo
   # fnc_script_outro
