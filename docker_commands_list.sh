@@ -1,6 +1,6 @@
 #!/bin/sh
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.script_vars.conf
 
 # function definitions
   fnc_list_syntax() {
@@ -11,9 +11,9 @@
     echo -e " -     ${cyn}-a │ --aliases   ${DEF}│ Displays the list of Docker Aliases."
     echo -e " -     ${cyn}-s │ --scripts   ${DEF}│ Displays the list of Docker Scripts."
     echo -e " -     ${cyn}-f │ --functions ${DEF}│ Displays both the list of Docker Scripts and Aliases."
-    echo -e " -     ${cyn}-x │ --execute   ${DEF}│ Register and create docker aliases and custom commands."
-  }
-  fnc_list_aliases() { 
+    echo -e " -     ${cyn}-c │ --create    ${DEF}│ Register and create docker aliases and custom commands."
+    }
+  fnc_list_aliases() {
     echo -e " -"
     echo -e " - NOTE: Aliases do not have options, and are only shortcuts for the target command."
     echo -e " -"
@@ -43,8 +43,8 @@
     echo -e " -${cyn} dcmd    ${DEF}│${ylw} dlist            ${DEF}│ ${cyn}list${DEF} all custom docker commands alias"
     echo
     exit 1
-  }
-  fnc_list_scripts() { 
+    }
+  fnc_list_scripts() {
     echo -e " -"
     echo -e " - NOTE: Commands have '${cyn}options${DEF}' which can be listed using the '${cyn}-help${def}' flag after the command, e.g. ${CYN}dls --${cyn}help${def} "
     echo -e " -"
@@ -53,10 +53,11 @@
     echo -e " -${cyn} dcmd / dlist       ${DEF}│ ${ylw}docker_commands_list   ${DEF}│ lists custom Docker commands for a QNAP Docker environment"
     echo -e " --${blu}    DOCKER_LIST   ${DEF}-│------------------------│-------------------------"
     echo -e " -${cyn} dlc                ${DEF}│ ${ylw}docker_list_container  ${DEF}│ ${cyn}lists${DEF} currently deployed ${grn}docker containers${DEF} and/or services"
-    echo -e " -${cyn} dls                ${DEF}│ ${ylw}docker_list_stack      ${DEF}│ ${cyn}lists${DEF} currently deployed ${grn}docker swarm stacks${DEF} and services"
     echo -e " -${cyn} dlg / dcg / dsg    ${DEF}│ ${ylw}docker_list_configs    ${DEF}│ ${cyn}lists${DEF} ${grn}config files${DEF} in the custom QNAP Docker folder structure"
-    echo -e " -${cyn} dln                ${DEF}│ ${ylw}docker_list_network    ${DEF}│ ${cyn}lists${DEF} currently created docker ${grn}networks${DEF}"
-    echo -e " -${cyn} dlv                ${DEF}│ ${ylw}docker_list_volumes    ${DEF}│ ${cyn}lists${DEF} currently created docker ${grn}volumes${DEF}"
+    echo -e " -${cyn} dli / dlimg        ${DEF}│ ${ylw}docker_system_image    ${DEF}│ ${cyn}lists${DEF} ${grn}docker images${DEF} currently stored on this system"
+    echo -e " -${cyn} dln                ${DEF}│ ${ylw}docker_system_network  ${DEF}│ ${cyn}lists${DEF} currently created docker ${grn}networks${DEF}"
+    echo -e " -${cyn} dls                ${DEF}│ ${ylw}docker_list_stack      ${DEF}│ ${cyn}lists${DEF} currently deployed ${grn}docker swarm stacks${DEF} and services"
+    echo -e " -${cyn} dlv                ${DEF}│ ${ylw}docker_system_volume   ${DEF}│ ${cyn}lists${DEF} currently created docker ${grn}volumes${DEF}"
     echo -e " --${blu} DOCKER_COMPOSE   ${DEF}-│------------------------│-------------------------"
     echo -e " -${cyn} dcf / dcfolders    ${DEF}│ ${ylw}docker_compose_folders ${DEF}│ ${cyn}creates ${grn}compose folder structure${DEF} for (1 - 9 listed) stacks"
     echo -e " -${cyn} dcb / dcbounce     ${DEF}│ ${ylw}docker_compose_bounce  ${DEF}│ ${cyn}removes${DEF} then ${cyn}recreates${DEF} a docker-compose container "
@@ -79,7 +80,7 @@
     echo -e " -${cyn} dprn / dprune      ${DEF}│ ${ylw}docker_system_prune    ${DEF}│ ${cyn}prunes${DEF} ${grn}UNUSED containers${DEF}, images, networks, and volumes"
     echo
     # exit 1
-  }
+    }
   fnc_create_aliases(){
     # docker alias list
     alias dk='docker'
@@ -102,22 +103,20 @@
     alias dkmssh='docker-machine ssh'
 
     # docker_commands_list -- lists the below custom docker commands
-    dlist(){ sh /share/docker/scripts/docker_commands_list.sh "${@}"; }
+    dlist(){ sh "${docker_scripts}/docker_commands_list.sh" "${@}"; }
     alias dcmd="dlist";
 
-    alias dcappdata="cd /share/docker/compose/appdata/$1"
-    alias dcappd="cd /share/docker/compose/appdata/$1"
-    alias dcconfigs="cd /share/docker/compose/configs/$1"
-    alias dcconf="cd /share/docker/compose/configs/$1"
-    alias dwappdata="cd /share/docker/swarm/appdata/$1"
-    alias dwappd="cd /share/docker/swarm/appdata/$1"
-    alias dwconfigs="cd /share/docker/swarm/configs/$1"
-    alias dwconf="cd /share/docker/swarm/configs/$1"
+    alias dappdata="cd ${docker_appdata}/${1}"
+    alias dappd="cd ${docker_appdata}/${1}"
+    alias dcconfigs="cd ${docker_compose}/${1}"
+    alias dcconf="cd ${docker_compose}/${1}"
+    alias dwconfigs="cd ${docker_swarm}/${1}"
+    alias dwconf="cd ${docker_swarm}/${1}"
 
     # alias jump="cd ../../${PWD##*/}"
 
     # # docker_folders_create -- creates the folder structure required for each listed docker container
-    # dkfolders(){ sh /share/docker/scripts/docker_folders_create.sh "${@}"; }
+    # dkfolders(){ sh "${docker_scripts}/docker_folders_create.sh" "${@}"; }
     # alias dcf="dkfolders -c";
     # alias dsf="dkfolders -w";
     # alias dwf="dkfolders -w";
@@ -126,38 +125,38 @@
     # # alias dwf='dkfolders -w "$1"';
 
     # docker_compose_bounce -- stops then re-creates the listed containers or '-all' container-stacks with config files in the folder structure
-    dcbounce(){ sh /share/docker/scripts/docker_compose_bounce.sh "${@}"; }
+    dcbounce(){ sh "${docker_scripts}/docker_compose_bounce.sh" "${@}"; }
     alias dcb="dcbounce";
     alias dcb="dcbounce";
     alias cbounce="dcbounce --all";
 
     # docker_compose_folders -- creates the folder structure required for each listed compose stack name (up to 9 per command)
-    # dcfolders(){ sh /share/docker/scripts/docker_compose_folders.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"; }
-    dcfolders(){ sh /share/docker/scripts/docker_compose_folders.sh "${@}"; }
+    # dcfolders(){ sh "${docker_scripts}/docker_compose_folders.sh" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"; }
+    dcfolders(){ sh "${docker_scripts}/docker_compose_folders.sh" "${@}"; }
     alias dcf="dcfolders";
 
     # docker_compose_start -- starts the entered container using preconfigured docker_compose files
-    dcstart(){ sh /share/docker/scripts/docker_compose_start.sh "${@}"; }
+    dcstart(){ sh "${docker_scripts}/docker_compose_start.sh" "${@}"; }
     alias dcu="dcstart"; # "Up"
     alias dcs="dcstart"; # "Start"
     alias dct="dcstart"; # "starT"
 
     # docker_compose_stop -- stops the entered container
-    dcstop(){ sh /share/docker/scripts/docker_compose_stop.sh "${@}"; }
+    dcstop(){ sh "${docker_scripts}/docker_compose_stop.sh" "${@}"; }
     alias dcd="dcstop"; # "Down"
     alias dcr="dcstop"; # "Remove"
     alias dcp="dcstop"; # "stoP"
 
     # docker_compose_logs -- displays 50 log entries for the indicated docker-compose container
-    dclogs(){ sh /share/docker/scripts/docker_compose_logs.sh "${@}"; }
+    dclogs(){ sh "${docker_scripts}/docker_compose_logs.sh" "${@}"; }
     alias dcl="dclogs";
 
     # docker_compose_networks -- creates required networks for docker-compose container manipulation via scripts
-    dcnet(){ sh /share/docker/scripts/docker_compose_networks.sh; }
+    dcnet(){ sh "${docker_scripts}/docker_compose_networks.sh"; }
     alias dcn="dcnet";
 
     # docker_list_configs -- lists existing stack config files for either swarm or compose filepaths
-    dlconfigs(){ sh /share/docker/scripts/docker_list_configs.sh "${1}"; }
+    dlconfigs(){ sh "${docker_scripts}/docker_list_configs.sh" "${1}"; }
     alias dlg="dlconfigs";
     alias dccfg="dlconfigs --compose";
     alias dcg="dlconfigs --compose";
@@ -167,36 +166,33 @@
     alias dwg="dlconfigs --swarm";
 
     # docker_list_container -- lists all currently deployed containers and/or services
-    dlcntnr(){ sh /share/docker/scripts/docker_list_container.sh "${1}" "${2}"; }
+    dlcntnr(){ sh "${docker_scripts}/docker_list_container.sh" "${1}" "${2}"; }
     alias dlc="dlcntnr";
 
     # docker_list_stack -- lists all stacks and number of services inside each stack
-    dlstack(){ sh /share/docker/scripts/docker_list_stack.sh "${1}" "${2}"; }
+    dlstack(){ sh "${docker_scripts}/docker_list_stack.sh" "${1}" "${2}"; }
     alias dls="dlstack";
     alias dlw="dlstack";
 
-    # docker_list_network -- lists current docker networks
-    dlnet(){ sh /share/docker/scripts/docker_list_network.sh "${1}" "${2}"; }
-    alias dln="dlnet";
-
-    # docker_list_volume -- lists unused docker volumes
-    dlvol(){ sh /share/docker/scripts/docker_list_volume.sh "${1}" "${2}"; }
-    alias dlv="dlvol";
-
     # docker_stack_bounce -- removes then re-deploys the listed stacks or '-all' stacks with config files in the folder structure
-    dwbounce(){ sh /share/docker/scripts/docker_stack_bounce.sh "${@}"; }
+    # dwbounce(){ sh "${docker_scripts}/docker_stack_bounce.sh" "${@}"; }
+    dwbounce(){
+      docker stack rm "${1}"
+      docker stack deploy "${1}" -c "/opt/docker/swarm/${1}/${1}-stack.yml"
+      }
     alias dsb="dwbounce";
     alias dwb="dwbounce";
     alias bounce="dwbounce --all";
 
     # # docker_stack_folders -- creates the folder structure required for each listed stack name (up to 9 per command)
-    # dwfolders(){ sh /share/docker/scripts/docker_stack_folders.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"; }
-    dwfolders(){ sh /share/docker/scripts/docker_stack_folders.sh "${@}"; }
+    # dwfolders(){ sh "${docker_scripts}/docker_stack_folders.sh" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"; }
+    dwfolders(){ sh "${docker_scripts}/docker_stack_folders.sh" "${@}"; }
     alias dsf="dwfolders";
     alias dwf="dwfolders";
 
     # docker_stack_deploy -- deploys a single stack as defind in the configs folder structure
-    dwstart(){ sh /share/docker/scripts/docker_stack_start.sh "${@}"; }
+    # dwstart(){ sh "${docker_scripts}/docker_stack_start.sh" "${@}"; }
+    dwstart(){ docker stack deploy "${1}" -c "/opt/docker/swarm/${1}/${1}-stack.yml"; }
     alias dsd="dwstart"; # "Deploy"
     alias dss="dwstart"; # "Start"
     alias dsu="dwstart"; # "Up"
@@ -207,7 +203,8 @@
     alias dwup="dwstart --all";
 
     # docker_stack_remove -- removes a single stack
-    dwstop(){ sh /share/docker/scripts/docker_stack_stop.sh "${@}"; }
+    # dwstop(){ sh "${docker_scripts}/docker_stack_stop.sh" "${@}"; }
+    dwstop(){ docker stack rm "${1}"; }
     alias dsr="dwstop"; # "Remove"
     alias dsp="dwstop"; # "stoP"
     alias dsrm="dwstop --all";
@@ -216,68 +213,79 @@
     alias dwrm="dwstop --all";
 
     # docker_service_errors -- displays 'docker ps --no-trunk <servicename>' command output
-    dverror(){ sh /share/docker/scripts/docker_service_error.sh "${1}" "${2}"; }
+    dverror(){ sh "${docker_scripts}/docker_service_error.sh" "${1}" "${2}"; }
     alias dve="dverror";
 
     # docker_service_logs -- displays 'docker service logs <servicename>' command output
-    dvlogs(){ sh /share/docker/scripts/docker_service_logs.sh "${1}" "${2}"; }
+    dvlogs(){ sh "${docker_scripts}/docker_service_logs.sh" "${1}" "${2}"; }
     alias dvl="dvlogs";
 
     # docker_swarm_init -- Initializes a Docker Swarm using the docker_swarm_init.sh script
-    dwinit(){ sh /share/docker/scripts/docker_swarm_init.sh "${1}"; }
+    dwinit(){ sh "${docker_scripts}/docker_swarm_init.sh" "${1}"; }
     alias dsin="dwinit traefik";
     alias dwin="dwinit traefik";
     # alias dwsetup="dwinit -setup"; # Downloads and executes the docker_swarm_setup.sh script (NOT YET WORKING)
 
     # docker_swarm_setup -- Downloads and executes the docker_swarm_setup.sh script (NOT YET WORKING)
-    dwsetup(){ sh /share/docker/scripts/docker_swarm_setup.sh "${@}"; }
+    dwsetup(){ sh "${docker_scripts}/docker_swarm_setup.sh" "${@}"; }
     alias dssup="dwsetup traefik";
     alias dwsup="dwsetup traefik";
-    # sh mkdir -pm 766 /share/docker/scripts && curl -fsSL https://raw.githubusercontent.com/Drauku/QNAP-Docker-Swarm-Setup/master/scripts/docker_swarm_setup.sh > /share/docker/scripts/docker_swarm_setup.sh && . /share/docker/scripts/docker_swarm_setup.sh; 
+    # sh mkdir -pm 766 ${docker_scripts} && curl -fsSL https://raw.githubusercontent.com/Drauku/QNAP-Docker-Swarm-Setup/master/scripts/docker_swarm_setup.sh > "${docker_scripts}/docker_swarm_setup.sh" && . "${docker_scripts}/docker_swarm_setup.sh";
 
     # docker_swarm_leave -- LEAVES the docker swarm. USE WITH CAUTION!
-    dwleave(){ sh /share/docker/scripts/docker_swarm_leave.sh "${@}"; }
+    dwleave(){ sh "${docker_scripts}/docker_swarm_leave.sh" "${@}"; }
     alias dslv="dwleave"
     alias dwlv="dwleave"
     alias dsclr="dwleave --all";
     alias dwclr="dwleave --all";
 
     # docker_system_clean -- similar to prune, but performs more in-depth removal functions
-    dclean(){ sh /share/docker/scripts/docker_system_clean.sh "${1}"; }
+    dclean(){ sh "${docker_scripts}/docker_system_clean.sh" "${1}"; }
     alias dkc="dclean";
     alias dyc="dclean";
     alias dcln="dclean";
 
-    # docker_system_images -- manage docker container images from the docker repository
-    dimages(){ sh /share/docker/scripts/docker_system.sh "${1}"; }
+    # docker_system_image -- manage docker container images from the docker repository
+    dimages(){ sh "${docker_scripts}/docker_system_image.sh" "${1}"; }
+    alias dli="dimages -l";
     alias dki="dimages";
     alias dyi="dimages";
     alias dimage="dimages";
 
+    # docker_system_network -- lists current docker networks
+    dnet(){ sh "${docker_scripts}/docker_system_network.sh" "${1}" "${2}"; }
+    alias dln="dnet";
+    alias dyn="dnet";
+
     # docker_system_prune -- prunes the docker system (removes unused images and containers and networks and volumes)
-    dprune(){ sh /share/docker/scripts/docker_system_prune.sh "${1}"; }
+    dprune(){ sh "${docker_scripts}/docker_system_prune.sh" "${1}"; }
     alias dkp="dprune";
     alias dyp="dprune";
     alias dprn="dprune";
 
     # docker_system_stats -- displays resources used by current docker stacks/containers
-    dstats(){ sh /share/docker/scripts/docker_system_stats.sh "${1}"; }
+    dstats(){ sh "${docker_scripts}/docker_system_stats.sh" "${1}"; }
     alias dks="dstats";
     alias dys="dstats";
     alias dtop="dstats --live";
     alias dstat="dstats --live";
 
-  echo -e "${blu} >> Created Docker command aliases for QNAP devices${def}"
-}
+    # docker_system_volume -- lists unused docker volumes
+    dvol(){ sh "${docker_scripts}/docker_system_volume.sh" "${1}" "${2}"; }
+    alias dlv="dvol";
+    alias dyv="dvol";
+
+    echo -e "${blu} >> Created Docker terminal functions and aliases. Type 'dlist' to display defined commands.${def}";
+    }
 
 # logical action check
-  case "${1}" in 
-    ("-a"|"--aliases"|"--aliases") fnc_list_syntax; fnc_list_aliases ;;
+  case "${1}" in
+    ("-a"|"--aliases") fnc_list_syntax; fnc_list_aliases ;;
     ("-s"|"--scripts") fnc_list_syntax; fnc_list_scripts ;;
     ("-f"|"--functions") fnc_list_syntax; fnc_list_scripts; fnc_list_aliases ;;
-    ("-x"|"--execute"|"--exe") 
-      fnc_create_aliases # register docker aliases and custom commands for qnap devices
-      # [ ! -e /share/docker/scripts/profile.sh ] && ln -s /opt/etc/profile /share/docker/scripts/profile.sh # create shortcut to 'entware-std' profile
+    ("-c"|"--create")
+      fnc_create_aliases "" # register docker aliases and custom commands for qnap devices
+      [ ! -e "${docker_scripts}/profile.sh" ] && ln -s /opt/etc/profile "${docker_scripts}/profile.sh" # create shortcut to 'entware-std' profile
       ;;
     (*) fnc_list_syntax ;;
   esac
