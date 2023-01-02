@@ -70,7 +70,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 ### 1. Network Port Configuration
 
 1. For ease of configuration, ports 80, 443, and 8080 **must be _unused_ by your NAS.**
-   - ***NOTE:*** This step may be unnecessary if you can get chained port forwards to work when configuring Traefik to recognize your domain and register a certificate. YMMV.
+   - ***NOTE:*** This step may be unnecessary if you can get 'chained' port-forwards to work when configuring Traefik to recognize your domain and register a certificate. YMMV.
    - **EXPLANATION:** QTS assigns ports 8080 and 443 as the default HTTP and HTTPS ports for the QNAP Web UI, and assigns 80 as the default HTTP port for the native "Web Server" application. A reverse proxy requires 80 and 443 in order to obtain certificates and properly route traffic. Unless you decide not to use a reverse proxy, these must be changed to successfully complete this guide.
    - **RECOMMENDATION:** Even if you do not use a reverse proxy, I ***HIGHLY*** recommend that you change the default ports for the Web UI, Web Server, and SSH connections to increase the security of your NAS. Also disable UPnP.
 </br>
@@ -99,16 +99,16 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
       - https://www.howtogeek.com/66214/how-to-forward-ports-on-your-router
 
-##### New Ports Settings Overview
+      ##### New Ports Settings Overview
 
-**QTS System UI**
-`HTTP: 8480 | HTTPS: 8443`
+      **QTS System UI**
+      `HTTP: 8480 | HTTPS: 8443`
 
-**Web Server**
-`HTTP: 9480 | HTTPS: 9443`
+      **Web Server**
+      `HTTP: 9480 | HTTPS: 9443`
 
-**SSH Terminal**
-`example: 54545`
+      **SSH Terminal**
+      `example: 54545`
 
 ### 2. Docker User Account Creation
 
@@ -168,12 +168,12 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 1. Remove Container Station:
       - In App Center, click the dropdown for Container Station and choose `Remove`.
       - In `Control Panel >> Shared Folders`, check the box next to the `container` shared folder and click "Remove"
-         <p align="center"><img width="400" height="100" src="https://i.imgur.com/s1jXNNs.png"></p>
+         <p align="left"><img width="400" height="100" src="https://i.imgur.com/s1jXNNs.png"></p>
       - In the pop-up box, check "Also delete the data" and click "Yes"
-         <p align="center"><img align="center" width="200" height="100" src="https://i.imgur.com/WXML3fl.png"></p></br>
+         <p align="left"><img width="200" height="100" src="https://i.imgur.com/WXML3fl.png"></p></br>
 
 1. Reboot the NAS
-   <p align="left"><mg align="center" width="150" height="200" src="https://i.imgur.com/voFkAt9.png"></p></br>
+   <p align="left"><img width="150" height="200" src="https://i.imgur.com/voFkAt9.png"></p></br>
 
 1. Once the reboot is complete, install Container Station from the QNAP Appstore.
    - Launch CS after installed.
@@ -235,7 +235,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
          - **Do not save sensitive data** in compose.yml files if this is a git repository.
 
       `/share/docker/runtime`
-         - Optional. `Temporary` DB files and `transcode` files will go here.
+         - OPTIONAL. `Temporary` DB files and `transcode` files will go here.
          - This folder should reside on a volume that does not get backed up.
          - Link this folder to a fast storage volume or Qtier cache if possible.
          - If used, create with `ln -s /target/volume/path /share/docker/runtime`
@@ -273,10 +273,8 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
          ```
 
       - This is what your folder heirarchy should show after creating the required folders:
-         <div align="center"><img src="https://i.imgur.com/Z3Q3NXn.png">
-
-         <small><figcaption align="center">Docker folder heirarchy visualized. The `runtime/` folder is optional.</figcaption></small></div></br>
-
+         <div align="left"><img src="https://i.imgur.com/Z3Q3NXn.png">
+         <small><figcaption align="left">Docker folder heirarchy visualized. <br> The `CECACHEDEV2_DATA` part may be different on your NAS.</figcaption></small></div></br>
 
 1. Next you need to download the `docker helper scripts` from this [QNAP HomeLAB Docker Scripts](https://gitlab.com/qnap-homelab/docker-scripts) repository to your `/share/docker/scripts/` directory.
 
@@ -302,12 +300,12 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    printf "\nalias profile='source /opt/etc/profile'" >> /opt/etc/profile
    ```
    ```bash
-   printf "\nsource /opt/docker/scripts/docker_commands_list.sh -x" >> /opt/etc/profile
+   printf "\nsource /opt/docker/scripts/docker_commands_list.sh -c" >> /opt/etc/profile
    ```
    - ***NOTE:*** If you prefer to enter the text manually, these are the lines that need to go at the bottom of the `profile` file:
       ```bash
       alias profile='source /opt/etc/profile'
-      source /opt/docker/scripts/docker_commands_list.sh -x
+      source /opt/docker/scripts/docker_commands_list.sh -c
       ```
 
    - ***OPTIONAL:*** The below steps accomplish the same thing as above, but add notification messages whenever you reload or log into the qnap cli.
@@ -315,22 +313,24 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - **EDIT** the `profile` file via `nano /opt/etc/profile` or `vi /opt/etc/profile`
    - **NOTE:** I prefer to use VSCodium to edit this file as it provides syntax highlighting.
       ```bash
-      source /opt/docker/scripts/docker_commands_list.sh -x && echo " >> '.../docker_commands_list.sh' successfully loaded" || echo " -- ERROR: could not import '.../docker_commands_list.sh'"
+      source /opt/docker/scripts/docker_commands_list.sh -c && echo " >> '.../docker_commands_list.sh' successfully loaded" || echo " -- ERROR: could not import '.../docker_commands_list.sh'"
       ```
    - ***NOTE:*** You will need to restart your ssh terminal session, or execute the `profile` alias (a shortcut to reload `profile`), in order to make the changes effective.
-</br>
-
-   ***WARNING:***
-   If you use a Windows client to save the profile (or the scripts below), by default the files will be saved with the `CR LF` end of line sequence, and will error when executed.
+   </br>
 
 <div align="center">
+
+   **WARNING:**
+   If you use a Windows client to save the profile (or the scripts below),
+   by default the files will be saved with the `CR LF` end of line sequence,
+   and will error when executed.
 
 **You MUST set the end of line sequence to UNIX `LF`.**
 **Windows `CR LF` style EoL will result in failed scripts with no error.**</strong>
 
-<img width="400" src="https://i.imgur.com/oGWEvCO.png"><small>
-
-<figcaption align="center">VSCodium EoL Settings</figcaption></small>
+<small><figcaption>VSCodium EoL Settings</figcaption></small><br>
+<img width="400" src="https://i.imgur.com/oGWEvCO.png"><br>
+<small><figcaption>(click on the "CRLF" text on the right of the bottom status bar)</figcaption></small>
 
 </div>
 
