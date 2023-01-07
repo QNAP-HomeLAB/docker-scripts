@@ -84,7 +84,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
       - `Control Panel >> Applications >> Web Server`
       - Change the default HTTP port to `9480`, and the default HTTPS port to `9443`.
       - **TIP:** Unless currently in use, consider disabling the MySQL application in the QNAP GUI Settings.
-      - **WARNING:** ***DO NOT* disable** the **Web Server** application, leave this active on the new port. There is a bug in QTS where the Web Server will re-acquire the default port if it is disabled.
+      - **NOTE:** It used to be required to keep the **Web Server** application enabled with the modified ports, otherwise the QTS Web Server would re-acquire the default port when disabled. I have not verified this personally, but apparently this bug was fixed so you can now safely disable the built-in Web Server.
    - **Change default *SSH* port:** In QNAP Web UI
       - `Control Panel >> Network & File Services >> Telent / SSH`
       - Change the default to a random number somewhere between `49152 - 65535`.
