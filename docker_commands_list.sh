@@ -1,6 +1,23 @@
-#!/bin/sh
+#!/bin/bash
+
+#
+
 # external variable sources
   source /share/docker/scripts/.script_vars.conf
+
+# common docker folders
+  alias share_folder='/share'
+  alias docker_folder="${share_folder}/docker"
+  alias docker_scripts="${docker_folder}/scripts"
+  alias docker_secrets="${docker_folder}/secrets"
+# docker-compose specific folders
+  alias compose_folder="${docker_folder}/compose"
+  alias compose_appdata="${compose_folder}/appdata"
+  alias compose_configs="${compose_folder}/configs"
+# docker swarm specific folders
+  alias swarm_folder="${docker_folder}/swarm"
+  alias swarm_appdata="${swarm_folder}/appdata"
+  alias swarm_configs="${swarm_folder}/configs"
 
 # function definitions
   fnc_list_syntax() {
@@ -13,7 +30,7 @@
     echo -e " -     ${cyn}-f │ --functions ${DEF}│ Displays both the list of Docker Scripts and Aliases."
     echo -e " -     ${cyn}-x │ --execute   ${DEF}│ Register and create docker aliases and custom commands."
   }
-  fnc_list_aliases() { 
+  fnc_list_aliases() {
     echo -e " -"
     echo -e " - NOTE: Aliases do not have options, and are only shortcuts for the target command."
     echo -e " -"
@@ -44,7 +61,7 @@
     echo
     exit 1
   }
-  fnc_list_scripts() { 
+  fnc_list_scripts() {
     echo -e " -"
     echo -e " - NOTE: Commands have '${cyn}options${DEF}' which can be listed using the '${cyn}-help${def}' flag after the command, e.g. ${CYN}dls --${cyn}help${def} "
     echo -e " -"
@@ -94,25 +111,28 @@
     alias dkt='docker stats --format "table {{.Name}}\t{{.CPUPerc}}  {{.MemPerc}}\t{{.MemUsage}}\t{{.NetIO}}"'
     alias dkps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
     # alias dkex='docker exec -it $(docker ps -f name=${1} --format "{{.ID}}") /bin/sh'
-    # alias dkex='docker ps -f name=${1}'
+    # alias dkex='docker exec -it $(docker ps -f name=${1} --quiet) /bin/sh'
+    alias dkex="docker ps -f name=${1}"
 
     alias dkc='docker-compose'
+    dccheck(){ docker-compose -f "/share/docker/compose/configs/${1}/${1}-compose.yml" config; }
+    alias dck="dccheck"
 
     alias dkm='docker-machine'
     alias dkmssh='docker-machine ssh'
 
     # docker_commands_list -- lists the below custom docker commands
-    dlist(){ sh /share/docker/scripts/docker_commands_list.sh "${@}"; }
+    dlist(){ sh "/share/docker/scripts/docker_commands_list.sh ${*}"; }
     alias dcmd="dlist";
 
-    alias dcappdata="cd /share/docker/compose/appdata/$1"
-    alias dcappd="cd /share/docker/compose/appdata/$1"
-    alias dcconfigs="cd /share/docker/compose/configs/$1"
-    alias dcconf="cd /share/docker/compose/configs/$1"
-    alias dwappdata="cd /share/docker/swarm/appdata/$1"
-    alias dwappd="cd /share/docker/swarm/appdata/$1"
-    alias dwconfigs="cd /share/docker/swarm/configs/$1"
-    alias dwconf="cd /share/docker/swarm/configs/$1"
+    alias dcappdata="cd /share/docker/compose/appdata/${1}"
+    alias dcappd="cd /share/docker/compose/appdata/${1}"
+    alias dcconfigs="cd /share/docker/compose/configs/${1}"
+    alias dcconf="cd /share/docker/compose/configs/${1}"
+    alias dwappdata="cd /share/docker/swarm/appdata/${1}"
+    alias dwappd="cd /share/docker/swarm/appdata/${1}"
+    alias dwconfigs="cd /share/docker/swarm/configs/${1}"
+    alias dwconf="cd /share/docker/swarm/configs/${1}"
 
     # alias jump="cd ../../${PWD##*/}"
 
@@ -121,9 +141,14 @@
     # alias dcf="dkfolders -c";
     # alias dsf="dkfolders -w";
     # alias dwf="dkfolders -w";
-    # # alias dcf='dkfolders -c "$1"';
-    # # alias dsf='dkfolders -w "$1"';
-    # # alias dwf='dkfolders -w "$1"';
+    # # alias dcf='dkfolders -c "$@"';
+    # # alias dsf='dkfolders -w "$@"';
+    # # alias dwf='dkfolders -w "$@"';
+
+    # docker_system_env == re-creates the appropriate '.env' file
+    dkenv(){ sh /share/docker/scripts/docker_system_env.sh "${@}"; }
+    alias dce="dkenv -c"
+    alias dwe="dkenv -w"
 
     # docker_compose_bounce -- stops then re-creates the listed containers or '-all' container-stacks with config files in the folder structure
     dcbounce(){ sh /share/docker/scripts/docker_compose_bounce.sh "${@}"; }
@@ -153,8 +178,11 @@
     alias dcl="dclogs";
 
     # docker_compose_networks -- creates required networks for docker-compose container manipulation via scripts
-    dcnet(){ sh /share/docker/scripts/docker_compose_networks.sh; }
-    alias dcn="dcnet";
+    dsnet(){ sh /share/docker/scripts/docker_system_networks.sh "${@}"; }
+    alias dsn="dsnet";
+    alias dnc="dsnet -c";
+    alias dnw="dsnet -w";
+    alias dnd="dsnet -d";
 
     # docker_list_configs -- lists existing stack config files for either swarm or compose filepaths
     dlconfigs(){ sh /share/docker/scripts/docker_list_configs.sh "${1}"; }
@@ -233,7 +261,7 @@
     dwsetup(){ sh /share/docker/scripts/docker_swarm_setup.sh "${@}"; }
     alias dssup="dwsetup traefik";
     alias dwsup="dwsetup traefik";
-    # sh mkdir -pm 766 /share/docker/scripts && curl -fsSL https://raw.githubusercontent.com/Drauku/QNAP-Docker-Swarm-Setup/master/scripts/docker_swarm_setup.sh > /share/docker/scripts/docker_swarm_setup.sh && . /share/docker/scripts/docker_swarm_setup.sh; 
+    # sh mkdir -pm 766 /share/docker/scripts && curl -fsSL https://raw.githubusercontent.com/Drauku/QNAP-Docker-Swarm-Setup/master/scripts/docker_swarm_setup.sh > /share/docker/scripts/docker_swarm_setup.sh && . /share/docker/scripts/docker_swarm_setup.sh;
 
     # docker_swarm_leave -- LEAVES the docker swarm. USE WITH CAUTION!
     dwleave(){ sh /share/docker/scripts/docker_swarm_leave.sh "${@}"; }
@@ -271,12 +299,11 @@
 }
 
 # logical action check
-  case "${1}" in 
-    ("-a"|"--aliases"|"--aliases") fnc_list_syntax; fnc_list_aliases ;;
-    ("-s"|"--scripts") fnc_list_syntax; fnc_list_scripts ;;
-    ("-f"|"--functions") fnc_list_syntax; fnc_list_scripts; fnc_list_aliases ;;
-    ("-x"|"--execute"|"--exe") 
-      fnc_create_aliases # register docker aliases and custom commands for qnap devices
+  case "${1}" in
+    ("-a"|"--aliases") fnc_list_aliases ;;
+    ("-s"|"--scripts") fnc_list_scripts ;;
+    ("-f"|"--functions") fnc_list_scripts; fnc_list_aliases ;;
+    ("-x"|"--execute"|"--exe") fnc_create_aliases "${@}" # register docker aliases and custom commands for qnap devices
       [ ! -e /share/docker/scripts/profile.sh ] && ln -s /opt/etc/profile /share/docker/scripts/profile.sh # create shortcut to 'entware-std' profile
       ;;
     (*) fnc_list_syntax ;;
