@@ -1,23 +1,17 @@
 #!/bin/bash
-
-#
+# shellcheck source=./.script_vars.conf
 
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.script_vars.conf
 
-# common docker folders
-  alias share_folder='/share'
-  alias docker_folder="${share_folder}/docker"
-  alias docker_scripts="${docker_folder}/scripts"
-  alias docker_secrets="${docker_folder}/secrets"
-# docker-compose specific folders
-  alias compose_folder="${docker_folder}/compose"
-  alias compose_appdata="${compose_folder}/appdata"
-  alias compose_configs="${compose_folder}/configs"
-# docker swarm specific folders
-  alias swarm_folder="${docker_folder}/swarm"
-  alias swarm_appdata="${swarm_folder}/appdata"
-  alias swarm_configs="${swarm_folder}/configs"
+## Folder heirarchy for Drauku's folder structure, modified from gkoerk's famously awesome folder structure for stacks.
+alias docker_folder="/opt/docker"
+alias docker_appdata='${docker_folder}/appdata'
+alias docker_compose='${docker_folder}/compose'
+alias docker_runtime='${docker_folder}/runtime'
+alias docker_scripts='${docker_folder}/scripts'
+alias docker_secrets='${docker_folder}/secrets'
+alias docker_swarm='${docker_folder}/swarm'
 
 # function definitions
   fnc_list_syntax() {
@@ -112,7 +106,7 @@
     alias dkps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
     # alias dkex='docker exec -it $(docker ps -f name=${1} --format "{{.ID}}") /bin/sh'
     # alias dkex='docker exec -it $(docker ps -f name=${1} --quiet) /bin/sh'
-    alias dkex="docker ps -f name=${1}"
+    dkex(){ docker ps -f name="${1}"; }
 
     alias dkc='docker-compose'
     dccheck(){ docker-compose -f "/share/docker/compose/configs/${1}/${1}-compose.yml" config; }
@@ -125,14 +119,14 @@
     dlist(){ sh "/share/docker/scripts/docker_commands_list.sh ${*}"; }
     alias dcmd="dlist";
 
-    alias dcappdata="cd /share/docker/compose/appdata/${1}"
-    alias dcappd="cd /share/docker/compose/appdata/${1}"
-    alias dcconfigs="cd /share/docker/compose/configs/${1}"
-    alias dcconf="cd /share/docker/compose/configs/${1}"
-    alias dwappdata="cd /share/docker/swarm/appdata/${1}"
-    alias dwappd="cd /share/docker/swarm/appdata/${1}"
-    alias dwconfigs="cd /share/docker/swarm/configs/${1}"
-    alias dwconf="cd /share/docker/swarm/configs/${1}"
+    dcappdata(){ cd "/share/docker/compose/appdata/${1}" || return; }
+    dcappd(){ cd "/share/docker/compose/appdata/${1}" || return; }
+    dcconfigs(){ cd "/share/docker/compose/configs/${1}" || return; }
+    dcconf(){ cd "/share/docker/compose/configs/${1}" || return; }
+    dwappdata(){ cd "/share/docker/swarm/appdata/${1}" || return; }
+    dwappd(){ cd "/share/docker/swarm/appdata/${1}" || return; }
+    dwconfigs(){ cd "/share/docker/swarm/configs/${1}" || return; }
+    dwconf(){ cd "/share/docker/swarm/configs/${1}" || return; }
 
     # alias jump="cd ../../${PWD##*/}"
 
