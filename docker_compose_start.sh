@@ -1,9 +1,12 @@
 #!/bin/bash
+
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # script variable definitions
   conftype="-compose"
+  unset bounce_list
 
 # function definitions
   fnc_help(){
@@ -14,28 +17,28 @@
     echo -e " - SYNTAX: # dcu ${cyn}-option${DEF}"
     echo -e " -   VALID OPTIONS:"
     echo -e " -     ${cyn}-h │ --help ${DEF}| Displays this help message."
-    echo -e " -     ${cyn}-a | --all  ${DEF}| Deploys all stacks with a config file inside the '${YLW}${compose_configs}/${DEF}' path."
+    echo -e " -     ${cyn}-a | --all  ${DEF}| Deploys all stacks with a config file inside the '${YLW}${docker_compose}/${DEF}' path."
     echo -e " -                         NOTE: config files must follow this naming format: '${cyn}stackname${CYN}-compose.yml${def}'"
     echo
     exit 1 # Exit script after printing help
     }
 
 # option logic action determination
-  case "${1}" in 
+  case "${1}" in
     (-*) # validate entered option exists
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
         ("-a"|"--all")
-          if [[ "${bounce_list[@]}" = "" ]]; then
+          if [[ "${bounce_list[*]}" = "" ]]; then
             # populate list of configuration folders
-            IFS=$'\n'; configs_folder_list=( $(cd "${compose_configs}" && find -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g') )
+            IFS=$'\n'; configs_folder_list=( "$(cd "${docker_compose}" && find . -maxdepth 1 -type d -not -path '*/\.*' | sed 's/^\.\///g')" )
             # check that each existing folder has a .yml config file inside
             for i in "${!configs_folder_list[@]}"; do
               # remove '.' folder name from printed list
               if [[ "${configs_folder_list[i]}" = "." ]]
-              then unset configs_folder_list[i]
+              then unset "configs_folder_list[i]"
               fi
-              if [[ -f "${compose_configs}"/"${configs_folder_list[i]}"/"${configs_folder_list[i]}${conftype}.yml" ]]
+              if [[ -f "${docker_compose}"/"${configs_folder_list[i]}"/"${configs_folder_list[i]}${conftype}.yml" ]]
               then configs_list="${configs_list} ${configs_folder_list[i]}"
               fi
             done
@@ -52,10 +55,10 @@
   esac
 
 # perform script main function
-  deploy_list=(`for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u`)
+  deploy_list=( "$(for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u)" )
   for stack in "${!deploy_list[@]}"; do
     # create '.env' file redirect if used
-    ln -sf ${var_script_vars} ${compose_configs}/${deploy_list[stack]}/.env
-    docker-compose -f ${compose_configs}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml up -d --remove-orphans
+    ln -sf "${var_script_vars}" "${docker_compose}/${deploy_list[stack]}/.env"
+    docker compose -f "${docker_compose}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml" up -d --remove-orphans
     sleep 1
   done

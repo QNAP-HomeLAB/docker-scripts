@@ -1,7 +1,8 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
-  source /share/docker/swarm/stackslist-swarm.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
+  # source /opt/docker/swarm/stackslist-swarm.conf
 
 # script variable definitions
   unset bounce_list IFS
@@ -13,7 +14,7 @@
     echo -e " - SYNTAX: # dsb ${cyn}stack_name${DEF}"
     echo -e " - SYNTAX: # dsb ${cyn}-option${DEF}"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn}-a | --all     ${DEF}│ Bounces all stacks with a corresponding folder inside the '${YLW}${swarm_configs}/${DEF}' path."
+    echo -e " -     ${cyn}-a | --all     ${DEF}│ Bounces all stacks with a corresponding folder inside the '${YLW}${docker_swarm}/${DEF}' path."
     echo -e " -     ${cyn}-d | --default ${DEF}│ Bounces the 'default' array of stacks defined in '${YLW}${docker_secrets}/${cyn}stackslist-swarm.conf${DEF}'"
     echo -e " -     ${cyn}-p | --preset  ${DEF}│ Bounces the 'preset' array of stacks defined in '${YLW}${docker_secrets}/${cyn}stackslist-swarm.conf${DEF}'"
     echo -e " -     ${cyn}-h │ --help    ${DEF}│ Displays this help message."
@@ -31,17 +32,17 @@
   fnc_script_outro(){ echo -e "[-- ${GRN}BOUNCE (REMOVE & REDEPLOY) STACK SCRIPT COMPLETE${DEF} --]"; echo; }
 
 # determine script output according to option entered
-  case "${1}" in 
-    (-*)
+  case "${1}" in
+    -*)
       case "${1}" in
-        ("-h"|"-help"|"--help") fnc_help ;;
-        ("-a"|"--all") fnc_list_all ;;
-        ("-d"|"--default") fnc_list_default ;;
-        ("-p"|"--preset") fnc_list_preset ;;
-        (*) fnc_invalid_syntax ;;
+        "-h"|"-help"|"--help") fnc_help ;;
+        "-a"|"--all") fnc_list_all ;;
+        "-d"|"--default") fnc_list_default ;;
+        "-p"|"--preset") fnc_list_preset ;;
+        *) fnc_invalid_syntax ;;
       esac
     ;;
-    (*) bounce_list=("$@") ;;
+    *) bounce_list=("$@") ;;
   esac
 
 # # display script intro

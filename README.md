@@ -43,7 +43,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 - [I. QNAP GUI Steps](#i-qnap-gui-steps)
    - [1. Network Port Configuration](#1-network-port-configuration)
    - [2. Docker user account](#2-docker-user-account)
-   - [3. Entware installation](#3-entware-installation)
+   - [3. Entware-std installation](#3-entware-std-installation)
    - [4. Container Station Setup](#4-container-station-setup)
 - [II. Terminal Steps](#ii-terminal-steps)
    - [1. SSH Terminal Connection](#1-ssh-terminal-connection)
@@ -121,15 +121,27 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - Click the `Create` dropdown button and select `Create User`.
    - **TIP:** Create the user with all lowercase letters so Linux case sensitivity is never an issue.
 
-### 3. Entware Installation
+### 3. Entware-std Installation
 
-1. Install the `Entware-std` QPKG provided for QNAP NAS devices from the Entware github downloads page. This installation is necessary in order to set up the shortcuts/aliases used when controlling docker via command line by editing a permanent profile.
+1. Install the `entware-std` package from the third-party QNAP Club repository appstore. This is necessary in order to set up the shortcuts/aliases used when controlling docker via command line by editing a permanent profile.
 
-   - The preferred installation method is by downloading the QPKG from the [Entware Github page](https://github.com/Entware/Entware/wiki/Install-on-QNAP-NAS).
+   - The preferred way to do this is to add the QNAP Club Repository to the App Center. Follow the [walkthrough instructions here](https://www.qnapclub.eu/en/howto/1).
 
-   - **NOTE:** If the App Center "Install Manually" button is used as suggested, you will need to periodically check the github for updates. QNAP cannot check for and notify of updates to the package when installed manually.
+      Note, I use the English translation of the QNAP Club website, but you may change languages (and urls) in the upper right language dropdown.
 
-   - **IMPORTANT:** ***DO NOT*** install the `entware-ng` or `entware-3x-std` packages as these have merged into `entware-std`. If either of these older versions, or `optware`, or `qnapware` were installed previously, they must be removed before installing `entware-std` as they have all been superceded.
+   - If you don't need the walkthrough, add the repository.
+      For English, go to App Center, Settings, App Repository, paste in
+      `https://www.qnapclub.eu/en/repo.xml`.
+
+   - If you **cannot** add the QNAP Club store to the App Center, you may manually download the qpkg file from that link and use it to manually install via the App Center, "Install Manually" button. This is **not preferred** as QNAP cannot check for and notify you of updates to the package.
+
+   - Search for `entware-std` and install the package.
+
+      **TIP:** If you have trouble locating the correct package, the description begins with
+      `entware-3x and entware-ng merged to become entware.`
+      The working link (as of publication) is here: https://www.qnapclub.eu/en/qpkg/556.
+
+   - **IMPORTANT:** ***DO NOT*** install the `entware-ng` or `entware-3x-std` packages. These have merged and been superceded by `entware-std`.
 
 ### 4. Container Station Setup
 
@@ -217,7 +229,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
          - Each docker `container` will have its own named subfolder.
 
       `/share/docker/compose`
-         - This is where `Docker stack` files will be stored using the docker-compose format.
+         - This is where `Docker stack` files will be stored using the docker compose format.
          - Each `compose` file can have multiple apps or containers included in the stack.
          - A git repository can provide versioning and backup for this folder.
          - **Do not save sensitive data** in compose.yml files if this is a git repository.
@@ -230,7 +242,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
       `/share/docker/scripts`
          - Docker helper scripts for convenient container management are stored here.
-         - Read and update the `.script_vars.conf` file with your configuration info.
+         - Read and update the `.vars_docker.conf` file with your configuration info.
          - These scripts are why folder paths and compose files have strict naming requirements.
 
       `/share/docker/secrets`
@@ -239,7 +251,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
          - Non-sensitive, `common` configuration settings can also be stored here.
 
       `/share/docker/swarm`
-         - This is where `Swarm stack` files will be stored using the docker-compose format.
+         - This is where `Swarm stack` files will be stored using the docker compose format.
          - Each `compose` file can have *multiple* apps or containers included in the stack.
          - A git repository can provide versioning and backup for this folder.
          - **Do not save sensitive data** in compose.yml files if this is a git repository.
@@ -316,8 +328,8 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 **You MUST set the end of line sequence to UNIX `LF`.**
 **Windows `CR LF` style EoL will result in failed scripts with no error.**</strong>
 
-<small><figcaption>VSCodium EoL Settings</figcaption></small><br>
-<img width="400" src="https://i.imgur.com/oGWEvCO.png"><br>
+<small><figcaption>VSCodium EoL Settings</figcaption></small>
+<img width="400" src="https://i.imgur.com/oGWEvCO.png">
 <small><figcaption>(click on the "CRLF" text on the right of the bottom status bar)</figcaption></small>
 
 </div>
@@ -350,9 +362,9 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
 1. The Docker helper scripts require several environment variable to be properly configured.
 
-   - The `.script_vars.conf` file has variables used by both Swarm and Compose containers.
+   - The `.vars_docker.conf` file has variables used by both Swarm and Compose containers.
 
-   - Ensure this file is located here: `/share/docker/scripts/.script_vars.conf`
+   - Ensure this file is located here: `/share/docker/scripts/.vars_docker.conf`
 
    - Read through this file, and fill in ***YOUR* NETWORK, NAS, OR PERSONAL INFORMATION**.
 

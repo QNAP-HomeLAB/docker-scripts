@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.env
-  # source /share/docker/.docker_vars.env
+  source /opt/docker/scripts/.script_vars.env
+  # source /opt/docker/.docker_vars.env
 
 # function definitions
   fnc_help(){
@@ -19,5 +19,5 @@
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE ${cyn}-help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; echo; exit 1; }
   fnc_invalid_input(){ echo -e "${YLW}INVALID INPUT${DEF}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
 
-docker network create --driver=bridge --subnet=172.0.0.0/24 --attachable docker_socket
-docker network create --driver=bridge --subnet=172.1.1.0/24 --attachable reverse_proxy
+# docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.127.0.0/24" --attachable "docker_socket"
+# docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.127.1.0/24" --attachable "reverse_proxy"

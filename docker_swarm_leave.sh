@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -20,7 +21,7 @@
   fnc_nothing_to_do(){ echo -e "${YLW}[-> THIS NODE IS NOT PART OF A SWARM, CANNOT LEAVE NON-EXISTENT SWARM <-]${DEF}"; echo; }
   fnc_invalid_input(){ echo -e "${YLW}INVALID INPUT${DEF}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
-  fnc_remove_all_query(){ printf " Do you want to remove all Docker Swarm stacks (${YLW}highly recommended${def})? "; }
+  fnc_remove_all_query(){ echo -e " Do you want to remove all Docker Swarm stacks (${YLW}highly recommended${def})? "; }
   fnc_msg_suggest_cleaning(){ echo -e "${YLW} >> CLEANING THE DOCKER ENVIRONMENT (${cyn}dprn${YLW}/${cyn}dcln${YLW}) AFTER LEAVING A SWARM IS RECOMMENDED <<${DEF}"; echo; }
   fnc_msg_stack_not_removed(){ echo -e " >> ${YLW}DOCKER SWARM STACKS WILL NOT BE REMOVED${DEF} << "; }
   fnc_swarm_check(){ if [[ "$(docker swarm leave -f)" == "Error response from daemon: This node is not part of a swarm" ]]; then fnc_nothing_to_do; exit 1; fi; }
@@ -31,11 +32,11 @@
 
 # determine script output according to option entered
   case "${1}" in
-    ("") # fnc_script_intro
+    "") # fnc_script_intro
       # fnc_swarm_check
       fnc_remove_all_query
       while read -r -p " [(Y)es/(N)o] " input; do
-        case "${input}" in 
+        case "${input}" in
           ([yY]|[yY][eE][sS]) break ;;
           ([nN]|[nN][oO]) break ;;
           (*) fnc_invalid_input ;;
@@ -43,7 +44,7 @@
       done
       echo
       ;;
-    (-*) # confirm entered option is valid
+    -*) # confirm entered option is valid
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
         ("-a"|"--all") input="yes" ;;
@@ -55,8 +56,8 @@
 
 # Remove stacks if input is Yes
     case $input in
-      ([yY][eE][sS]|[yY]) fnc_docker_stack_stop ;;
-      ([nN][oO]|[nN]) fnc_msg_stack_not_removed ;;
+      [yY][eE][sS]|[yY]) fnc_docker_stack_stop ;;
+      [nN][oO]|[nN]) fnc_msg_stack_not_removed ;;
     esac
 
 # Leave the swarm

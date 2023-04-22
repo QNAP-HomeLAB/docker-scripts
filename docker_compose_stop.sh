@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # script variable definitions
   conftype="-compose"
@@ -22,14 +23,14 @@
   fnc_script_outro(){ echo -e "${blu}[-  LISTED DOCKER CONTAINERS ${red}STOPPED${blu}  -]${DEF}"; }
   fnc_nothing_to_do(){ echo -e "${YLW} -> no configuration files exist${DEF}"; }
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
-  fnc_list_processing(){ remove_list=(`for stack in "${remove_list[@]}" ; do echo "$stack" ; done | sort -u`); }
+  fnc_list_processing(){ remove_list="$(for stack in "${remove_list[@]}" ; do echo "$stack" ; done | sort -u)"; }
   fnc_configs_list_all(){ IFS=$'\n' remove_list=("$(docker container list --format {{.Names}})"); }
-  fnc_docker_compose_down(){ docker-compose -f ${compose_configs}/${remove_list[stack]}/${remove_list[stack]}${conftype}.yml down; }
-  fnc_docker_compose_stop(){ docker-compose -f ${compose_configs}/${remove_list[stack]}/${remove_list[stack]}${conftype}.yml stop; }
-  fnc_env_file_remove(){ [ -f "${compose_configs}/${stack}/.env" ] && rm -f "${compose_configs}/${stack}/.env"; }
+  fnc_docker_compose_down(){ docker compose -f "${docker_compose}/${remove_list[stack]}/${remove_list[stack]}${conftype}.yml" down; }
+  fnc_docker_compose_stop(){ docker compose -f "${docker_compose}/${remove_list[stack]}/${remove_list[stack]}${conftype}.yml" stop; }
+  fnc_env_file_remove(){ [ -f "${docker_compose}/${stack}/.env" ] && rm -f "${docker_compose}/${stack}/.env"; }
 
 # option logic action determination
-  case "${1}" in 
+  case "${1}" in
     ("") fnc_nothing_to_do ;;
     (-*) # validate entered option exists
       case "${1}" in

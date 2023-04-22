@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -19,7 +20,7 @@
       #docker volume ls -qf dangling=true | xargs -r docker volume rm;
       VOLUMES_DANGLING=$(docker volume ls -qf dangling=true);
       if [[ ! ${VOLUMES_DANGLING} = "" ]];
-      then docker volume rm ${NETWORKS_DANGLING};
+      then docker volume rm ${VOLUMES_DANGLING};
       else echo -e " - ${YLW}No dangling volumes to remove.${DEF}";
       fi
       echo
