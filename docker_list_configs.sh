@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /share/docker/scripts/.script_vars.conf
-  source /share/docker/swarm/stackslist-swarm.conf
+  source /share/docker/swarm/.stackslist-swarm.conf
 
 # script variable definitions
   unset configs_folder_list IFS
@@ -35,8 +35,8 @@
   fnc_type_swarm(){ configs_path=${swarm_configs}; unset conftype IFS; }
   fnc_list_config_files(){ if [[ -f "${configs_path}"/"${configs_folder_list[i]}"/"${configs_folder_list[i]}${conftype}.yml" ]]; then configs_list="${configs_list} ${configs_folder_list[i]}"; fi; }
   fnc_display_config_files(){ for i in "${!configs_folder_list[@]}"; do fnc_folder_list_cleanup; fnc_list_config_files; done; }
-  fnc_script_outro(){ if [[ ! ${configs_list} ]]; then echo -e " -> ${YLW}no configuration files exist${DEF}"; else echo -e " ->${cyn}${configs_list[@]}${DEF}"; fi; echo; }
-  
+  fnc_script_outro(){ if [[ ! ${configs_list} ]]; then echo -e " -> ${YLW}no configuration files exist${DEF}"; else echo -e " ->${cyn}${configs_list[*]}${DEF}"; fi; echo; }
+
 # determine configuration type to query
   case "$1" in
     ("-h"|"-help"|"--help") fnc_help ;;
