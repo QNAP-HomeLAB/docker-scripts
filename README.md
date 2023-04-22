@@ -43,7 +43,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 - [I. QNAP GUI Steps](#i-qnap-gui-steps)
    - [1. Network Port Configuration](#1-network-port-configuration)
    - [2. Docker user account](#2-docker-user-account)
-   - [3. Entware-std installation](#3-entware-std-installation)
+   - [3. Entware installation](#3-entware-installation)
    - [4. Container Station Setup](#4-container-station-setup)
 - [II. Terminal Steps](#ii-terminal-steps)
    - [1. SSH Terminal Connection](#1-ssh-terminal-connection)
@@ -84,7 +84,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
       - `Control Panel >> Applications >> Web Server`
       - Change the default HTTP port to `9480`, and the default HTTPS port to `9443`.
       - **TIP:** Unless currently in use, consider disabling the MySQL application in the QNAP GUI Settings.
-      - **WARNING:** ***DO NOT* disable** the **Web Server** application, leave this active on the new port. There is a bug in QTS where the Web Server will re-acquire the default port if it is disabled.
+      - **NOTE:** It used to be required to keep the **Web Server** application enabled with the modified ports, otherwise the QTS Web Server would re-acquire the default port when disabled. I have not verified this personally, but apparently this bug was fixed so you can now safely disable the built-in Web Server.
    - **Change default *SSH* port:** In QNAP Web UI
       - `Control Panel >> Network & File Services >> Telent / SSH`
       - Change the default to a random number somewhere between `49152 - 65535`.
@@ -121,27 +121,15 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - Click the `Create` dropdown button and select `Create User`.
    - **TIP:** Create the user with all lowercase letters so Linux case sensitivity is never an issue.
 
-### 3. Entware-std Installation
+### 3. Entware Installation
 
-1. Install the `entware-std` package from the third-party QNAP Club repository appstore. This is necessary in order to set up the shortcuts/aliases used when controlling docker via command line by editing a permanent profile.
+1. Install the `Entware-std` QPKG provided for QNAP NAS devices from the Entware github downloads page. This installation is necessary in order to set up the shortcuts/aliases used when controlling docker via command line by editing a permanent profile.
 
-   - The preferred way to do this is to add the QNAP Club Repository to the App Center. Follow the [walkthrough instructions here](https://www.qnapclub.eu/en/howto/1).
+   - The preferred installation method is by downloading the QPKG from the [Entware Github page](https://github.com/Entware/Entware/wiki/Install-on-QNAP-NAS).
 
-      Note, I use the English translation of the QNAP Club website, but you may change languages (and urls) in the upper right language dropdown.
+   - **NOTE:** If the App Center "Install Manually" button is used as suggested, you will need to periodically check the github for updates. QNAP cannot check for and notify of updates to the package when installed manually.
 
-   - If you don't need the walkthrough, add the repository.
-      For English, go to App Center, Settings, App Repository, paste in
-      `https://www.qnapclub.eu/en/repo.xml`.
-
-   - If you **cannot** add the QNAP Club store to the App Center, you may manually download the qpkg file from that link and use it to manually install via the App Center, "Install Manually" button. This is **not preferred** as QNAP cannot check for and notify you of updates to the package.
-
-   - Search for `entware-std` and install the package.
-
-      **TIP:** If you have trouble locating the correct package, the description begins with
-      `entware-3x and entware-ng merged to become entware.`
-      The working link (as of publication) is here: https://www.qnapclub.eu/en/qpkg/556.
-
-   - **IMPORTANT:** ***DO NOT*** install the `entware-ng` or `entware-3x-std` packages. These have merged and been superceded by `entware-std`.
+   - **IMPORTANT:** ***DO NOT*** install the `entware-ng` or `entware-3x-std` packages as these have merged into `entware-std`. If either of these older versions, or `optware`, or `qnapware` were installed previously, they must be removed before installing `entware-std` as they have all been superceded.
 
 ### 4. Container Station Setup
 
@@ -273,9 +261,8 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
          ```
 
       - This is what your folder heirarchy should show after creating the required folders:
-         <div align="center"><img src="https://i.imgur.com/Z3Q3NXn.png">
-
-         <small><figcaption align="center">Docker folder heirarchy visualized. <br> The `CECACHEDEV2_DATA` part may be different on your NAS.</figcaption></small></div></br>
+         <div align="left"><img src="https://i.imgur.com/Z3Q3NXn.png">
+         <small><figcaption align="left">Docker folder heirarchy visualized. <br> The `CECACHEDEV2_DATA` part may be different on your NAS.</figcaption></small></div></br>
 
 1. Next you need to download the `docker helper scripts` from this [QNAP HomeLAB Docker Scripts](https://gitlab.com/qnap-homelab/docker-scripts) repository to your `/share/docker/scripts/` directory.
 
@@ -319,17 +306,19 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - ***NOTE:*** You will need to restart your ssh terminal session, or execute the `profile` alias (a shortcut to reload `profile`), in order to make the changes effective.
    </br>
 
-      ***WARNING:***
-      If you use a Windows client to save the profile (or the scripts below), by default the files will be saved with the `CR LF` end of line sequence, and will error when executed.
-
 <div align="center">
+
+   **WARNING:**
+   If you use a Windows client to save the profile (or the scripts below),
+   by default the files will be saved with the `CR LF` end of line sequence,
+   and will error when executed.
 
 **You MUST set the end of line sequence to UNIX `LF`.**
 **Windows `CR LF` style EoL will result in failed scripts with no error.**</strong>
 
-<img width="400" src="https://i.imgur.com/oGWEvCO.png"><small>
-
-<figcaption align="center">VSCodium EoL Settings</figcaption></small>
+<small><figcaption>VSCodium EoL Settings</figcaption></small><br>
+<img width="400" src="https://i.imgur.com/oGWEvCO.png"><br>
+<small><figcaption>(click on the "CRLF" text on the right of the bottom status bar)</figcaption></small>
 
 </div>
 

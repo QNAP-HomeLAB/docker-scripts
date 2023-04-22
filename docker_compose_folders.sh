@@ -57,9 +57,9 @@
         else echo -e "  > ${CYN}${docker_compose}${cyn}/${stack}   ${ylw}ALREADY EXISTS ${DEF}"; exist=1;
       fi;
       if [ ! -f "${docker_compose}/${stack}/${stack}-compose.yml" ];
-        then install -m 664 "${var_template_file}" "${docker_compose}/${stack}/${stack}-compose.yml";
+        # then install -m 664 "${var_template_file}" "${docker_compose}/${stack}/${stack}-compose.yml";
+        then touch "${docker_compose}/${stack}/${stack}-compose.yml" && chmod 664 "${docker_compose}/${stack}/${stack}-compose.yml";
           { printf "# '%s' docker config file created for the homelab described here https://github.com/qnap-homelab\n---\n" "${stack}";
-            # printf "---\n";
           } >> "${docker_compose}/${stack}/${stack}-compose.yml";
         else echo -e "  > ${CYN}${docker_compose}/${cyn}${stack}/${stack}-compose.yml ${ylw}ALREADY EXISTS${DEF}";
       fi;
@@ -111,6 +111,26 @@
       esac
     done
     }
+
+  # fnc_folders_clean(){
+  #   unset removed_content IFS;
+  #   fnc_confirm_remove;
+  #   while read -r -p " [(Y)es/(N)o] " input; do
+  #     case "${input}" in
+  #       ([yY]|[yY][eE][sS])
+  #         echo;
+  #         case "${folder_list[0]}" in
+  #           ("-a") rm -rf "${docker_appdata:?}/${stack:?}"/* && removed_content="CONTAINER APPDATA" ;;
+  #           ("-g") rm -rf "${docker_compose:?}/${stack:?}"/* && removed_content="CONTAINER CONFIGS" ;;
+  #           ("-w") rm -rf "${docker_swarm:?}/${stack:?}"/* && removed_content="SWARM CONFIGS" ;;
+  #         esac
+  #         [ ! "${removed_content}" == "" ] && echo -e "  > ${cyn}${stack} ${def}${removed_content} ${ylw}CLEANED ${DEF}";
+  #         ;;
+  #       ([nN]|[nN][oO]) break ;;
+  #       (*) fnc_invalid_input ;;
+  #     esac
+  #   done
+  #   }
 
 # output determination logic
   case "${1}" in
