@@ -1,6 +1,8 @@
 #!/bin/bash
+
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -23,42 +25,66 @@
   fnc_script_error(){ echo -e "${blu}[-> LIST OF DOCKER SWARM STACK ${red}ERRORS${blu} <-]${DEF} "; }
   fnc_nothing_to_do(){ echo -e "${YLW} -> no current docker swarm stacks exist${DEF}"; }
   fnc_not_swarm_node(){ echo -e "${YLW} -> this docker node is not a swarm manager ${DEF}"; }
-  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE '${DEF}--${cyn}help${YLW}' OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; }
+  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE '${cyn}--help${YLW}' OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; }
   fnc_stack_lst(){ docker stack ls; }
   fnc_stack_svc(){ docker stack services "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Image}}\t{{.Ports}}"; }
   fnc_stack_err(){ docker stack ps --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}" "${1}"; }
   fnc_stack_chk(){ docker stack ps --no-trunc --format "{{.Error}}" "${1}"; }
 
-  # fnc_node_lst(){ docker node ps $(docker node ls -q) --format "table {{.Node}}\t{{.Name}}\t{{.CurrentState}}" --filter desired-state=Running | uniq; }
+  # fnc_node_lst(){ docker node ps "$(docker node ls -q)" --format "table {{.Node}}\t{{.Name}}\t{{.CurrentState}}" --filter desired-state=Running | uniq; }
 
 # determine script output according to option entered
-  case "${1}" in 
-    ("") fnc_script_intro; 
+  case "${1}" in
+    ("")
+      fnc_script_intro;
       case "$(fnc_stack_lst)" in
-        ("NAME                SERVICES") fnc_nothing_to_do ;;
-        ("Error response from daemon: This node is not a swarm manager. Use \"docker swarm init\" or \"docker swarm join\" to connect this node to swarm and try again.") fnc_not_swarm_node ;;
-        (*) fnc_stack_lst ;;
+        ("NAME                SERVICES")
+          fnc_nothing_to_do;
+          ;;
+        ("Error response from daemon: This node is not a swarm manager. Use \"docker swarm init\" or \"docker swarm join\" to connect this node to swarm and try again.")
+          fnc_not_swarm_node;
+          ;;
+        (*)
+          fnc_stack_lst;
+          ;;
       esac
       ;;
     (-*) # confirm entered option is valid
       case "${1}" in
-        ("-"|"-h"|"-help"|"--help") fnc_help ;;
-        (*) fnc_invalid_syntax ;;
+        ("-"|"-h"|"-help"|"--help")
+          fnc_help
+          ;;
+        (*)
+          fnc_invalid_syntax
+          ;;
       esac
       ;;
-    (*) 
+    (*)
       case "${2}" in
         (-*) # confirm entered option is valid
           case "${2}" in
-            ("-e"|"--errors") fnc_script_error; fnc_stack_err ${1} ${2} ;;
-            ("-s"|"--services") fnc_script_intro; fnc_stack_svc ${1} ${2} ;;
-            (*) fnc_invalid_syntax ;;
+            ("-e"|"--errors")
+              fnc_script_error;
+              fnc_stack_err "${1}" "${2}";
+              ;;
+            ("-s"|"--services")
+              fnc_script_intro;
+              fnc_stack_svc "${1}" "${2}";
+              ;;
+            (*)
+              fnc_invalid_syntax;
+              ;;
           esac
           ;;
-        (*) fnc_script_intro;
-          case "$(fnc_stack_chk ${1} ${2})" in 
-            ("") fnc_stack_svc ${1} ${2} ;;
-            (*) fnc_stack_err ${1} ${2} ;; 
+        (*)
+          fnc_script_intro;
+          case "$(fnc_stack_chk "${1}" "${2}")" in
+            ("")
+              fnc_stack_svc "${1}" "${2}";
+              ;;
+            (*)
+              fnc_stack_err "${1}" "${2}";
+              ;;
           esac
           ;;
       esac

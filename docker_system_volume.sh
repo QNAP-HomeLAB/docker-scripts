@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -21,8 +22,8 @@
   fnc_docker_volumes_list(){ docker volume ls; }
 
 # output determination logic
-  case "${1}" in 
-    ("")
+  case "${1}" in
+    "")
       fnc_script_intro
       if [ "$(fnc_docker_volumes_check)" ]
       then fnc_docker_volumes_list
@@ -30,9 +31,9 @@
       fi
       fnc_script_outro
       ;;
-    (-*)
+    -*)
       case "${1}" in
-        ("-h"|"-help"|"--help") fnc_help ;;
-        (*) fnc_invalid_syntax ;;
+        "-h"|"-help"|"--help") fnc_help ;;
+        *) fnc_invalid_syntax ;;
       esac
   esac

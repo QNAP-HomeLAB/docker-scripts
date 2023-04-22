@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -24,18 +25,18 @@
   fnc_service_logs_long(){ docker service logs --no-trunc "${1}"; }
 
 # determine script output according to option entered
-  case "${1}" in 
-    ("") fnc_invalid_syntax ;;
-    (-*)
+  case "${1}" in
+    "") fnc_invalid_syntax ;;
+    -*)
       case "${1}" in
-        ("-h"|"-help"|"--help") fnc_help ;;
-        (*) fnc_invalid_syntax ;;
+        "-h"|"-help"|"--help") fnc_help ;;
+        *) fnc_invalid_syntax ;;
       esac
     ;;
-    (*)
+    *)
       case "${2}" in
-        ("-l"|"--long") fnc_service_logs_long ;;
-        (*) fnc_service_logs ;;
+        "-l"|"--long") fnc_service_logs_long "{$1}" ;;
+        *) fnc_service_logs "${1}" ;;
       esac
     ;;
   esac

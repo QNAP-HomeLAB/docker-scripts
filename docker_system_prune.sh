@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -28,27 +29,27 @@
   fnc_intro
 
 # Script logic and execution
-  case "${1}" in 
-    (-*)
+  case "${1}" in
+    -*)
       case "${1}" in
-        ("-h"|"-help"|"--help") fnc_help ;;
-        ("-a"|"--all")
-          if [[ "$(fnc_container_list)" ]]; then 
+        "-h"|"-help"|"--help") fnc_help ;;
+        "-a"|"--all")
+          if [[ "$(fnc_container_list)" ]]; then
             fnc_query_remove_all
             while read -r -p " [(Y)es/(N)o] " input; do
-              case "${input}" in 
-                ([yY]|[yY][eE][sS]) fnc_container_stop && echo && fnc_prune && break;;
-                ([nN]|[nN][oO]) break ;;
-                (*) fnc_invalid_input ;;
+              case "${input}" in
+                [yY]|[yY][eE][sS]) fnc_container_stop && echo && fnc_prune && break;;
+                [nN]|[nN][oO]) break ;;
+                *) fnc_invalid_input ;;
               esac
             done
           else fnc_nothing_to_do
           fi
           ;;
-        (*) fnc_invalid_syntax ;;
+        *) fnc_invalid_syntax ;;
       esac
       ;;
-    (*) fnc_prune ;;
+    *) fnc_prune ;;
   esac
 
 # Script completion notice

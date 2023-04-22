@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -26,20 +27,20 @@
   fnc_service_error(){ docker service ps "${1}" --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}"; }
 
 # determine script output according to option entered
-  case "${1}" in 
-    (-*)
+  case "${1}" in
+    -*)
       case "${1}" in
-        ("-h"|"-help"|"--help") fnc_help ;;
-        (*) fnc_invalid_syntax ;;
+        "-h"|"-help"|"--help") fnc_help ;;
+        *) fnc_invalid_syntax ;;
       esac
     ;;
-    (*)
+    *)
       case "${2}" in
-        ("-l"|"--long") fnc_service_basic ;;
-        (*)
-          if [[ ! "$(fnc_service_check ${1})" ]]
-          then fnc_service_short
-          else fnc_service_error
+        "-l"|"--long") fnc_service_basic "${1}" ;;
+        *)
+          if [[ ! "$(fnc_service_check "${1}")" ]]
+          then fnc_service_short "${1}"
+          else fnc_service_error "${1}"
           fi
         ;;
       esac

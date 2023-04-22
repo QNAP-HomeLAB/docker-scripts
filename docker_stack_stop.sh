@@ -1,7 +1,8 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
-  source /share/docker/swarm/.swarm_stacks.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
+  # source /opt/docker/swarm/.swarm_stacks.conf
 
 # script variable definitions
   unset remove_list IFS
@@ -35,7 +36,7 @@
   fnc_stack_remove_success(){ echo -e "${RED} -- '${cyn}$stack${RED}' STACK ${red}REMOVED${RED} -- ${DEF}"; echo; }
 
 # determine script output according to option entered
-  case "${1}" in 
+  case "${1}" in
     (-*)
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
@@ -63,10 +64,10 @@
       then fnc_stack_remove_error
       else # echo -e "${CYN} -> REMOVE '${cyn}$stack${CYN}' STACK <-${DEF}"
         docker stack rm "$stack"
-        #[ -f "${swarm_configs}/${stack}/.env" ] && rm -f "${swarm_configs}/${stack}/.env"
+        #[ -f "${docker_swarm}/${stack}/.env" ] && rm -f "${docker_swarm}/${stack}/.env"
         # Pause until stack is removed
         while [ "$(fnc_docker_service_list)" ] || [ "$(fnc_docker_network_list)" ]
-        do sleep 1; 
+        do sleep 1;
         done
         fnc_stack_remove_success
       fi

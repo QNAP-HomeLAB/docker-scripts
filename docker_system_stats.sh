@@ -1,6 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /share/docker/scripts/.script_vars.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -20,15 +21,15 @@
   fnc_stats_part(){ docker stats --format "table {{.Name}}\t{{.CPUPerc}}  {{.MemPerc}}\t{{.MemUsage}}\t{{.NetIO}}"; }
 
 # determine script output according to option entered
-  case "${1}" in 
-    ("") fnc_stats_part ;; 
-    (-*)
+  case "${1}" in
+    "") fnc_stats_part ;;
+    -*)
       case "${1}" in
-        ("-h"|"-help"|"--help") fnc_help ;;
-        ("-l"|"--live") fnc_stats_full ;; 
-        ("-p"|"--part") fnc_stats_part ;; 
-        (*) fnc_invalid_syntax ;;
+        "-h"|"-help"|"--help") fnc_help ;;
+        "-l"|"--live") fnc_stats_full ;;
+        "-p"|"--part") fnc_stats_part ;;
+        *) fnc_invalid_syntax ;;
       esac
       ;;
-    (*) fnc_stats_full ;;
+    *) fnc_stats_full ;;
   esac
