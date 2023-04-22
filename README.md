@@ -146,7 +146,6 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 ### 4. Container Station Setup
 
 1. Backup what you have running now (if you don't have anything running yet, skip to Step 3. If you have also never used Container Station, skip to Step 5).
-</br>
 
 1. Shutdown and remove all docker containers and networks. This can be accomplished using Container Station, but connecting via SSH terminal allows you to complete this quickly with only three commands.
 
