@@ -1,24 +1,30 @@
 #!/bin/bash
 
 # warning to modify UID and GID if "dockeruser" was not the first user created during initiailization
-  echo -e "${YLW} >> WARNING: Modify the UID and GID if 'dockeruser' was not the first user created during initiailization << ${DEF}"
+  # echo -e "${YLW} >> WARNING: Modify the UID and GID if 'dockeruser' was not the first user created during initiailization << ${DEF}"
+
+# ask user to input `docker_uid` and `docker_gid` with defaults of 1000
+  echo -e " If the docker UID: $(id -u) and GID: $(id -g) are correct, enter them below."
+  echo -e " Otherwise, check them manually with the 'id docker' command."
+  read -p " Enter the UID of the docker user: " docker_uid
+  read -p " Enter the GID of the docker user: " docker_gid
 
 # check for `/opt/docker` folder and link or create if not present
   case $(uname -r | grep -o '[^-]\+$') in
-    ("qnap")
+    "qnap")
       if [[ ! -d "/share/docker" ]] ; then
         echo -e " You must first create the 'docker/' Shared Folder in QTS before running this script."
         exit 1;
       fi
       if [[ ! -d "/opt/docker" ]] ; then
         ln -s "/share/docker" "/opt/docker"
-        chown 1000:1000 "/opt/docker"
+        chown "${docker_uid}:${docker_gid}" "/opt/docker"
         chmod g+s "/opt/docker"
       fi
     ;;
-    (*)
+    *)
       if [[ ! -d "/opt/docker" ]] ; then
-        sudo install -o 1000 -g 1000 -m 755 "/opt/docker"
+        sudo install -o "${docker_uid}" -g "${docker_gid}" -m 755 "/opt/docker"
         sudo chmod g+s "/opt/docker"
       fi
     ;;
@@ -46,9 +52,11 @@
   fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
   fnc_nothing_to_do(){ echo -e " >> ${YLW}DOCKER HOMELAB FILES ALREADY EXIST, AND WILL NOT BE OVERWRITTEN${DEF} << "; echo; }
 
-# check for `.vars_scripts.conf` file and download if not present
-  if [[ ! -f /opt/docker/scripts/.vars_scripts.conf ]] ; then
-    curl -s https://gitlab.com/qnap-homelab/docker-scripts/.scripts_vars.conf -o /share/docker/scripts/.scripts_vars.conf
+# check for `.vars_docker.conf` file and download if not present
+  if [[ ! -f /opt/docker/scripts/.vars_docker.conf ]] ; then
+    curl -s https://gitlab.com/qnap-homelab/docker-scripts/.vars_docker.conf -o /share/docker/scripts/.vars_docker.conf
+    sed -i "s/var_usr=1000/var_usr=${docker_uid}/g" /share/docker/scripts/.vars_docker.conf
+    sed -i "s/var_grp=1000/var_grp=${docker_gid}/g" /share/docker/scripts/.vars_docker.conf
   fi
 
 # external variable sources
