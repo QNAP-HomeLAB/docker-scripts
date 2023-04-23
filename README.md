@@ -45,6 +45,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - [2. Docker user account](#2-docker-user-account)
    - [3. Entware-std installation](#3-entware-std-installation)
    - [4. Container Station Setup](#4-container-station-setup)
+   - [5. Docker Shared Folder](#5-docker-shared-folder)
 - [II. Terminal Steps](#ii-terminal-steps)
    - [1. SSH Terminal Connection](#1-ssh-terminal-connection)
    - [2. Docker folder creation](#2-docker-folder-creation)
@@ -73,7 +74,6 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - ***NOTE:*** This step may be unnecessary if you can get 'chained' port-forwards to work when configuring Traefik to recognize your domain and register a certificate. YMMV.
    - **EXPLANATION:** QTS assigns ports 8080 and 443 as the default HTTP and HTTPS ports for the QNAP Web UI, and assigns 80 as the default HTTP port for the native "Web Server" application. A reverse proxy requires 80 and 443 in order to obtain certificates and properly route traffic. Unless you decide not to use a reverse proxy, these must be changed to successfully complete this guide.
    - **RECOMMENDATION:** Even if you do not use a reverse proxy, I ***HIGHLY*** recommend that you change the default ports for the Web UI, Web Server, and SSH connections to increase the security of your NAS. Also disable UPnP.
-</br>
 
 1. Modify the default ports as follows to ensure there will be no port conflicts with docker stacks:
    - **Change default *System* ports:** In QNAP Web GUI
@@ -89,7 +89,6 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
       - `Control Panel >> Network & File Services >> Telent / SSH`
       - Change the default to a random number somewhere between `49152 - 65535`.
       - See this [list of port numbers](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports) to make sure the one you choose is not already assigned.
-</br>
 
 1. **Ports 80 and 443 must be forwarded from your router to your NAS**.
    - *Disable UPnP on you router and manually forward ports 80 and 443 to your NAS.*
@@ -119,7 +118,15 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 1. Ensure the `docker` user account is created.
    - `Control Panel >> Privilege >> Users`
    - Click the `Create` dropdown button and select `Create User`.
-   - **TIP:** Create the user with all lowercase letters so Linux case sensitivity is never an issue.
+   **TIP:** Create the user with all lowercase letters so Linux case sensitivity is never an issue.
+
+1. Create a new group called `docker`.
+   **NOTE:** This step can be performed after creation of the `/docker` Shared Folder below in the `5. Docker Folder Creation` section.
+   - `Control Panel >> Privilege >> User Groups`
+   - Click the `Create` button and type in the `docker` name.
+      **TIP:** Create the user with all lowercase letters so Linux case sensitivity is never an issue.
+   - Assign the `docker` user account to this group by clicking the `Edit` button on the right.
+   - If the `/docker` Shared Folder has been created, assign `read/write` folder permissions for this group to the folder.
 
 ### 3. Entware-std Installation
 
@@ -146,7 +153,6 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 ### 4. Container Station Setup
 
 1. Backup what you have running now (if you don't have anything running yet, skip to Step 3. If you have also never used Container Station, skip to Step 5).
-</br>
 
 1. Shutdown and remove all docker containers and networks. This can be accomplished using Container Station, but connecting via SSH terminal allows you to complete this quickly with only three commands.
 
@@ -179,7 +185,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - Launch CS after installed.
    - Create the `container/` folder when prompted during the first launch of CS.
 
-### 3. Docker Shared Folder
+### 5. Docker Shared Folder
 
 1. Create the `docker/` folder share **using the QTS Web UI**
 
