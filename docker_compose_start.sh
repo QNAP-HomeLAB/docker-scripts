@@ -22,6 +22,13 @@
     echo
     exit 1 # Exit script after printing help
     }
+  # fnc_script_intro(){ echo -e "${blu}[-  ${grn}STARTING${blu} LISTED DOCKER CONTAINERS  -]${DEF}"; }
+  # fnc_script_outro(){ echo -e "${blu}[-  List of Docker containers ${grn}STARTED${blu} <-]${DEF}"; }
+  # fnc_nothing_to_do(){ echo -e "${YLW} -> no configuration files exist${DEF}"; }
+  # fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE ${cyn}-help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
+  # fnc_list_processing(){ bounce_list="$(for stack in "${bounce_list[@]}" ; do echo "$stack" ; done | sort -u)"; }
+  # fnc_configs_list_all(){ IFS=$'\n' bounce_list=("$(docker container list --format {{.Names}})"); }
+
 
 # option logic action determination
   case "${1}" in
@@ -58,7 +65,9 @@
   deploy_list=( "$(for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u)" )
   for stack in "${!deploy_list[@]}"; do
     # create '.env' file redirect if used
-    ln -sf "${var_script_vars}" "${docker_compose}/${deploy_list[stack]}/.env"
+    if [ ! -f "${docker_compose}/${deploy_list[stack]}/.env" ]; then
+      ln -s "${var_script_vars}" "${docker_compose}/${deploy_list[stack]}/.env";
+    fi
     docker compose -f "${docker_compose}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml" up -d --remove-orphans
     sleep 1
   done
