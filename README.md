@@ -94,9 +94,10 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
    - *Disable UPnP on you router and manually forward ports 80 and 443 to your NAS.*
    **NOTE:** There are too many possible routers to cover how to forward ports on each, but there are some good guides here if you don't know how to do it for your router:
 
-      - https://portforward.com/router.htm
-
       - https://www.howtogeek.com/66214/how-to-forward-ports-on-your-router
+
+      - https://portforward.com/router.htm
+         - **WARNING:** Do not purchase the port-forwarding program offered from this website, it will not work for this and is a waste of money.
 
       ##### New Ports Settings Overview
 
