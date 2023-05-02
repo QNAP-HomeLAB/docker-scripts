@@ -279,13 +279,38 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
          chown dockeruser:dockergroup -cR /opt/docker && chmod 755 -cR /opt/docker
          ```
 
-      - This is what your folder heirarchy should show after creating the required folders:
-         <div align="left"><img src="https://i.imgur.com/Z3Q3NXn.png">
-         <small><figcaption align="left">Docker folder heirarchy visualized. <br> The `CECACHEDEV2_DATA` part may be different on your NAS.</figcaption></small></div></br>
+         - This is what your folder heirarchy should show after creating the required folders:
+            ```bash
+            # Docker folder heirarchy
+            /share
+               └── docker
+                  ├── appdata
+                  │   ├── appname
+                  │   └── ...
+                  ├── compose
+                  │   ├── appname
+                  │   └── ...
+                  ├── runtime
+                  ├── scripts
+                  ├── secrets
+                  └── swarm
+                     ├── appname
+                     └── ...
+            ```
+         - Viewed through WinSCP, which shows the volume designation:
+            <div align="left"><img src="https://i.imgur.com/Z3Q3NXn.png">
+            <small><figcaption align="left">The `CECACHEDEV2_DATA` volume tag may be different on your NAS.</figcaption></small></div></br>
 
 1. Next you need to download the `docker helper scripts` from this [QNAP HomeLAB Docker Scripts](https://gitlab.com/qnap-homelab/docker-scripts) repository to your `/share/docker/scripts/` directory.
 
-   - ~~Alternatively, if you trust my installation script to run as root on your system, you can run this `curl` command that will automatically download and install the scripts for you:~~ This feature is not finished, please download and install the scripts manually.
+<div align="center">
+
+   **WARNING:**
+   The automatic install script is not working, please download and install the scripts manually.
+
+</div>
+
+   - ~~Alternatively, if you trust my installation script to run as root on your system, you can run this `curl` command that will automatically download and install the scripts for you:~~
 
    - ***TIP:*** Read through and understand what a script does before executing possibly malicious code on any device.
 
