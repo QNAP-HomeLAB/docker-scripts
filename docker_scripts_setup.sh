@@ -2,11 +2,9 @@
 
 # set variables used in this script
   docker_folder="/opt/docker"
-  docker_secrets="${docker_folder}/secrets"
   docker_scripts="${docker_folder}/scripts"
-  # var_distro="$(uname -r | grep -o '[^-]\+$')"
+  docker_secrets="${docker_folder}/secrets"
   var_distro="$(awk -F'=' '/^ID=/ { gsub("\"","",$2); print tolower($2) } ' /etc/*-release 2> /dev/null)"
-  var_git_link="https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/master"
 
 # script help message check and display when called
   fnc_help(){
@@ -32,9 +30,6 @@
 # script intro message
   fnc_script_intro
 
-# warning to modify UID and GID if "dockeruser" was not the first user created during initiailization
-  # echo -e "${YLW:?} >> WARNING: Modify the UID and GID if 'dockeruser' was not the first user created during initiailization << ${DEF:?}"
-
 # ask user to input `docker_uid` and `docker_gid` with defaults of 1000
   echo -e " If the UID: $(id -u) and GID: $(id -g) are correct for the docker user, enter them below."
   echo -e " Otherwise, check the UID and GID manually with the 'id docker' command."
@@ -53,7 +48,6 @@
     esac
   done;
 
-
 # check for `/opt/docker` folder and link or create if not present
   case ${var_distro} in
     ("qts"|"quts")
@@ -63,8 +57,7 @@
         exit 1;
       fi
       if [ ! -d "${docker_folder}" ] ; then
-        ln -s "/share/docker" "${docker_folder}"
-        chown "${docker_uid:1000}:${docker_gid:1000}" "${docker_folder}"
+        ln -s "/share/docker" "${docker_folder}" && chown "${docker_uid}:${docker_gid}" "${docker_folder}"
       fi
       ;;
     (*)
@@ -73,51 +66,22 @@
           unset var_sudo;
           ;;
         (*)
-          var_sudo="sudo "
+          var_sudo="sudo ";
           ;;
       esac
       if [ ! -d "${docker_folder}" ] ; then
-        "${var_sudo}"install -o "${docker_uid:1000}" -g "${docker_gid:1000}" -m 755 "${docker_folder}"
+        "${var_sudo}"install -o "${docker_uid}" -g "${docker_gid}" -m 755 "${docker_folder}"
       fi
       ;;
   esac
   [ -d "${docker_folder}" ] && "${var_sudo}"chmod g+s "${docker_folder}"
 
-# # check for `.color_codes.conf` file and download if not present
-#   if [ ! -f "${docker_scripts}/.color_codes.conf" ] ; then
-#     # curl -s https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/master/.color_codes.conf -o /share/docker/scripts/.color_codes.conf
-#     "${var_sudo}"wget -O "${docker_scripts}/.color_codes.conf" "${var_git_link}/.color_codes.conf"
-#     "${var_sudo}"chown "${docker_uid:1000}:${docker_uid:1000}" "${docker_scripts}/.color_codes.conf" && "${var_sudo}"chmod 664 "${docker_scripts}/.color_codes.conf"
-#   fi
-# # check for `.vars_docker.conf` file and download if not present
-#   if [ ! -f "${docker_scripts}/.vars_docker.conf" ] ; then
-#     # curl -s https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/master/.vars_docker.conf -o /share/docker/scripts/.vars_docker.conf
-#     "${var_sudo}"wget -O "${docker_scripts}/.vars_docker.conf" "${var_git_link}/.vars_docker.conf"
-#     "${var_sudo}"chown "${docker_uid:1000}:${docker_uid:1000}" "${docker_scripts}/.vars_docker.conf" && "${var_sudo}"chmod 664 "${docker_scripts}/.vars_docker.conf"
-#     sed -i "s/var_usr=1000/var_usr=${docker_uid:1000}/g" /share/docker/scripts/.vars_docker.conf
-#     sed -i "s/var_grp=1000/var_grp=${docker_gid:1000}/g" /share/docker/scripts/.vars_docker.conf
-#   fi
-
-# # external variable sources
-#   source "${docker_scripts}/.color_codes.conf"
-#   source "${docker_scripts}/.vars_docker.conf"
-
 # docker sub-folder creation
-  "${var_sudo}"mkdir -pm 664 "${docker_folder}"/{appdata,compose,scripts,secrets,swarm} && "${var_sudo}"chmod 660 "${docker_secrets}";
+  "${var_sudo}"mkdir -pm 664 "${docker_folder}"/{appdata,compose,scripts,secrets,swarm} && "${var_sudo}"chmod 660 -R "${docker_secrets}";
   "${var_sudo}"wget -O - https://api.github.com/repos/qnap-homelab/docker-scripts/tarball/master | "${var_sudo}"tar -xzf - -C "${docker_scripts}" --strip=1;
-  "${var_sudo}"chown "${docker_uid:1000}":"${docker_uid:1000}" -R "${docker_folder}";
-  "${var_sudo}"sed -i "s/var_usr=1000/var_usr=${docker_uid:1000}/g" "${docker_scripts}"/.vars_docker.conf;
-  "${var_sudo}"sed -i "s/var_grp=1000/var_grp=${docker_gid:1000}/g" "${docker_scripts}"/.vars_docker.conf;
+  "${var_sudo}"chown -R "${docker_uid}":"${docker_uid}" -R "${docker_folder}";
+  "${var_sudo}"sed -i "s/var_usr=1000/var_usr=${docker_uid}/g" "${docker_scripts}"/.vars_docker.conf;
+  "${var_sudo}"sed -i "s/var_grp=1000/var_grp=${docker_gid}/g" "${docker_scripts}"/.vars_docker.conf;
 
-  # "${var_sudo}"mkdir -pm 660 "${docker_folder:/opt/docker}"/{appdata,compose,scripts,secrets,swarm};
-  # "${var_sudo}"chown "${var_usr:1000}":"${var_grp:1000}" -R "${docker_folder:/opt/docker}";
-  # ls "$PWD/dir1" "$PWD/dir2" "$PWD/dir3" >/dev/null 2>&1 && echo All there
-
-  # if [ ! -f "${docker_folder}/scripts" ]; then
-  #   mkdir -pm 600 "${docker_folder}"/{scripts,secrets,swarm/{appdata,configs},compose/{appdata,configs}};
-  #   setfacl -Rdm g:docker:rwx "${docker_folder}";
-  #   chmod -R 600 "${docker_folder}";
-  # fi
-
-# Script completion message
+# script completion message
   fnc_script_outro
