@@ -8,24 +8,24 @@
 
 # script help message check and display when called
   fnc_help(){
-    echo -e "${blu:?}[-> This script installs Docker HomeLab scripts from 'https://www.gitlab.com/qnap-homelab/docker-scripts'. <-]${DEF:?}"
+    echo -e "\e[94m[-> This script installs Docker HomeLab scripts from 'https://www.gitlab.com/qnap-homelab/docker-scripts'. <-]\e[0m"
         echo -e " -"
     echo -e " - SYNTAX: # dsup"
-    echo -e " - SYNTAX: # dsup ${cyn:?}-option${DEF:?}"
+    echo -e " - SYNTAX: # dsup \e[96m-option\e[0m"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn:?}-h │ --help      ${DEF:?}│ Displays this help message."
-    # echo -e " -     ${cyn:?}-o | --overwrite ${DEF:?}│ Does not prompt for overwrite of scripts if they already exist."
+    echo -e " -     \e[96m-h │ --help      \e[0m│ Displays this help message."
+    # echo -e " -     \e[96m-o | --overwrite \e[0m│ Does not prompt for overwrite of scripts if they already exist."
     echo
     exit 1 # Exit script after printing help
     }
   case "$1" in ("-h"|*"help"*) fnc_help ;; esac
 
 # function definitions
-  fnc_script_intro(){ echo -e "${blu:?}[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION ${ylw:?}STARTING${blu:?} <-]${def:?}"; echo; }
-  fnc_script_outro(){ echo -e "${blu:?}[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION ${grn:?}COMPLETE${blu:?} <-]${def:?}"; echo; }
-  fnc_invalid_input(){ echo -e "${YLW:?}INVALID INPUT${DEF:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
-  # fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${DEF:?}"; exit 1; }
-  # fnc_nothing_to_do(){ echo -e " >> ${YLW:?}DOCKER HOMELAB FILES ALREADY EXIST, AND WILL NOT BE OVERWRITTEN${DEF:?} << "; echo; }
+  fnc_script_intro(){ echo -e "\e[94m[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION \e[93mSTARTING\e[94m <-]\e[0m"; echo; }
+  fnc_script_outro(){ echo -e "\e[94m[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION \e[92mCOMPLETE\e[94m <-]\e[0m"; echo; }
+  fnc_invalid_input(){ echo -e "\e[93mINVALID INPUT\e[0m: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
+  # fnc_invalid_syntax(){ echo -e "\e[93m >> INVALID OPTION SYNTAX, USE THE \e[96m-help\e[93m OPTION TO DISPLAY PROPER SYNTAX <<\e[0m"; exit 1; }
+  # fnc_nothing_to_do(){ echo -e " >> \e[93mDOCKER HOMELAB FILES ALREADY EXIST, AND WILL NOT BE OVERWRITTEN\e[0m << "; echo; }
 
 # script intro message
   fnc_script_intro
