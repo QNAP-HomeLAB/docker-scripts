@@ -22,6 +22,8 @@
     echo
     exit 1 # Exit script after printing help
     }
+  case "$1" in ("-h"|*"help"*) fnc_help ;; esac
+
   fnc_script_intro(){ echo -e "${blu}[-> STOPS THEN RESTARTS LISTED CONTAINERS <-]${DEF}"; echo -e "${cyn} -> ${bounce_list[*]} ${DEF}"; echo; }
   fnc_script_outro(){ echo -e "[-- ${GRN}BOUNCE (REMOVE & REDEPLOY) STACK SCRIPT COMPLETE${DEF} --]"; echo; }
   fnc_nothing_to_do(){ echo -e "${YLW} -> no containers exist to bounce${DEF}"; }
@@ -29,28 +31,52 @@
   fnc_list_all(){ IFS=$'\n'; bounce_list=( "$(docker container list --format "{{.Names}}")" ); }
   fnc_list_preset(){ IFS=$'\n'; bounce_list=( "${stacks_preset[@]}" ); }
   fnc_list_default(){ IFS=$'\n'; bounce_list=( "${stacks_default[@]}" ); }
-  fnc_docker_compose_stop(){ sh "${docker_scripts}/docker_compose_stop.sh ${bounce_list[*]}"; }
-  fnc_docker_compose_start(){ sh "${docker_scripts}/docker_compose_start.sh ${bounce_list[*]}"; }
+  fnc_docker_compose_stop(){ bash "${docker_scripts}/docker_compose_stop.sh" "${bounce_list[*]}"; }
+  fnc_docker_compose_start(){ bash "${docker_scripts}/docker_compose_start.sh" "${bounce_list[*]}"; }
 
 # determine script output according to option entered
   case "${1}" in
-    -*)
+    (-*)
       case "${1}" in
-        "-h"|"-help"|"--help") fnc_help ;;
-        "-a"|"--all") fnc_list_all ;;
-        "-p"|"--preset") fnc_list_preset ;;
-        "-d"|"--default") fnc_list_default ;;
-        *) fnc_invalid_syntax ;;
+        ("-a"|"--all") fnc_list_all ;;
+        ("-d"|"--default") fnc_list_default ;;
+        ("-p"|"--preset") fnc_list_preset ;;
+        (*) fnc_invalid_syntax ;;
       esac
       ;;
-    *) bounce_list=("$@") ;;
+    (*)
+      container_list=("$(docker container list --format {{.Names}})")
+      for name in ${!container_list}; do
+
+        # case "${bounce_list[@]}" in
+        #   (*${name}*)
+        #     echo "present"
+        #     ;;
+        #   (*)
+        #     echo "not present"
+        #     ;;
+        # esac
+
+        if [[ " ${bounce_list[*]} " == *"${name}"* ]]; then
+          break
+        fi
+
+      done
+      bounce_list=("${@}")
+      ;;
   esac
 
 # # display script intro
 #   fnc_script_intro
 # remove all stacks in list defined above
   fnc_docker_compose_stop "${bounce_list[*]}"
+  # sh /opt/docker/scripts/.docker_compose_stop.sh "${bounce_list[*]}"
+  # dcd "${bounce_list[*]}"
+
 # (re)deploy all stacks in list defined above
   fnc_docker_compose_start "${bounce_list[*]}"
+  # sh /opt/docker/scripts/.docker_compose_start.sh "${bounce_list[*]}"
+  # dcu "${bounce_list[*]}"
+
 # # display script outro
 #   fnc_script_outro
