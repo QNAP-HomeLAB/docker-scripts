@@ -10,22 +10,22 @@
 
 # function definitions
   fnc_help(){
-    echo -e " - ${blu}[-> This script STARTS 'up' a single Docker container using a pre-written compose file <-]${DEF}"
+    echo -e " - ${blu:?}[-> This script STARTS 'up' a single Docker container using a pre-written compose file <-]${def:?}"
     echo -e " -"
     echo -e " - SYNTAX: # dcu | dcs | dct"
-    echo -e " - SYNTAX: # dcu ${cyn}stack_name${DEF}"
-    echo -e " - SYNTAX: # dcu ${cyn}-option${DEF}"
+    echo -e " - SYNTAX: # dcu ${cyn:?}stack_name${def:?}"
+    echo -e " - SYNTAX: # dcu ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn}-h │ --help ${DEF}| Displays this help message."
-    echo -e " -     ${cyn}-a | --all  ${DEF}| Deploys all stacks with a config file inside the '${YLW}${docker_compose}/${DEF}' path."
-    echo -e " -                         NOTE: config files must follow this naming format: '${cyn}stackname${CYN}-compose.yml${def}'"
+    echo -e " -     ${cyn:?}-h │ --help ${def:?}| Displays this help message."
+    echo -e " -     ${cyn:?}-a | --all  ${def:?}| Deploys all stacks with a config file inside the '${YLW:?}${docker_compose}/${def:?}' path."
+    echo -e " -                         NOTE: config files must follow this naming format: '${cyn:?}stackname${CYN:?}-compose.yml${def:?}'"
     echo
     exit 1 # Exit script after printing help
     }
-  # fnc_script_intro(){ echo -e "${blu}[-  ${grn}STARTING${blu} LISTED DOCKER CONTAINERS  -]${DEF}"; }
-  # fnc_script_outro(){ echo -e "${blu}[-  List of Docker containers ${grn}STARTED${blu} <-]${DEF}"; }
-  # fnc_nothing_to_do(){ echo -e "${YLW} -> no configuration files exist${DEF}"; }
-  # fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE ${cyn}-help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
+  # fnc_script_intro(){ echo -e "${blu:?}[-  ${grn}STARTING${blu:?} LISTED DOCKER CONTAINERS  -]${def:?}"; }
+  # fnc_script_outro(){ echo -e "${blu:?}[-  List of Docker containers ${grn}STARTED${blu:?} <-]${def:?}"; }
+  # fnc_nothing_to_do(){ echo -e "${YLW:?} -> no configuration files exist${def:?}"; }
+  # fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
   # fnc_list_processing(){ bounce_list="$(for stack in "${bounce_list[@]}" ; do echo "$stack" ; done | sort -u)"; }
   # fnc_configs_list_all(){ IFS=$'\n' bounce_list=("$(docker container list --format {{.Names}})"); }
 
@@ -55,7 +55,7 @@
           else IFS=$'\n'; deploy_list=( "${bounce_list[@]}" )
           fi
           ;;
-        (*) echo -e "${YLW} >> INVALID OPTION SYNTAX -- USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1 ;;
+        (*) echo -e "${YLW:?} >> INVALID OPTION SYNTAX -- USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1 ;;
       esac
       ;;
     (*) deploy_list=("$@") ;;
