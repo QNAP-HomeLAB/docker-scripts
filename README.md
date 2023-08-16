@@ -30,7 +30,7 @@ A Debian based Linux distribution with Docker installed via https://get.docker.c
 
 Thanks for checking out this guide. If it ends up being useful for your setup, please consider donating!
 
-<a href="https://ko-fi.com/W7W64AIOZ"><img src="https://ko-fi.com/img/githubbutton_sm.svg"></a>
+<a href="https://ko-fi.com/drauku"><img src="https://ko-fi.com/img/githubbutton_sm.svg"></a>
 
 </div>
 
