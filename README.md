@@ -133,13 +133,13 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
 1. Install the `entware-std` package from the third-party QNAP Club repository appstore. This is necessary in order to set up the shortcuts/aliases used when controlling docker via command line by editing a permanent profile.
 
-   - The preferred way to do this is to add the QNAP Club Repository to the App Center. Follow the [walkthrough instructions here](https://www.qnapclub.eu/en/howto/1).
+   - The preferred way to do this is to add the My QNAP (formerly QNAP Club) Repository to the App Center. Follow the [walkthrough instructions here](https://www.myqnap.org/install-the-repo/).
 
-      Note, I use the English translation of the QNAP Club website, but you may change languages (and urls) in the upper right language dropdown.
+      Note, I use the English translation of the My QNAP website, but you may change languages (and urls) in the upper right language dropdown.
 
    - If you don't need the walkthrough, add the repository.
       For English, go to App Center, Settings, App Repository, paste in
-      `https://www.qnapclub.eu/en/repo.xml`.
+      `https://www.myqnap.org/repo.xml`.
 
    - If you **cannot** add the QNAP Club store to the App Center, you may manually download the qpkg file from that link and use it to manually install via the App Center, "Install Manually" button. This is **not preferred** as QNAP cannot check for and notify you of updates to the package.
 
@@ -147,7 +147,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
       **TIP:** If you have trouble locating the correct package, the description begins with
       `entware-3x and entware-ng merged to become entware.`
-      The working link (as of publication) is here: https://www.qnapclub.eu/en/qpkg/556.
+      The working link (as of publication) is here: https://www.myqnap.org/product/entware-std/
 
    - **IMPORTANT:** ***DO NOT*** install the `entware-ng` or `entware-3x-std` packages. These have merged and been superceded by `entware-std`.
 
