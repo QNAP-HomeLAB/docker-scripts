@@ -9,40 +9,40 @@
 
 # function definitions
   fnc_help(){
-    echo -e "${blu}[-> This script bounces (removes then re-deploys) a single or pre-defined list of Docker Swarm stack <-]${DEF}"
+    echo -e "${blu:?}[-> This script bounces (removes then re-deploys) a single or pre-defined list of Docker Swarm stack <-]${def:?}"
     echo -e " -"
-    echo -e " - SYNTAX: # dsb ${cyn}stack_name${DEF}"
-    echo -e " - SYNTAX: # dsb ${cyn}-option${DEF}"
+    echo -e " - SYNTAX: # dsb ${cyn:?}stack_name${def:?}"
+    echo -e " - SYNTAX: # dsb ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn}-a | --all     ${DEF}│ Bounces all stacks with a corresponding folder inside the '${YLW}${docker_swarm}/${DEF}' path."
-    echo -e " -     ${cyn}-d | --default ${DEF}│ Bounces the 'default' array of stacks defined in '${YLW}${docker_secrets}/${cyn}stackslist-swarm.conf${DEF}'"
-    echo -e " -     ${cyn}-p | --preset  ${DEF}│ Bounces the 'preset' array of stacks defined in '${YLW}${docker_secrets}/${cyn}stackslist-swarm.conf${DEF}'"
-    echo -e " -     ${cyn}-h │ --help    ${DEF}│ Displays this help message."
+    echo -e " -     ${cyn:?}-a | --all     ${def:?}│ Bounces all stacks with a corresponding folder inside the '${YLW:?}${docker_swarm}/${def:?}' path."
+    echo -e " -     ${cyn:?}-d | --default ${def:?}│ Bounces the 'default' array of stacks defined in '${YLW:?}${docker_secrets}/${cyn:?}stackslist-swarm.conf${def:?}'"
+    echo -e " -     ${cyn:?}-p | --preset  ${def:?}│ Bounces the 'preset' array of stacks defined in '${YLW:?}${docker_secrets}/${cyn:?}stackslist-swarm.conf${def:?}'"
+    echo -e " -     ${cyn:?}-h │ --help    ${def:?}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
-  fnc_script_intro(){ echo -e "${blu}[-> STOP THEN RESTART LISTED CONTAINERS <-]${DEF}"; echo -e "${cyn} -> ${bounce_list[@]} ${DEF}"; echo; }
-  fnc_nothing_to_do(){ echo -e "${YLW} -> no containers exist to bounce${DEF}"; }
-  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
+  fnc_script_intro(){ echo -e "${blu:?}[-> STOP THEN RESTART LISTED CONTAINERS <-]${def:?}"; echo -e "${cyn:?} -> ${bounce_list[*]} ${def:?}"; echo; }
+  fnc_nothing_to_do(){ echo -e "${YLW:?} -> no containers exist to bounce${def:?}"; }
+  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
   fnc_list_all(){ IFS=$'\n'; bounce_list=( $(docker stack ls --format {{.Name}}) ); }
   fnc_list_preset(){ IFS=$'\n'; bounce_list=( "${stacks_preset[@]}" ); }
   fnc_list_default(){ IFS=$'\n'; bounce_list=( "${stacks_default[@]}" ); }
   fnc_docker_stack_stop(){ sh ${docker_scripts}/docker_stack_stop.sh "${bounce_list[@]}"; }
   fnc_docker_stack_start(){ sh ${docker_scripts}/docker_stack_start.sh "${bounce_list[@]}"; }
-  fnc_script_outro(){ echo -e "[-- ${GRN}BOUNCE (REMOVE & REDEPLOY) STACK SCRIPT COMPLETE${DEF} --]"; echo; }
+  fnc_script_outro(){ echo -e "[-- ${GRN:?}BOUNCE (REMOVE & REDEPLOY) STACK SCRIPT COMPLETE${def:?} --]"; echo; }
 
 # determine script output according to option entered
   case "${1}" in
-    -*)
+    (-*)
       case "${1}" in
-        "-h"|"-help"|"--help") fnc_help ;;
-        "-a"|"--all") fnc_list_all ;;
-        "-d"|"--default") fnc_list_default ;;
-        "-p"|"--preset") fnc_list_preset ;;
-        *) fnc_invalid_syntax ;;
+        ("-h"|"-help"|"--help") fnc_help ;;
+        ("-a"|"--all") fnc_list_all ;;
+        ("-d"|"--default") fnc_list_default ;;
+        ("-p"|"--preset") fnc_list_preset ;;
+        (*) fnc_invalid_syntax ;;
       esac
     ;;
-    *) bounce_list=("$@") ;;
+    (*) bounce_list=("$@") ;;
   esac
 
 # # display script intro

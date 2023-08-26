@@ -5,25 +5,25 @@
 
 # function definitions
   fnc_help(){
-    echo -e "${blu}[-> This script leaves a Docker Swarm environment and removes a list of stacks on QNAP Container Station architecture. <-]${def}"
+    echo -e "${blu:?}[-> This script leaves a Docker Swarm environment and removes a list of stacks on QNAP Container Station architecture. <-]${def:?}"
     echo -e " -"
     echo -e " - SYNTAX: # dwlv"
-    echo -e " - SYNTAX: # dwlv ${cyn}-option${def}"
+    echo -e " - SYNTAX: # dwlv ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn}-a | --all  ${def}│ ${YLW}CAUTION${DEF}: Removes ${BLD}all${DEF} stacks currently listed with ${cyn}'docker stack ls'${def} command, then laves the Swarm."
-    echo -e " -     ${cyn}-n | --none ${def}│ Leaves the Docker Swarm, but Does ${BLD}*NOT*${DEF} remove any currently deployed stacks."
-    echo -e " -     ${cyn}-h | --help ${def}│ Displays this help message."
+    echo -e " -     ${cyn:?}-a | --all  ${def:?}│ ${YLW:?}CAUTION${def:?}: Removes ${BLD}all${def:?} stacks currently listed with ${cyn:?}'docker stack ls'${def:?} command, then laves the Swarm."
+    echo -e " -     ${cyn:?}-n | --none ${def:?}│ Leaves the Docker Swarm, but Does ${BLD}*NOT*${def:?} remove any currently deployed stacks."
+    echo -e " -     ${cyn:?}-h | --help ${def:?}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
-  fnc_script_intro(){ echo -e "${blu}[-> LEAVING THE DOCKER SWARM AND REMOVING INDICATED STACKS <-]${def}"; }
-  fnc_script_outro(){ echo -e "${GRN}[-> DOCKER SWARM LEAVE SCRIPT COMPLETE <-]${DEF}"; echo; }
-  fnc_nothing_to_do(){ echo -e "${YLW}[-> THIS NODE IS NOT PART OF A SWARM, CANNOT LEAVE NON-EXISTENT SWARM <-]${DEF}"; echo; }
-  fnc_invalid_input(){ echo -e "${YLW}INVALID INPUT${DEF}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
-  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
-  fnc_remove_all_query(){ echo -e " Do you want to remove all Docker Swarm stacks (${YLW}highly recommended${def})? "; }
-  fnc_msg_suggest_cleaning(){ echo -e "${YLW} >> CLEANING THE DOCKER ENVIRONMENT (${cyn}dprn${YLW}/${cyn}dcln${YLW}) AFTER LEAVING A SWARM IS RECOMMENDED <<${DEF}"; echo; }
-  fnc_msg_stack_not_removed(){ echo -e " >> ${YLW}DOCKER SWARM STACKS WILL NOT BE REMOVED${DEF} << "; }
+  fnc_script_intro(){ echo -e "${blu:?}[-> LEAVING THE DOCKER SWARM AND REMOVING INDICATED STACKS <-]${def:?}"; }
+  fnc_script_outro(){ echo -e "${GRN:?}[-> DOCKER SWARM LEAVE SCRIPT COMPLETE <-]${def:?}"; echo; }
+  fnc_nothing_to_do(){ echo -e "${YLW:?}[-> THIS NODE IS NOT PART OF A SWARM, CANNOT LEAVE NON-EXISTENT SWARM <-]${def:?}"; echo; }
+  fnc_invalid_input(){ echo -e "${YLW:?}INVALID INPUT${def:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
+  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
+  fnc_remove_all_query(){ printf " Do you want to remove all Docker Swarm stacks (${YLW:?}highly recommended${def:?})? "; }
+  fnc_msg_suggest_cleaning(){ echo -e "${YLW:?} >> CLEANING THE DOCKER ENVIRONMENT (${cyn:?}dprn${YLW:?}/${cyn:?}dcln${YLW:?}) AFTER LEAVING A SWARM IS RECOMMENDED <<${def:?}"; echo; }
+  fnc_msg_stack_not_removed(){ echo -e " >> ${YLW:?}DOCKER SWARM STACKS WILL NOT BE REMOVED${def:?} << "; }
   fnc_swarm_check(){ if [[ "$(docker swarm leave -f)" == "Error response from daemon: This node is not part of a swarm" ]]; then fnc_nothing_to_do; exit 1; fi; }
   fnc_swarm_leave_force(){ docker swarm leave -f; echo; }
   fnc_docker_stack_stop(){ sh ${docker_scripts}/docker_stack_stop.sh -all; }
@@ -32,7 +32,7 @@
 
 # determine script output according to option entered
   case "${1}" in
-    "") # fnc_script_intro
+    ("") # fnc_script_intro
       # fnc_swarm_check
       fnc_remove_all_query
       while read -r -p " [(Y)es/(N)o] " input; do
@@ -44,7 +44,7 @@
       done
       echo
       ;;
-    -*) # confirm entered option is valid
+    (-*) # confirm entered option is valid
       case "${1}" in
         ("-h"|"-help"|"--help") fnc_help ;;
         ("-a"|"--all") input="yes" ;;
@@ -56,8 +56,8 @@
 
 # Remove stacks if input is Yes
     case $input in
-      [yY][eE][sS]|[yY]) fnc_docker_stack_stop ;;
-      [nN][oO]|[nN]) fnc_msg_stack_not_removed ;;
+      ([yY][eE][sS]|[yY]) fnc_docker_stack_stop ;;
+      ([nN][oO]|[nN]) fnc_msg_stack_not_removed ;;
     esac
 
 # Leave the swarm
