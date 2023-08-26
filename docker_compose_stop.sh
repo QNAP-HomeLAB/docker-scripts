@@ -4,6 +4,7 @@
   source /opt/docker/scripts/.vars_docker.conf
 
 # script variable definitions
+  unset remove_list IFS
   conftype="-compose"
 
 # function definitions
@@ -19,28 +20,46 @@
     echo
     exit 1 # Exit script after printing help
     }
-  fnc_script_intro(){ echo -e "${blu:?}[-  STOPPING LISTED DOCKER CONTAINERS  -]${def:?}"; }
-  fnc_script_outro(){ echo -e "${blu:?}[-  LISTED DOCKER CONTAINERS ${red}STOPPED${blu:?}  -]${def:?}"; }
+  case "$1" in ("-h"|*"help"*) fnc_help ;; esac
+
+  fnc_script_intro(){ echo -e "${blu:?}[-  ${RED:?}STOPPING${blu:?} LISTED DOCKER CONTAINERS  -]${def:?}"; }
+  fnc_script_outro(){ echo -e "${blu:?}[-  LISTED DOCKER CONTAINERS ${RED:?}STOPPED${blu:?}  -]${def:?}"; }
   fnc_nothing_to_do(){ echo -e "${YLW:?} -> no configuration files exist${def:?}"; }
-  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
-  fnc_list_processing(){ remove_list="$(for stack in "${remove_list[@]}" ; do echo "$stack" ; done | sort -u)"; }
-  fnc_configs_list_all(){ IFS=$'\n' remove_list=("$(docker container list --format {{.Names}})"); }
+  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
+  fnc_configs_list_all(){
+    IFS=$'\n' remove_list=("$(docker container list --format {{.Names}})");
+    # this function needs to check if the listed container has a corresponding compose file in the $docker_compose directory
+    }
+  fnc_list_processing(){ IFS=$'\n' remove_list=( "$(for stack in "${remove_list[@]}" ; do echo "$stack" ; done | sort -u)" ); }
   fnc_docker_compose_down(){ docker compose -f "${docker_compose}/${remove_list[stack]}/${remove_list[stack]}${conftype}.yml" down; }
   fnc_docker_compose_stop(){ docker compose -f "${docker_compose}/${remove_list[stack]}/${remove_list[stack]}${conftype}.yml" stop; }
   fnc_env_file_remove(){ [ -f "${docker_compose}/${stack}/.env" ] && rm -f "${docker_compose}/${stack}/.env"; }
 
 # option logic action determination
   case "${1}" in
-    ("") fnc_nothing_to_do ;;
+    ("")
+      fnc_nothing_to_do
+      ;;
     (-*) # validate entered option exists
       case "${1}" in
-        ("-h"|"-help"|"--help") fnc_help ;;
-        ("-a"|"--all") fnc_configs_list_all ;;
-        ("-r"|"--") fnc_configs_list_all ;;
-        (*) fnc_invalid_syntax ;;
+        ("-a"|"--all")
+          fnc_configs_list_all
+          ;;
+        ("-r"|"--")
+          fnc_configs_list_all
+          ;;
+        ("-l"|"--list")
+          fnc_configs_list_all
+          echo "${remove_list[@]}"
+          ;;
+        (*)
+          fnc_invalid_syntax
+          ;;
       esac
       ;;
-    (*) remove_list=("$@") ;;
+    (*)
+      IFS=' ' remove_list=("$@")
+      ;;
   esac
 
 # Perform scripted action(s)
