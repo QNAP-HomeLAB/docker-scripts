@@ -1,31 +1,32 @@
 #!/bin/bash
-
+# shellcheck source=K:\docker\scripts\.vars_scripts.conf
+# shellcheck source-path=K:\docker\scripts\
 # external variable sources
   source /opt/docker/scripts/.color_codes.conf
   source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
-    echo -e "${blu}[-> This script lists current '${cyn}stacknames${blu}' and the number of '${CYN}services${blu}' in that stack <-]${def} "
-    echo -e "${blu} ->   It will also list services inside a '${cyn}stacknames${blu}' when passing one of the below options <-]${def} "
+    echo -e "${blu:?}[-> This script lists current '${cyn:?}stacknames${blu:?}' and the number of '${CYN:?}services${blu:?}' in that stack <-]${def:?} "
+    echo -e "${blu:?} ->   It will also list services inside a '${cyn:?}stacknames${blu:?}' when passing one of the below options <-]${def:?} "
     echo -e " -"
-    echo -e " - SYNTAX: # dls ${cyn}stackname${def} │ this is the same as with '-sv' option"
-    echo -e " - SYNTAX: # dls ${cyn}stackname${def} ${cyn}-option${DEF}"
+    echo -e " - SYNTAX: # dls ${cyn:?}stackname${def:?} │ this is the same as with '-sv' option"
+    echo -e " - SYNTAX: # dls ${cyn:?}stackname${def:?} ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTION(S):"
-    echo -e " -     ${cyn}-e | --errors${def}   │ Displays '${CYN}docker stack ps --no-trunc ${cyn}stackname${def}' output with non-truncated entries and select columns."
-    echo -e " -     ${cyn}-s | --services${def} │ Displays '${CYN}docker stack services ${cyn}stackname${def}' output with custom selected columns."
+    echo -e " -     ${cyn:?}-e | --errors${def:?}   │ Displays '${CYN:?}docker stack ps --no-trunc ${cyn:?}stackname${def:?}' output with non-truncated entries and select columns."
+    echo -e " -     ${cyn:?}-s | --services${def:?} │ Displays '${CYN:?}docker stack services ${cyn:?}stackname${def:?}' output with custom selected columns."
     echo -e " -"
-    echo -e " - SYNTAX: # dls ${cyn}-option${DEF}"
+    echo -e " - SYNTAX: # dls ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTION(S):"
-    echo -e " -     ${cyn}-h | --help${def} │ Displays this help message."
+    echo -e " -     ${cyn:?}-h | --help${def:?} │ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
-  fnc_script_intro(){ echo -e "${blu}[-> LIST OF CURRENT DOCKER SWARM STACKS <-]${DEF} "; }
-  fnc_script_error(){ echo -e "${blu}[-> LIST OF DOCKER SWARM STACK ${red}ERRORS${blu} <-]${DEF} "; }
-  fnc_nothing_to_do(){ echo -e "${YLW} -> no current docker swarm stacks exist${DEF}"; }
-  fnc_not_swarm_node(){ echo -e "${YLW} -> this docker node is not a swarm manager ${DEF}"; }
-  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE '${cyn}--help${YLW}' OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; }
+  fnc_script_intro(){ echo -e "${blu:?}[-> LIST OF CURRENT DOCKER SWARM STACKS <-]${def:?} "; }
+  fnc_script_error(){ echo -e "${blu:?}[-> LIST OF DOCKER SWARM STACK ${RED:?}ERRORS${blu:?} <-]${def:?} "; }
+  fnc_nothing_to_do(){ echo -e "${YLW:?} -> no current docker swarm stacks exist${def:?}"; }
+  fnc_not_swarm_node(){ echo -e "${YLW:?} -> this docker node is not a swarm manager ${def:?}"; }
+  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE '${cyn:?}--help${YLW:?}' OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
   fnc_stack_lst(){ docker stack ls; }
   fnc_stack_svc(){ docker stack services "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Image}}\t{{.Ports}}"; }
   fnc_stack_err(){ docker stack ps --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}" "${1}"; }

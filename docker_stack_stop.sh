@@ -9,31 +9,31 @@
 
 # function definitions
   fnc_help(){
-    echo -e "${blu}[-> This script removes a single or pre-defined list of Docker Swarm stack(s) <-]${DEF}"
+    echo -e "${blu:?}[-> This script removes a single or pre-defined list of Docker Swarm stack(s) <-]${def:?}"
     echo -e " -"
-    echo -e " - SYNTAX: # dsr ${cyn}stack_name${DEF}"
-    echo -e " - SYNTAX: # dsr ${cyn}-option${DEF}"
+    echo -e " - SYNTAX: # dsr ${cyn:?}stack_name${def:?}"
+    echo -e " - SYNTAX: # dsr ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn}-a | --all     ${DEF}│ ${YLW}CAUTION${DEF}: Removes ${BLD}all${DEF} stacks currently listed with 'docker stack ls' command."
-    echo -e " -     ${cyn}-d | --default ${DEF}│ Removes the '${cyn}default${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e " -     ${cyn}-p | --preset  ${DEF}│ Removes the '${cyn}preset${DEF}' array of stacks defined in '${YLW}${docker_vars}/${cyn}swarm_stacks.conf${DEF}'"
-    echo -e " -     ${cyn}-h │ --help    ${DEF}│ Displays this help message."
+    echo -e " -     ${cyn:?}-a | --all     ${def:?}│ ${YLW:?}CAUTION${def:?}: Removes ${BLD}all${def:?} stacks currently listed with 'docker stack ls' command."
+    echo -e " -     ${cyn:?}-d | --default ${def:?}│ Removes the '${cyn:?}default${def:?}' array of stacks defined in '${YLW:?}${docker_vars}/${cyn:?}swarm_stacks.conf${def:?}'"
+    echo -e " -     ${cyn:?}-p | --preset  ${def:?}│ Removes the '${cyn:?}preset${def:?}' array of stacks defined in '${YLW:?}${docker_vars}/${cyn:?}swarm_stacks.conf${def:?}'"
+    echo -e " -     ${cyn:?}-h │ --help    ${def:?}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
-  fnc_script_intro(){ echo -e "${blu}[-> REMOVE THE INDICATED DOCKER STACK(S) <-]${def}"; }
-  fnc_script_outro(){ echo -e "${GRN}[>> STACK REMOVE SCRIPT COMPLETE <<]${DEF}"; echo; }
-  fnc_nothing_to_do(){ echo -e "${YLW} -> between 1 and 9 names must be entered for this command to work${DEF}"; exit 1; }
-  fnc_invalid_syntax(){ echo -e "${YLW} >> INVALID OPTION SYNTAX, USE THE -${cyn}help${YLW} OPTION TO DISPLAY PROPER SYNTAX <<${DEF}"; exit 1; }
+  fnc_script_intro(){ echo -e "${blu:?}[-> REMOVE THE INDICATED DOCKER STACK(S) <-]${def:?}"; }
+  fnc_script_outro(){ echo -e "${GRN:?}[>> STACK REMOVE SCRIPT COMPLETE <<]${def:?}"; echo; }
+  fnc_nothing_to_do(){ echo -e "${YLW:?} -> between 1 and 9 names must be entered for this command to work${def:?}"; exit 1; }
+  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
 
   # fnc_stack_remove_list(){ ; }
 
   fnc_docker_service_list(){ docker service ls --filter label=com.docker.stack.namespace=$stack -q; }
   fnc_docker_network_list(){ docker network ls --filter label=com.docker.stack.namespace=$stack -q; }
 
-  fnc_msg_no_stacks(){ echo -e "${YLW} -> no docker stacks to remove${DEF}"; echo; }
-  fnc_stack_remove_error(){ echo -e " ${red}ERROR: ${YLW}STACK NAME${DEF} '${cyn}$stack${DEF}' ${YLW}NOT FOUND${DEF} "; echo; }
-  fnc_stack_remove_success(){ echo -e "${RED} -- '${cyn}$stack${RED}' STACK ${red}REMOVED${RED} -- ${DEF}"; echo; }
+  fnc_msg_no_stacks(){ echo -e "${YLW:?} -> no docker stacks to remove${def:?}"; echo; }
+  fnc_stack_remove_error(){ echo -e " ${RED:?}ERROR: ${YLW:?}STACK NAME${def:?} '${cyn:?}$stack${def:?}' ${YLW:?}NOT FOUND${def:?} "; echo; }
+  fnc_stack_remove_success(){ echo -e "${RED:?} -- '${cyn:?}$stack${RED:?}' STACK ${RED:?}REMOVED${RED:?} -- ${def:?}"; echo; }
 
 # determine script output according to option entered
   case "${1}" in
@@ -50,7 +50,7 @@
   esac
 
 # Remove indicated stacks
-  # echo -e "${blu}[-> REMOVING LISTED STACK(S) <-]${def}"
+  # echo -e "${blu:?}[-> REMOVING LISTED STACK(S) <-]${def:?}"
   # de-duplicate and remove carriage returns in remove_list entries
   remove_list=(`for stack in "${remove_list[@]}"; do echo "${stack}"; done | sort -u`)
   # echo " -> ${remove_list[@]}"; echo
@@ -62,7 +62,7 @@
     for stack in "${remove_list[@]}"; do
       if [ ! "$(fnc_docker_service_list)" ];
       then fnc_stack_remove_error
-      else # echo -e "${CYN} -> REMOVE '${cyn}$stack${CYN}' STACK <-${DEF}"
+      else # echo -e "${CYN:?} -> REMOVE '${cyn:?}$stack${CYN:?}' STACK <-${def:?}"
         docker stack rm "$stack"
         #[ -f "${docker_swarm}/${stack}/.env" ] && rm -f "${docker_swarm}/${stack}/.env"
         # Pause until stack is removed
