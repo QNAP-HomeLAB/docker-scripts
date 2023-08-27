@@ -404,9 +404,9 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
      - `var_nas_ip` - this is the Local Area Network IP address of your QNAP
 
-     - `var_usr` - userid from command `id dockeruser`
+     - `var_uid` - userid from command `id dockeruser`
 
-     - `var_grp` - groupid from command `id dockeruser`
+     - `var_gid` - groupid from command `id dockeruser`
 
      - `var_tz` - time zone in standard `Region/City` format
 

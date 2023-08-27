@@ -1,10 +1,4 @@
-#!/bin/sh
-
-# shellcheck source=/dev/null
-# Suggest ${VAR} in place of $VAR
-# shellcheck enable=require-variable-braces
-# disable POSIX compatibility checks
-# shellcheck disable=SC3000-SC4000
+#!/bin/bash
 
 ## Folder heirarchy for Drauku's folder structure, modified from gkoerk's famously awesome folder structure for stacks.
   export docker_folder="/opt/docker"
@@ -53,8 +47,7 @@
   fnc_docker_commands(){ sh "${docker_scripts}/docker_commands_list.sh" "${@}"; }
   alias dcmd="fnc_docker_commands -c"
   alias dlist="fnc_docker_commands";
-  alias dscripts="fnc_docker_commands -c";
-  # alias dscripts='. /opt/docker/scripts/docker_commands_list.sh -c'
+  # alias dscripts='source /opt/docker/scripts/docker_commands_list.sh --create'
 
 ## docker script definitions
   # filename="/opt/docker/scripts/docker_commands_list.sh"
@@ -141,33 +134,8 @@
     alias dkt='docker stats --format "table {{.Name}}\t{{.CPUPerc}}  {{.MemPerc}}\t{{.MemUsage}}\t{{.NetIO}}"'
     alias dkps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
     alias dkc='docker compose'
-
     # alias dkm='docker-machine'
     # alias dkmssh='docker-machine ssh'
-
-    # alias jump="cd ../../${PWD##*/}"
-
-    # # docker_folders_create -- creates the folder structure required for each listed docker container
-    # dkfolders(){ sh "${docker_scripts}/docker_folders_create.sh" "${@}"; }
-    # alias dcf="dkfolders -c";
-    # alias dsf="dkfolders -w";
-    # alias dwf="dkfolders -w";
-    # # alias dcf='dkfolders -c "$1"';
-    # # alias dsf='dkfolders -w "$1"';
-    # # alias dwf='dkfolders -w "$1"';
-
-    # dcappdata(){ cd "${docker_appdata}/${1}" || return; }
-    # alias dcappd='dcappdata'
-    # dcconfigs(){ cd "${docker_compose}/${1}" || return; }
-    # alias dcconf='dcconfigs'
-    # dwappdata(){ cd "${docker_appdata}/${1}" || return; }
-    # alias dwappd='dwappdata'
-    # dwconfigs(){ cd "${docker_swarm}/${1}" || return; }
-    # alias dwconf='dwconfigs'
-
-    # # docker_commands_list -- lists the below custom docker commands
-    # dlist(){ sh "${docker_scripts}/docker_commands_list.sh" "${@}"; }
-    # alias dcmd="dlist";
 
     docker_version(){ docker --version && docker compose version; }
     alias dkcv="docker_version"
@@ -217,6 +185,15 @@
     # docker_compose_networks -- creates required networks for docker compose container manipulation via scripts
     docker_compose_networks(){ sh "${docker_scripts}/docker_compose_networks.sh"; }
     alias dcn="docker_compose_networks";
+
+    # # docker_folders_create -- creates the folder structure required for each listed docker container
+    # dkfolders(){ sh "${docker_scripts}/docker_folders_create.sh" "${@}"; }
+    # alias dcf="dkfolders -c";
+    # alias dsf="dkfolders -w";
+    # alias dwf="dkfolders -w";
+    # # alias dcf='dkfolders -c "$1"';
+    # # alias dsf='dkfolders -w "$1"';
+    # # alias dwf='dkfolders -w "$1"';
 
     # docker_list_configs -- lists existing stack config files for either swarm or compose filepaths
     docker_list_configs(){ sh "${docker_scripts}/docker_list_configs.sh" "${1}"; }

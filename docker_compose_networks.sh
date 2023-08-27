@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
-  source /opt/docker/scripts/.script_vars.env
-  # source /opt/docker/.vars_docker.conf
+  source /opt/docker/scripts/.color_codes.conf
+  source /opt/docker/scripts/.vars_docker.conf
 
 # function definitions
   fnc_help(){
@@ -11,7 +11,7 @@
     echo -e " -   SYNTAX: dnc ${cyn:?}-option${def:?}"
     echo -e " -     VALID OPTIONS:"
     echo -e " -       ${cyn:?}-c │ --create ${def:?}│ ${grn:?}Creates${def:?} the ${blu:?}{netproxy,netsocket}${def:?} docker networks"
-    echo -e " -       ${cyn:?}-d │ --delete ${def:?}│ ${RED:?}Deletes${def:?} the ${blu:?}{netproxy,netsocket}${def:?} docker networks"
+    echo -e " -       ${cyn:?}-d │ --delete ${def:?}│ ${red:?}Deletes${def:?} the ${blu:?}{netproxy,netsocket}${def:?} docker networks"
   }
   fnc_script_intro(){ echo -e "${blu:?}[-  CREATE DOCKER NETWORKS REQUIRED FOR USE WITH DOCKER SOCKET AND A REVERSE PROXY  -]${def:?}"; }
   fnc_script_outro(){ echo -e "${GRN:?} -  DOCKER NETWORKS '${var_net_rproxy} & ${var_net_socket}' CREATED${def:?}"; echo; exit 1; }

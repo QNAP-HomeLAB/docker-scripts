@@ -21,7 +21,7 @@
   fnc_nothing_to_do(){ echo -e "${YLW:?}[-> THIS NODE IS NOT PART OF A SWARM, CANNOT LEAVE NON-EXISTENT SWARM <-]${def:?}"; echo; }
   fnc_invalid_input(){ echo -e "${YLW:?}INVALID INPUT${def:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
-  fnc_remove_all_query(){ printf " Do you want to remove all Docker Swarm stacks (${YLW:?}highly recommended${def:?})? "; }
+  fnc_remove_all_query(){ echo -e " Do you want to remove all Docker Swarm stacks (${YLW:?}highly recommended${def:?})? "; }
   fnc_msg_suggest_cleaning(){ echo -e "${YLW:?} >> CLEANING THE DOCKER ENVIRONMENT (${cyn:?}dprn${YLW:?}/${cyn:?}dcln${YLW:?}) AFTER LEAVING A SWARM IS RECOMMENDED <<${def:?}"; echo; }
   fnc_msg_stack_not_removed(){ echo -e " >> ${YLW:?}DOCKER SWARM STACKS WILL NOT BE REMOVED${def:?} << "; }
   fnc_swarm_check(){ if [[ "$(docker swarm leave -f)" == "Error response from daemon: This node is not part of a swarm" ]]; then fnc_nothing_to_do; exit 1; fi; }

@@ -1,6 +1,5 @@
 #!/bin/bash
-# shellcheck source=K:\docker\scripts\.vars_scripts.conf
-# shellcheck source-path=K:\docker\scripts\
+
 # external variable sources
   source /opt/docker/scripts/.color_codes.conf
   source /opt/docker/scripts/.vars_docker.conf
@@ -23,7 +22,7 @@
     exit 1 # Exit script after printing help
     }
   fnc_script_intro(){ echo -e "${blu:?}[-> LIST OF CURRENT DOCKER SWARM STACKS <-]${def:?} "; }
-  fnc_script_error(){ echo -e "${blu:?}[-> LIST OF DOCKER SWARM STACK ${RED:?}ERRORS${blu:?} <-]${def:?} "; }
+  fnc_script_error(){ echo -e "${blu:?}[-> LIST OF DOCKER SWARM STACK ${red:?}ERRORS${blu:?} <-]${def:?} "; }
   fnc_nothing_to_do(){ echo -e "${YLW:?} -> no current docker swarm stacks exist${def:?}"; }
   fnc_not_swarm_node(){ echo -e "${YLW:?} -> this docker node is not a swarm manager ${def:?}"; }
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE '${cyn:?}--help${YLW:?}' OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
