@@ -26,9 +26,9 @@
   fnc_invalid_input(){ echo -e "${YLW:?}INVALID INPUT${def:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
   fnc_nothing_to_do(){ echo -e " >> ${YLW:?}SWARM STACKS WILL NOT BE DEPLOYED${def:?} << "; echo; }
-  fnc_deploy_query(){ printf "Do you want to deploy the '-${cyn:?}default${def:?}' list of Docker Swarm stacks?"; }
+  fnc_deploy_query(){ echo -e "Do you want to deploy the '-${cyn:?}default${def:?}' list of Docker Swarm stacks?"; }
   fnc_deploy_stack(){ if [ ! "${deploy_list}" ] || [ "${deploy_list}" = "-n" ]; then fnc_nothing_to_do; else sh "${docker_scripts}"/docker_stack_start.sh "${deploy_list}"; fi; }
-  fnc_traefik_query(){ printf " - Should ${cyn:?}traefik${def:?} still be installed (${YLW:?}recommended${def:?})?"; }
+  fnc_traefik_query(){ echo -e " - Should ${cyn:?}traefik${def:?} still be installed (${YLW:?}recommended${def:?})?"; }
   fnc_folder_creation(){ if [[ ! -d "${docker_folder}/{scripts,secrets,swarm,compose}" ]]; then mkdir -pm 600 "${docker_folder}"/{scripts,secrets,swarm/{appdata,configs},compose/{appdata,configs}}; fi; }
   fnc_folder_owner(){ chown -R ${var_user}:${var_group} ${swarm_folder}; echo "FOLDER OWNERSHIP UPDATED"; echo; }
   fnc_folder_auth(){ chmod -R 600 ${swarm_folder}; echo "FOLDER PERMISSIONS UPDATED"; echo; }
@@ -54,7 +54,7 @@
 # docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.1.0.0/16 --attachable reverse_proxy
 # docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.2.0.0/16 --attachable external_edge
   fnc_network_init(){
-    docker network rm ingress && docker network create --driver overlay --opt encrypted --ingress --subnet 10.10.0.0/16 ingress;
+    docker network rm ingress && docker network create --driver overlay --opt encrypted --ingress --subnet "10.10.0.0/16" ingress;
     docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_socket}" --attachable "${var_net_socket}";
     docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_rproxy}" --attachable "${var_net_rproxy}";
     docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_exedge}" --attachable "${var_net_exedge}";
