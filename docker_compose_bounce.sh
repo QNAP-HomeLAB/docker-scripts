@@ -9,23 +9,23 @@
   unset bounce_list IFS
 
 # function definitions
-  fnc_help(){
+  fnc_help_compose_bounce(){
     echo -e "${blu:?}[-> This script bounces (removes then re-deploys) a single or pre-defined list of Docker Swarm stack <-]${def:?}"
     echo -e " -"
     echo -e " - SYNTAX: # dsb ${cyn:?}stack_name${def:?}"
     echo -e " - SYNTAX: # dsb ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTIONS:"
     echo -e " -     ${cyn:?}-a | --all     ${def:?}│ Bounces all containers with a corresponding folder inside the '${YLW:?}${docker_compose}/${def:?}' path."
-    echo -e " -     ${cyn:?}-p | --preset  ${def:?}│ Bounces the 'preset' array of containers defined in '${YLW:?}${docker_vars}/${cyn:?}compose_stacks.conf${def:?}'"
-    echo -e " -     ${cyn:?}-d | --default ${def:?}│ Bounces the 'default' array of containers defined in '${YLW:?}${docker_vars}/${cyn:?}compose_stacks.conf${def:?}'"
+    echo -e " -     ${cyn:?}-p | --preset  ${def:?}│ Bounces the 'preset' array of containers defined in '${YLW:?}${docker_vars}/${cyn:?}compose_stacks.env${def:?}'"
+    echo -e " -     ${cyn:?}-d | --default ${def:?}│ Bounces the 'default' array of containers defined in '${YLW:?}${docker_vars}/${cyn:?}compose_stacks.env${def:?}'"
     echo -e " -     ${cyn:?}-h │ --help    ${def:?}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
-  case "$1" in ("-h"|*"help"*) fnc_help ;; esac
+  case "$1" in ("-h"|*"help"*) fnc_help_compose_bounce ;; esac
 
-  fnc_script_intro(){ echo -e "${blu:?}[-> STOPS THEN RESTARTS LISTED CONTAINERS <-]${def:?}"; echo -e "${cyn:?} -> ${bounce_list[*]} ${def:?}"; echo; }
-  fnc_script_outro(){ echo -e "[-- ${GRN:?}BOUNCE (REMOVE & REDEPLOY) STACK SCRIPT COMPLETE${def:?} --]"; echo; }
+  fnc_intro_compose_bounce(){ echo -e "${blu:?}[-> STOPS THEN RESTARTS LISTED CONTAINERS <-]${def:?}"; echo -e "${cyn:?} -> ${bounce_list[*]} ${def:?}"; echo; }
+  fnc_outro_compose_bounce(){ echo -e "[-- ${GRN:?}BOUNCE (REMOVE & REDEPLOY) STACK SCRIPT COMPLETE${def:?} --]"; echo; }
   fnc_nothing_to_do(){ echo -e "${YLW:?} -> no containers exist to bounce${def:?}"; }
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
   fnc_list_all(){ IFS=$'\n'; bounce_list=( "$(docker container list --format "{{.Names}}")" ); }
@@ -45,38 +45,32 @@
       esac
       ;;
     (*)
-      container_list=("$(docker container list --format {{.Names}})")
-      for name in ${!container_list}; do
+      # container_list=("$(docker container list --format {{.Names}})")
+      # for name in ${!container_list}; do
 
-        # case "${bounce_list[@]}" in
-        #   (*${name}*)
-        #     echo "present"
-        #     ;;
-        #   (*)
-        #     echo "not present"
-        #     ;;
-        # esac
+      #   # case "${bounce_list[@]}" in
+      #   #   (*${name}*)
+      #   #     echo "present"
+      #   #     ;;
+      #   #   (*)
+      #   #     echo "not present"
+      #   #     ;;
+      #   # esac
 
-        if [[ " ${bounce_list[*]} " == *"${name}"* ]]; then
-          break
-        fi
+      #   if [[ " ${bounce_list[*]} " == *"${name}"* ]]; then
+      #     break
+      #   fi
 
-      done
-      bounce_list=("${@}")
+      # done
+      bounce_list=("$@")
       ;;
   esac
 
 # # display script intro
-#   fnc_script_intro
+#   fnc_intro_compose_bounce
 # remove all stacks in list defined above
   fnc_docker_compose_stop "${bounce_list[*]}"
-  # . /opt/docker/scripts/.docker_compose_stop.sh "${bounce_list[*]}"
-  # dcd "${bounce_list[*]}"
-
 # (re)deploy all stacks in list defined above
   fnc_docker_compose_start "${bounce_list[*]}"
-  # . /opt/docker/scripts/.docker_compose_start.sh "${bounce_list[*]}"
-  # dcu "${bounce_list[*]}"
-
 # # display script outro
-#   fnc_script_outro
+#   fnc_outro_compose_bounce
