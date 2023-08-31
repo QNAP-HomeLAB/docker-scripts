@@ -100,6 +100,12 @@
         fnc_create_directories
         # create symlink from docker_folder to /share/docker for qnap nas only
         [[ -d "${docker_folder}" ]] && ln -s "/share/docker" "${docker_folder}"
+        # check if /opt/etc/profile automatically loads docker scripts
+        source="/opt/docker/scripts/docker_commands_list.sh";
+        line="[ -f ${source} ] && . ${source}";
+        file="/opt/etc/profile";
+        grep -qxF "${line}" "${file}" || echo "${line}" >> "${file}";
+        # ln -s "${file}" "${docker_scripts}"/.profile
         ;;
       (*)
         case $(id -un) in
@@ -110,9 +116,19 @@
             var_sudo="sudo "
             ;;
         esac
+
         fnc_create_directories
         ;;
     esac
+    # check if ~/.bashrc automatically loads docker scripts
+    source="/opt/docker/scripts/docker_commands_list.sh";
+    line="[ -f ${source} ] && . ${source}";
+    file="$HOME/.bashrc";
+    grep -sqxF "${line}" "${file}" || echo "${line}" >> "${file}";
+    # create /opt/docker if not present
+    if [ ! -d "${docker_folder}" ] ; then
+      "${var_sudo}"install -o "${docker_uid}" -g "${docker_gid}" -m 755 "${docker_folder}";
+    fi
     # create symlink from $HOME/docker to docker_folder
     if [[ -d "${docker_folder}" ]]; then ln -s "${docker_folder}" "$HOME/docker"; fi
     }
