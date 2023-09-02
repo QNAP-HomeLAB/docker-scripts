@@ -249,7 +249,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
       `/share/docker/scripts`
          - Docker helper scripts for convenient container management are stored here.
-         - Read and update the `.vars_docker.conf` file with your configuration info.
+         - Read and update the `.vars_docker.env` file with your configuration info.
          - These scripts are why folder paths and compose files have strict naming requirements.
 
       `/share/docker/secrets`
@@ -394,9 +394,9 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
 1. The Docker helper scripts require several environment variable to be properly configured.
 
-   - The `.vars_docker.conf` file has variables used by both Swarm and Compose containers.
+   - The `.vars_docker.env` file has variables used by both Swarm and Compose containers.
 
-   - Ensure this file is located here: `/share/docker/scripts/.vars_docker.conf`
+   - Ensure this file is located here: `/share/docker/scripts/.vars_docker.env`
 
    - Read through this file, and fill in ***YOUR* NETWORK, NAS, OR PERSONAL INFORMATION**.
 

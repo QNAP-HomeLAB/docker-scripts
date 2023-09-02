@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /opt/docker/scripts/.color_codes.conf
-  source /opt/docker/scripts/.vars_docker.conf
+  source /opt/docker/scripts/.vars_docker.env
 
 # sudo install -o 1000 -g 1000 -m 774 -d /share/docker/{appdata,compose}/dozzle
 # sudo install -o 1000 -g 1000 -m 774 /dev/null /share/docker/compose/dozzle/compose.yml

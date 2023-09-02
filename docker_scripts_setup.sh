@@ -68,8 +68,8 @@
   fnc_download_scripts(){
     "${var_sudo}"wget -O - https://api.github.com/repos/qnap-homelab/docker-scripts/tarball/master | "${var_sudo}"tar -xzf - -C "${docker_scripts}" --strip=1;
     "${var_sudo}"chown -R "${docker_uid}":"${docker_uid}" -R "${docker_scripts}";
-    "${var_sudo}"sed -i "s/var_uid=1000/var_uid=${docker_uid}/g" "${docker_scripts}"/.vars_docker.conf;
-    "${var_sudo}"sed -i "s/var_gid=1000/var_gid=${docker_gid}/g" "${docker_scripts}"/.vars_docker.conf;
+    "${var_sudo}"sed -i "s/var_uid=1000/var_uid=${docker_uid}/g" "${docker_scripts}"/.vars_docker.env;
+    "${var_sudo}"sed -i "s/var_gid=1000/var_gid=${docker_gid}/g" "${docker_scripts}"/.vars_docker.env;
     }
 
   fnc_distro_specific_tasks(){
