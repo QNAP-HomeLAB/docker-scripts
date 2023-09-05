@@ -31,8 +31,8 @@
   fnc_list_all(){ IFS=$'\n'; bounce_list=( "$(docker container list --format "{{.Names}}")" ); }
   fnc_list_default(){ IFS=$'\n'; bounce_list=( "${stacks_default[@]}" ); }
   fnc_list_preset(){ IFS=$'\n'; bounce_list=( "${stacks_preset[@]}" ); }
-  fnc_docker_compose_stop(){ bash "${docker_scripts}/docker_compose_stop.sh" "${bounce_list[*]}"; }
-  fnc_docker_compose_start(){ bash "${docker_scripts}/docker_compose_start.sh" "${bounce_list[*]}"; }
+  fnc_docker_compose_stop(){ bash "${docker_scripts}/docker_compose_stop.sh" "${bounce_list[@]}"; }
+  fnc_docker_compose_start(){ bash "${docker_scripts}/docker_compose_start.sh" "${bounce_list[@]}"; }
 
 # determine script output according to option entered
   case "${1}" in
@@ -62,15 +62,15 @@
       #   fi
 
       # done
-      bounce_list=("$@")
+      IFS=' '; bounce_list=("$@")
       ;;
   esac
 
 # # display script intro
 #   fnc_intro_compose_bounce
 # remove all stacks in list defined above
-  fnc_docker_compose_stop "${bounce_list[*]}"
+  fnc_docker_compose_stop "${bounce_list[@]}"
 # (re)deploy all stacks in list defined above
-  fnc_docker_compose_start "${bounce_list[*]}"
+  fnc_docker_compose_start "${bounce_list[@]}"
 # # display script outro
 #   fnc_outro_compose_bounce

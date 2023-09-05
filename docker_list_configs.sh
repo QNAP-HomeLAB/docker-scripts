@@ -8,9 +8,8 @@
   unset configs_folder_list IFS
   unset configs_list IFS
   unset configs_path IFS
-  unset filetype IFS
 
-# function definitions
+# script help text
   fnc_help_list_configs(){
     echo -e "${blu:?}[-> This script lists the existing 'stackname.yml' files in the ${YLW:?}../swarm/${blu:?} or ${YLW:?}../compose/${blu:?} folder structure. <-]${DEF:?}"
     echo -e " -"
@@ -29,9 +28,13 @@
   case "$1" in ("-h"|*"help"*) fnc_help_list_configs ;; esac
 
 ## function definitions
-
   # intro message for script
-  fnc_script_intro(){ echo -e "${blu:?}[-> EXISTING DOCKER ${conftype:?}CONFIG FILES IN ${YLW:?}${configs_path}/${blu:?} <-]${DEF:?}"; }
+  fnc_intro_list_configs(){ echo -e "${blu:?}[-> EXISTING DOCKER ${cyn:?}${conftype:?}${blu:?} CONFIG FILES IN ${YLW:?}${configs_path}/${blu:?} <-]${DEF:?}"; }
+  # outro message for script
+  fnc_outro_list_configs(){
+    # echo -e "[-- ${GRN:?} DISPLAYED LIST OF CONFIG FILES IN ${YLW:?}${configs_path}/ ${def:?} --]";
+    echo;
+    }
   # invalid syntax message
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${DEF:?}"; exit 1; }
   # nothing to do message
@@ -42,15 +45,13 @@
     }
   # set script variables for Docker Compose configs
   fnc_type_compose(){
-    conftype="COMPOSE ";
-    filetype="-compose";
+    conftype="compose";
     configs_path="${docker_compose:-/opt/docker/compose}";
     source "${docker_compose}"/.stackslist-compose.conf;
     }
   # set script variables for Docker Swarm configs
   fnc_type_swarm(){
-    conftype="SWARM ";
-    filetype="-stack";
+    conftype="swarm";
     configs_path="${docker_swarm:-/opt/docker/swarm}";
     source "${docker_swarm}"/.stackslist-swarm.conf;
     }
@@ -60,14 +61,12 @@
     unset "configs_folder_list[i]";
     fi;
     for i in "${!configs_folder_list[@]}"; do
-      if [ i == "." ];
-      then unset "configs_folder_list[i]";
-      fi;
+      if [ i == "." ]; then unset "configs_folder_list[i]"; fi;
     done;
     }
   # populate the configs_list array
   fnc_list_config_files(){
-    if [[ -f "${configs_path}"/"${configs_folder_list[i]}"/"${configs_folder_list[i]}${filetype}.yml" ]];
+    if [[ -f "${configs_path}/${configs_folder_list[i]}/${var_configs_file:-compose.yml}" ]];
     then configs_list="${configs_list} ${configs_folder_list[i]}";
     fi;
     }
@@ -80,10 +79,6 @@
     fi;
     echo;
     }
-  fnc_script_outro(){
-    # echo -e "[-- ${GRN:?} DISPLAYED LIST OF CONFIG FILES IN ${YLW:?}${configs_path}/ ${def:?} --]";
-    echo;
-    }
 
 # determine configuration type to query
   case "$1" in
@@ -92,11 +87,11 @@
       ;;
     ("-c"|"--compose")
       fnc_type_compose
-      fnc_script_intro
+      fnc_intro_list_configs
       ;;
     ("-s"|"-w"|"--swarm")
       fnc_type_swarm
-      fnc_script_intro
+      fnc_intro_list_configs
       ;;
     (*)
       fnc_invalid_syntax
@@ -105,5 +100,6 @@
 
 # common tasks for all config types
   fnc_list_config_folders
+  # fnd_list_config_files
   fnc_display_config_files
-  fnc_script_outro
+  # fnc_outro_list_configs

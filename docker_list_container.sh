@@ -34,17 +34,17 @@
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE '--${cyn:?}help${YLW:?}' OPTION TO DISPLAY PROPER SYNTAX${def:?} <<"; exit 1; }
   fnc_container_list(){ docker container list -a -q; }
   fnc_error_check(){ docker container list --no-trunc --format "{{.Error}}" "${1}"; }
-  # fnc_list_container_all(){ docker container list --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}\t{{.Command}}"; }
-  fnc_list_container_all(){ docker container list --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}"; }
+  fnc_list_container_act(){ docker container list --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}\t{{.Command}}"; }
+  fnc_list_container_all(){ docker container list --all --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}\t{{.Command}}"; }
+  fnc_list_container_lbl(){ docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.Labels}}\t{{.Command}}"; }
   fnc_list_container_net(){ docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}\t{{.Ports}}"; }
   fnc_list_container_vol(){ docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.LocalVolumes}}\t{{.Mounts}}"; }
-  fnc_list_container_lbl(){ docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.Labels}}\t{{.Command}}"; }
 
 # output determination logic
   case "${1}" in
     ("")
       fnc_script_intro;
-      if [ ! "$(fnc_container_list)" ]; then fnc_nothing_to_do; else fnc_list_container_all; fi ;;
+      if [ ! "$(fnc_container_list)" ]; then fnc_nothing_to_do; else fnc_list_container_act; fi ;;
     (-*)
       case "${1}" in
         ("-a"|"-all"|"--all")
@@ -67,9 +67,9 @@
     (*)
       case "${2}" in
         ("")
-          # if [ "$(fnc_error_check)" ]; then fnc_list_service_err "${1}" "${2}"; else fnc_list_service_all "${1}" "${2}"; fi
+          # if [ "$(fnc_error_check)" ]; then fnc_list_service_err "${1}" "${2}"; else fnc_list_service_act "${1}" "${2}"; fi
           if [ ! "$(fnc_error_check "${1}" "${2}")" ];
-          then fnc_script_intro; fnc_list_service_all "${1}" "${2}";
+          then fnc_script_intro; fnc_list_service_act "${1}" "${2}";
           else fnc_script_error; fnc_list_service_err "${1}" "${2}";
           fi
           ;;
@@ -79,7 +79,7 @@
               fnc_script_intro; fnc_list_container_err "${1}" "${2}";
               ;;
             ("-sv"|"-svcs"|"--services")
-              fnc_script_intro; fnc_list_container_all "${1}" "${2}";
+              fnc_script_intro; fnc_list_container_act "${1}" "${2}";
               ;;
             (*)
               fnc_invalid_syntax;

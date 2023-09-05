@@ -174,9 +174,9 @@
 
     # docker_compose_stop -- stops the entered container
     docker_compose_stop(){ sh "${docker_scripts}/docker_compose_stop.sh" "${@}"; }
-    alias dcd="docker_compose_stop"; # "Down"
-    alias dcp="docker_compose_stop"; # "stoP"
-    alias dcr="docker_compose_stop"; # "Remove"
+    alias dcd="docker_compose_stop -d"; # "Down"
+    alias dcp="docker_compose_stop -p"; # "stoP"
+    alias dcr="docker_compose_stop -r"; # "Remove"
 
     # docker_compose_logs -- displays 50 log entries for the indicated docker compose container
     docker_compose_logs(){ sh "${docker_scripts}/docker_compose_logs.sh" "${@}"; }

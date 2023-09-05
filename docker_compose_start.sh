@@ -5,11 +5,11 @@
   source /opt/docker/scripts/.vars_docker.env
 
 # script variable definitions
-  conftype="-compose"
+  conftype="compose"
   bounce_list=""
 
 # function definitions
-  fnc_help(){
+  fnc_help_compose_start(){
     echo -e " - ${blu:?}[-> This script STARTS 'up' a single Docker container using a pre-written compose file <-]${def:?}"
     echo -e " -"
     echo -e " - SYNTAX: # dcu | dcs | dct"
@@ -18,11 +18,11 @@
     echo -e " -   VALID OPTIONS:"
     echo -e " -     ${cyn:?}-h │ --help ${def:?}| Displays this help message."
     echo -e " -     ${cyn:?}-a | --all  ${def:?}| Deploys all stacks with a config file inside the '${YLW:?}${docker_compose}/${def:?}' path."
-    echo -e " -                         NOTE: config files must follow this naming format: '${cyn:?}stackname${CYN:?}-compose.yml${def:?}'"
+    echo -e " -                         NOTE: config files must follow this naming format: '${cyn:?}/stackname${CYN:?}/compose.yml${def:?}'"
     echo
     exit 1 # Exit script after printing help
     }
-  case "$1" in ("-h"|*"help"*) fnc_help ;; esac
+  case "$1" in ("-h"|*"help"*) fnc_help_compose_start ;; esac
 
   fnc_script_intro(){ echo -e "${blu:?}[-  ${grn:?}STARTING${blu:?} LISTED DOCKER CONTAINERS  -]${def:?}"; }
   fnc_script_outro(){ echo -e "${blu:?}[-  List of Docker containers ${grn:?}STARTED${blu:?} <-]${def:?}"; }
@@ -35,7 +35,7 @@
     for i in "${!configs_folder_list[@]}"; do
       # remove '.' folder name from printed list
       if [[ "${configs_folder_list[i]}" = "." ]]; then unset "configs_folder_list[i]"; fi
-      if [[ -f "${docker_compose}"/"${configs_folder_list[i]}"/"${configs_folder_list[i]}${conftype}.yml" ]]
+      if [[ -f "${docker_compose}"/"${configs_folder_list[i]}"/"${conftype}.yml" ]]
       then configs_list="${configs_list} ${configs_folder_list[i]}"
       fi
     done
@@ -53,13 +53,13 @@
       fi
     }
   fnc_start_containers(){ # perform script main function
-      deploy_list=( "$(for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u)" )
-      for stack in "${!deploy_list[@]}"; do
+      IFS=$'\n'; deploy_list=( $(for stack in "${deploy_list[@]}" ; do echo "${stack}" ; done | sort -u) )
+      for stack in "${deploy_list[@]}"; do
         # create '.env' file redirect if used
         # if [ ! -f "${docker_compose}/${deploy_list[stack]}/.env" ]; then ln -s "${var_script_vars}" "${docker_compose}/${deploy_list[stack]}/.env"; fi
         # [ ! -f "${docker_compose}/${deploy_list[stack]}/.env" ] && ln -sf "${var_script_vars}" "${docker_compose}/${deploy_list[stack]}/.env";
-        ln -sf "${var_script_vars}" "${docker_compose}/${deploy_list[stack]}/.env"
-        docker compose -f "${docker_compose}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml" up -d --remove-orphans
+        ln -sf "${var_script_vars}" "${docker_compose}/${stack}/.env"
+        docker compose -f "${docker_compose}/${stack}/${conftype}.yml" up -d --remove-orphans
         sleep 1
       done
     }
