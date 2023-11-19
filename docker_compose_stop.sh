@@ -32,7 +32,8 @@
   fnc_env_file_remove(){ [[ -f "${docker_compose}/${1}/.env" ]] && rm -f "${docker_compose}/${1}/.env"; }
   fnc_docker_stop(){ docker stop -f "${1}"; }
   fnc_docker_container_rm(){ docker container rm -f "${1}"; fnc_env_file_remove "${1}"; }
-  fnc_docker_compose_down(){ docker compose -f "${docker_compose}/${1}/${var_configs_file}" down; fnc_env_file_remove "${1}"; }
+  fnc_docker_compose_action(){ docker compose -f "${docker_compose}/${1}/${var_configs_file}" "${action}"; }
+  fnc_docker_compose_down(){ docker compose -f "${docker_compose}/${1}/${var_configs_file}" down; } # fnc_env_file_remove "${1}"; }
   fnc_docker_compose_stop(){ docker compose -f "${docker_compose}/${1}/${var_configs_file}" stop; }
 
   # NOTE: below function order must not change
@@ -71,7 +72,7 @@
         fnc_docker_compose_down "${stack}"
       else
         fnc_docker_stop "${stack}"
-        docker_container_rm "${stack}"
+        fnc_docker_container_rm "${stack}"
       fi
       fnc_env_file_remove "${stack}"
       sleep 1

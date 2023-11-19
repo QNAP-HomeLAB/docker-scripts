@@ -148,10 +148,10 @@
 
     ipcheck(){ echo "Container IP: $(docker container exec -it "${*}" wget -qO- ipinfo.io)"; }
     alias checkip='ipcheck'
-    # portcheck(){ curl -sq -b cookies.txt "http://${QIP}:${QPORT}/container-station/api/v1/system/port/tcp/${1}"; }
-    # alias checkport='portcheck'
     vpncheck(){ echo "     Host IP: $(wget -qO- ifconfig.me)" && echo "Container IP: $(docker container exec -it "${*}" wget -qO- ipinfo.io/ip)"; }
     alias checkvpn='vpncheck'
+    # portcheck(){ curl -sq -b cookies.txt "http://${QIP}:${QPORT}/container-station/api/v1/system/port/tcp/${1}"; }
+    # alias checkport='portcheck'
 
     appdata(){ cd "${docker_appdata}/${1}" || return; }
     compose(){ cd "${docker_compose}/${1}" || return; }
