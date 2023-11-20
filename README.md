@@ -402,7 +402,7 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
    - Pay special attention to these variables, as they are ***REQUIRED:***
 
-     - `var_nas_ip` - this is the Local Area Network IP address of your QNAP
+     - `var_host_ip` - this is the Local Area Network IP address of your QNAP
 
      - `var_uid` - userid from command `id dockeruser`
 

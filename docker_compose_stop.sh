@@ -4,8 +4,8 @@
   source /opt/docker/scripts/.vars_docker.env
 
 # script variable definitions
-  unset action_list IFS
-  IFS=' ' action_list=("$@")
+  unset stacks_list IFS
+  IFS=' ' stacks_list=("$@")
 
 # function definitions
   fnc_help_compose_stop(){
@@ -27,21 +27,43 @@
   fnc_outro_compose_stop(){ echo -e "${blu:?}[-  LISTED DOCKER CONTAINERS ${RED:?}STOPPED${blu:?}  -]${def:?}"; }
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
   fnc_nothing_to_do(){ echo -e "${YLW:?} -> No compose or stack specified. Expected synatax: ${def:?}dcd ${cyn:?}stack_name${def:?}"; }
-  fnc_list_cleanup(){ IFS=$'\n'; action_list=( $(for stack in "${action_list[@]}" ; do echo "${stack}" ; done | sort -u) ); }
-  fnc_configs_list_all(){ IFS=$'\n'; action_list=($(docker container list --format {{.Names}})); fnc_list_cleanup; }
-  fnc_env_file_remove(){ [[ -f "${docker_compose}/${1}/.env" ]] && rm -f "${docker_compose}/${1}/.env"; }
-  fnc_docker_stop(){ docker stop -f "${1}"; }
-  fnc_docker_container_rm(){ docker container rm -f "${1}"; fnc_env_file_remove "${1}"; }
-  fnc_docker_compose_action(){ docker compose -f "${docker_compose}/${1}/${var_configs_file}" "${action}"; }
-  fnc_docker_compose_down(){ docker compose -f "${docker_compose}/${1}/${var_configs_file}" down; } # fnc_env_file_remove "${1}"; }
-  fnc_docker_compose_stop(){ docker compose -f "${docker_compose}/${1}/${var_configs_file}" stop; }
 
-  # NOTE: below function order must not change
+  # fnc_remove_cmd_option(){ for i in "${!stacks_list[@]}"; do if [[ "${stacks_list[i]}" = "-*" || "${stacks_list[i]}" = "." ]]; then unset "${stacks_list[i]}"; fi; done; }
+  fnc_remove_cmd_option() { # remove elements starting with '-' from array
+    local filtered=()
+    for element in "$@"; do
+      if [[ $element != \-* && $element != . ]]; then
+        filtered+=("$element")
+      fi
+    done
+    stacks_list=("${filtered[@]}")
+  }
 
+  # fnc_list_sort(){ IFS=$'\n'; stacks_list=( $(for stack in "${stacks_list[@]}" ; do echo "${stack}" ; done | sort -u) ); }
+  fnc_list_sort(){ sort_list="${stacks_list[*]}"; IFS=$'\n' read -r stacks_list <<< "$( for stack in "${sort_list[@]}" ; do echo "${stack}" ; done | sort -u )"; }
+  # fnc_list_sort(){
+  #   stacks_list=();
+  #   while IFS=$'' read -r line; do stacks_list+=("$line"); done < <( for stack in "${stacks_list[@]}" ; do echo "${stack}" ; done | sort -u );
+  #   }
+  fnc_configs_list_all(){ IFS=$'\n'; stacks_list=($(docker container list --format {{.Names}})); fnc_list_sort; }
+  # fnc_configs_list_all(){
+  #   stacks_list=();
+  #   while IFS=$'' read -r line; do stacks_list+=("$line"); done < <( docker container list --format "{{.Names}}" ); fnc_list_sort;
+  #   }
+  # fnc_configs_list_all(){ IFS=$'\n' read -r -q stacks_list <<< "$( docker container list --format "{{.Names}}" )"; fnc_list_sort; }
+  fnc_env_file_remove(){ if [[ -f "${docker_compose:?}/${1}/.env" ]]; then rm -f "${docker_compose:?}/${1}/.env"; fi; }
+  fnc_docker_stop(){ docker stop "${1}"; }
+  fnc_docker_container_rm(){ docker container rm -f "${1}"; } #fnc_env_file_remove "${1}"; }
+  fnc_docker_compose_down(){ docker compose -f "${docker_compose:?}/${1}/${var_configs_file:?}" down; } # fnc_env_file_remove "${1}"; }
+  fnc_docker_compose_stop(){ docker compose -f "${docker_compose:?}/${1}/${var_configs_file:?}" stop; }
+
+#### NOTE: below function order must not change
+
+  # TODO: this function might replace individual "rm/down/stop" functions with an "action" variable assigned during case logic
   fnc_container_action(){
-    for stack in "${action_list[@]}"; do
-      if [[ -f "${docker_compose}/${stack}/${var_configs_file}" ]]; then
-        docker compose -f "${docker_compose}/${stack}/${var_configs_file}" "${action}"
+    for stack in "${stacks_list[@]}"; do
+      if [[ -f "${docker_compose:?}/${stack}/${var_configs_file:?}" ]]; then
+        docker compose -f "${docker_compose:?}/${stack}/${var_configs_file:?}" "${action}"
       else
         if [[ "${action}" == "down" ]]; then
           fnc_docker_stop "${stack}"
@@ -53,11 +75,10 @@
       sleep 1
     done
   }
-
   fnc_container_stop(){
-    for stack in "${action_list[@]}"; do
+    for stack in "${stacks_list[@]}"; do
       # TODO: check if compose file exists, if not, try to stop container instead
-      if [[ -f "${docker_compose}/${stack}/${var_configs_file}" ]]; then
+      if [[ -f "${docker_compose:?}/${stack}/${var_configs_file:?}" ]]; then
         fnc_docker_compose_stop "${stack}"
       else
         fnc_docker_stop "${stack}"
@@ -66,15 +87,17 @@
     done
     }
   fnc_container_remove(){
-    for stack in "${action_list[@]}"; do
+    # stacks_list=($(fnc_remove_cmd_option "${stacks_list[@]}"))
+    fnc_remove_cmd_option "${stacks_list[@]}"
+    for stack in "${stacks_list[@]}"; do
       # TODO: check if compose file exists, if not, try to stop and remove container instead
-      if [[ -f "${docker_compose}/${stack}/${var_configs_file}" ]]; then
+      if [[ -f "${docker_compose:?}/${stack}/${var_configs_file:?}" ]]; then
         fnc_docker_compose_down "${stack}"
       else
         fnc_docker_stop "${stack}"
         fnc_docker_container_rm "${stack}"
       fi
-      fnc_env_file_remove "${stack}"
+      # fnc_env_file_remove "${stack}"
       sleep 1
     done
     }
@@ -86,18 +109,37 @@
       ;;
     (-*) # validate entered option exists
       case "${1}" in
+        ("-a"|"--all")
+          unset stacks_list
+          fnc_configs_list_all
+          action="down"
+          fnc_remove_cmd_option "${stacks_list[@]}"
+          fnc_container_remove "${stacks_list[@]}"
+          ;;
         ("-d"|"--down")
-          fnc_container_remove "${action_list[@]}"
+          # unset "stacks_list[0]"
+          action="down"
+          fnc_remove_cmd_option "${stacks_list[@]}"
+          fnc_container_remove "${stacks_list[@]}"
           ;;
         ("-s"|"--stop")
-          fnc_container_stop "${action_list[@]}"
+          # unset "stacks_list[0]"
+          action="stop"
+          fnc_remove_cmd_option "${stacks_list[@]}"
+          fnc_container_stop "${stacks_list[@]}"
           ;;
         ("-r"|"--remove")
-          fnc_container_remove "${action_list[@]}"
+          # unset "stacks_list[0]"
+          action="rm"
+          fnc_remove_cmd_option "${stacks_list[@]}"
+          fnc_container_remove "${stacks_list[@]}"
           ;;
         ("-l"|"--list")
+          # unset "stacks_list[0]"
+          action="ls"
+          fnc_remove_cmd_option "${stacks_list[@]}"
           fnc_configs_list_all
-          echo "${action_list[*]}"
+          echo "${stacks_list[*]}"
           ;;
         (*)
           fnc_invalid_syntax
@@ -105,7 +147,10 @@
       esac
       ;;
     (*)
-      fnc_invalid_syntax
+      # fnc_invalid_syntax
+      action="down"
+      fnc_remove_cmd_option "${stacks_list[@]}"
+      fnc_container_remove "${stacks_list[@]}"
       ;;
   esac
 

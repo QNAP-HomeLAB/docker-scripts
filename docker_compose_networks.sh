@@ -12,13 +12,33 @@
     echo -e " -     VALID OPTIONS:"
     echo -e " -       ${cyn:?}-c │ --create ${def:?}│ ${grn:?}Creates${def:?} the ${blu:?}{netproxy,netsocket}${def:?} docker networks"
     echo -e " -       ${cyn:?}-d │ --delete ${def:?}│ ${red:?}Deletes${def:?} the ${blu:?}{netproxy,netsocket}${def:?} docker networks"
+    echo -e " -       ${cyn:?}-l │ --list   ${def:?}│ ${red:?}Lists${def:?} the current docker networks"
+    echo
   }
+  case "${1}" in ("-h"|*"help"*) fnc_help ;; esac
   fnc_script_intro(){ echo -e "${blu:?}[-  CREATE DOCKER NETWORKS REQUIRED FOR USE WITH DOCKER SOCKET AND A REVERSE PROXY  -]${def:?}"; }
   fnc_script_outro(){ echo -e "${GRN:?} -  DOCKER NETWORKS '${var_net_rproxy} & ${var_net_socket}' CREATED${def:?}"; echo; exit 1; }
   fnc_nothing_to_do(){ echo -e "${YLW:?} >> A valid option and container name(s) must be entered for this command to work (use ${cyn:?}--help ${YLW:?}for info)${def:?}"; }
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; echo; exit 1; }
   fnc_invalid_input(){ echo -e "${YLW:?}INVALID INPUT${def:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
 
-# docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.27.0.0/24" --gateway "172.27.0.254" --attachable "docker_socket"
-# docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.27.1.0/24" --gateway "172.27.1.254" --attachable "external_edge"
-# docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.27.2.0/24" --gateway "172.27.2.254" --attachable "reverse_proxy"
+  fnc_create_networks() {
+    docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.27.0.0/24" --gateway "172.27.0.254" --attachable "docker_socket"
+    docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.27.1.0/24" --gateway "172.27.1.254" --attachable "external_edge"
+    docker network create --driver "bridge" --opt "encrypted" --scope "local" --subnet "172.27.2.0/24" --gateway "172.27.2.254" --attachable "reverse_proxy"
+  }
+  fnc_delete_networks() {
+    docker network rm "docker_socket"
+    docker network rm "external_edge"
+    docker network rm "reverse_proxy"
+  }
+  fnc_list_networks() {
+    docker network ls
+  }
+
+case "${1}" in
+  -c|--create) fnc_create_networks ;;
+  -d|--delete) fnc_delete_networks ;;
+  -l|--list) fnc_list_networks ;;
+  *) fnc_nothing_to_do ;;
+esac

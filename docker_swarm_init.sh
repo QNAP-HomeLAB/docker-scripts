@@ -32,7 +32,7 @@
   fnc_folder_creation(){ if [[ ! -d "${docker_folder}/{scripts,secrets,swarm,compose}" ]]; then mkdir -pm 600 "${docker_folder}"/{scripts,secrets,swarm/{appdata,configs},compose/{appdata,configs}}; fi; }
   fnc_folder_owner(){ chown -R ${var_user}:${var_group} ${swarm_folder}; echo "FOLDER OWNERSHIP UPDATED"; echo; }
   fnc_folder_auth(){ chmod -R 600 ${swarm_folder}; echo "FOLDER PERMISSIONS UPDATED"; echo; }
-  fnc_swarm_init(){ docker swarm init --advertise-addr "${var_nas_ip}"; }
+  fnc_swarm_init(){ docker swarm init --advertise-addr "${var_host_ip}"; }
   fnc_swarm_verify(){ while [[ "$(docker stack ls)" != "NAME                SERVICES   ORCHESTRATOR" ]]; do sleep 1; done; }
   # fnc_swarm_check(){ while [[ ! "$(docker stack ls --format "{{.Name}}")" ]]; do sleep 1; done; }
   fnc_swarm_success(){ echo; echo -e " >> ${grn:?}DOCKER SWARM INITIALIZED SUCCESSFULLY${def:?} << "; echo; }
@@ -48,16 +48,24 @@
     echo -e " -- ${RED:?}ERROR${def:?}: DOCKER SWARM SETUP WAS ${YLW:?}NOT SUCCESSFUL${def:?} -- "
     exit 1 # Exit script here
     }
+  fnc_network_gwbridge(){
+    docker network rm docker_gwbridge
+    docker network create --driver bridge --scope local --opt encrypted --subnet 172.20.0.0/16 --gateway 172.20.0.254 \
+    --opt com.docker.network.bridge.enable_icc=false \
+    --opt com.docker.network.bridge.enable_ip_masquerade=true \
+    --opt com.docker.network.bridge.name=docker_gwbridge \
+    docker_gwbridge
+  }
 # docker network rm ingress
-# docker network create --driver overlay --opt encrypted --ingress --subnet 10.10.0.0/16 ingress
-# docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.0.0.0/16 --attachable docker_socket
-# docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.1.0.0/16 --attachable reverse_proxy
-# docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.2.0.0/16 --attachable external_edge
-  fnc_network_init(){
-    docker network rm ingress && docker network create --driver overlay --opt encrypted --ingress --subnet "10.10.0.0/16" ingress;
-    docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_socket}" --attachable "${var_net_socket}";
-    docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_rproxy}" --attachable "${var_net_rproxy}";
-    docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_exedge}" --attachable "${var_net_exedge}";
+# docker network create --driver overlay --opt encrypted --ingress --subnet 10.27.0.0/16 --gateway 10.27.0.254 ingress
+# docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.27.0.0/16 --gateway=172.27.0.254 --attachable docker_socket
+# docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.27.1.0/16 --gateway=172.27.1.254 --attachable external_edge
+# docker network create --driver overlay --opt encrypted --scope swarm --subnet=172.27.2.0/16 --gateway=172.27.2.254 --attachable reverse_proxy
+  fnc_network_init(){ # copy fnc_network_check from docker/scripts/docker_system_network.sh
+    docker network rm ingress && docker network create --driver overlay --opt encrypted --ingress --subnet "${var_subnet_ingress}" --gateway "${var_gateway_ingress}" ${var_net_ingress};
+    docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_socket}" --gateway "${var_gateway_socket}" --attachable "${var_net_socket}";
+    docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_rproxy}" --gateway "${var_gateway_rproxy}" --attachable "${var_net_rproxy}";
+    docker network create --driver overlay --opt encrypted --scope swarm --subnet "${var_subnet_exedge}" --gateway "${var_gateway_exedge}" --attachable "${var_net_exedge}";
   }
   fnc_network_check_dockersocket(){ docker network ls --filter name="${var_net_socket}" -q; }
   fnc_network_check_proxynet(){ docker network ls --filter name="${var_net_rproxy}" -q; }
@@ -113,6 +121,8 @@ fnc_folder_creation
 # fnc_folder_owner
 # fnc_folder_auth
 
+# must remove and recreate docker_gwbridge before swarm init to make it encrypted
+# fnc_network_gwbridge
 fnc_swarm_init
 fnc_swarm_verify
 
@@ -133,7 +143,7 @@ fnc_script_outro
 
 # # Swarm initialization
 #   #echo -e " -> INITIALIZING SWARM <- "
-#   docker swarm init --advertise-addr "${var_nas_ip}"
+#   docker swarm init --advertise-addr "${var_host_ip}"
 
 # # Required networks creation verification
 #   docker network create --driver=overlay --subnet=${var_subnet_rproxy} --attachable ${var_net_rproxy}

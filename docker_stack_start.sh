@@ -112,7 +112,8 @@
         fi
       fi
       # deploy the requested stack
-      docker stack deploy "${stack}" -c "${docker_swarm}"/"${stack}"/"${stack}".yml
+      # docker stack deploy "${stack}" -c "${docker_swarm}"/"${stack}"/"${stack}".yml --prune
+      docker stack deploy "${stack}" -c "${docker_swarm}"/"${stack}"/compose.yml --prune
       sleep 1
       if [[ ! "$(docker service ls --filter name="${stack}" -q)" ]]; then
         echo -e " ${RED:?}ERROR${def:?}: '${cyn:?}${stack}${def:?}' ${YLW:?}*NOT* DEPLOYED${def:?}"; echo

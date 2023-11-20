@@ -34,8 +34,8 @@
   fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE '--${cyn:?}help${YLW:?}' OPTION TO DISPLAY PROPER SYNTAX${def:?} <<"; exit 1; }
   fnc_container_list(){ docker container list -a -q; }
   fnc_error_check(){ docker container list --no-trunc --format "{{.Error}}" "${1}"; }
-  fnc_list_container_act(){ docker container list --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}\t{{.Command}}"; }
-  fnc_list_container_all(){ docker container list --all --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}\t{{.Command}}"; }
+  fnc_list_container_act(){ docker container list --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Command}}"; }
+  fnc_list_container_all(){ docker container list --all --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}"; }
   fnc_list_container_lbl(){ docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.Labels}}\t{{.Command}}"; }
   fnc_list_container_net(){ docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}\t{{.Ports}}"; }
   fnc_list_container_vol(){ docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.LocalVolumes}}\t{{.Mounts}}"; }
