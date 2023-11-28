@@ -1,5 +1,11 @@
 #!/bin/bash
 ################################################################################
+# Place this file in $HOME/docker/ and name it docker_functions.sh
+# A quick and easy way to do this is to run one of these download commands:
+# wget 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/master/docker_functions' -O $HOME/docker/docker_functions.sh
+# curl 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/master/docker_functions' > $HOME/docker/docker_functions.sh
+# git archive --remote=https://github.com/QNAP-HomeLAB/docker-scripts.git HEAD:docker_functions $HOME/docker/docker_functions.sh | tar -xvf -
+################################################################################
 ######### --> **** UPDATE THESE VARIABLES FOR YOUR ENVIRONMENT **** <-- ########
 
     export docker_usr="docker" ## default is `docker`
