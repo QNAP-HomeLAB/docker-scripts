@@ -11,15 +11,15 @@
 
 # script help text
   fnc_help_list_configs(){
-    echo -e "${blu:?}[-> This script lists the existing 'stackname.yml' files in the ${ylw:?}../swarm/${blu:?} or ${ylw:?}../compose/${blu:?} folder structure. <-]${DEF:?}"
+    echo -e "${blu:?}[-> This script lists the existing 'stackname.yml' files in the ${ylw:?}../swarm/${blu:?} or ${ylw:?}../compose/${blu:?} folder structure. <-]${def:?}"
     echo -e " -"
-    echo -e " - SYNTAX: # dlg ${cyn:?}-option${DEF:?}"
-    echo -e " - SYNTAX: # dccfg | dcg == 'dlg ${cyn:?}--compose${DEF:?}'"
-    echo -e " - SYNTAX: # dwcfg | dwg == 'dlg ${cyn:?}--swarm${DEF:?}'"
+    echo -e " - SYNTAX: # dlg ${cyn:?}-option${def:?}"
+    echo -e " - SYNTAX: # dccfg | dcg == 'dlg ${cyn:?}--compose${def:?}'"
+    echo -e " - SYNTAX: # dwcfg | dwg == 'dlg ${cyn:?}--swarm${def:?}'"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn:?}-h │ --help    ${DEF:?}│ Displays this help message."
-    echo -e " -     ${cyn:?}-c │ --compose ${DEF:?}│ Displays stacks with config files in the ${ylw:?}..${docker_compose:-/opt/docker/compose}/${def:?} filepath."
-    echo -e " -     ${cyn:?}-w │ --swarm   ${DEF:?}│ Displays stacks with config files in the ${ylw:?}..${docker_swarm:-/opt/docker/swarm}/${def:?} filepath."
+    echo -e " -     ${cyn:?}-h │ --help    ${def:?}│ Displays this help message."
+    echo -e " -     ${cyn:?}-c │ --compose ${def:?}│ Displays stacks with config files in the ${ylw:?}..${docker_compose:-/opt/docker/compose}/${def:?} filepath."
+    echo -e " -     ${cyn:?}-w │ --swarm   ${def:?}│ Displays stacks with config files in the ${ylw:?}..${docker_swarm:-/opt/docker/swarm}/${def:?} filepath."
     echo -e " -"
     echo -e " -   NOTE: a valid option from above is required for this script to function"
     echo
@@ -29,16 +29,16 @@
 
 ## function definitions
   # intro message for script
-  fnc_intro_list_configs(){ echo -e "${blu:?}[-> EXISTING DOCKER ${cyn:?}${conftype:?}${blu:?} CONFIG FILES IN ${ylw:?}${configs_path}/${blu:?} <-]${DEF:?}"; }
+  fnc_intro_list_configs(){ echo -e "${blu:?}[-> EXISTING DOCKER ${cyn:?}${conftype:?}${blu:?} CONFIG FILES IN ${ylw:?}${configs_path}/${blu:?} <-]${def:?}"; }
   # outro message for script
   fnc_outro_list_configs(){
     # echo -e "[-- ${grn:?} DISPLAYED LIST OF CONFIG FILES IN ${ylw:?}${configs_path}/ ${def:?} --]";
     echo;
     }
   # invalid syntax message
-  fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${DEF:?}"; exit 1; }
+  fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
   # nothing to do message
-  fnc_nothing_to_do(){ echo -e "${ylw:?} -> no configuration files exist${DEF:?}"; }
+  fnc_nothing_to_do(){ echo -e "${ylw:?} -> no configuration files exist${def:?}"; }
   # populate configs list array with docker config files in the '/opt/docker/${conftype}' folder
   fnc_list_config_folders(){
     IFS=$'\n' configs_folder_list=( $(cd "${configs_path}" && find . -maxdepth 1 -type d -not -path '*/\.*' | sort | sed 's/^\.\///g') );
@@ -73,9 +73,9 @@
   fnc_display_config_files(){
     # display config files list if any
     if [[ ! ${configs_list} ]]; then
-      echo -e " -> ${ylw:?}no configuration files exist${DEF:?}";
+      echo -e " -> ${ylw:?}no configuration files exist${def:?}";
     else
-      echo -e " ->${cyn:?}${configs_list[*]}${DEF:?}";
+      echo -e " ->${cyn:?}${configs_list[*]}${def:?}";
     fi;
     echo;
     }

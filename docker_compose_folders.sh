@@ -115,7 +115,7 @@
       fi;
       if [ ! -d "${docker_compose:?}/${stack}/" ];
         then ${var_sudo}install -o "${var_uid:-1000}" -g "${var_gid:-1000}" -m "${folders_permissions}" -d "${docker_compose:?}/${stack}";
-          if [ ! -f "${docker_compose:?}/${stack}/.env" ]; then ln -sf "${var_script_vars:?}" "${docker_compose:?}/${stack}/.env"; fi;
+          if [ ! -f "${docker_compose:?}/${stack}/.env" ]; then ln -s "${var_script_vars:?}" "${docker_compose:?}/${stack}/.env"; fi;
         else fnc_permissions_update "${folder_list[@]}";
           echo -e "  ${ylw:?}ALREADY EXISTS ${def:?}-> ${blu:?}${docker_compose:?}${mgn:?}/${stack}${def:?}"; exist=1; # ((++exist));
       fi;

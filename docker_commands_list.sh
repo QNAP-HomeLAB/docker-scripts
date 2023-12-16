@@ -45,11 +45,11 @@
 
 # docker_commands_list -- function and alias for this script file
   fnc_docker_commands(){ sh "${docker_scripts}/docker_commands_list.sh" "${@}"; }
-  alias dcmd="fnc_docker_commands"
-  alias dlist="fnc_docker_commands -f";
+  alias dcmd="fnc_docker_commands -c"
+  alias dlist="fnc_docker_commands";
   # alias dscripts='source /opt/docker/scripts/docker_commands_list.sh --create'
 
-  fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
+  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
 
 ## docker script definitions
   # filename="/opt/docker/scripts/docker_commands_list.sh"
