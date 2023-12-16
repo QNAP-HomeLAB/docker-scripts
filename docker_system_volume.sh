@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /opt/docker/scripts/.color_codes.conf
-  source /opt/docker/scripts/.vars_docker.conf
+  source /opt/docker/scripts/.vars_docker.env
 
 # function definitions
   fnc_help(){
@@ -17,7 +17,7 @@
   fnc_script_intro(){ echo -e "${blu:?}[-> LISTING UNUSED DOCKER VOLUMES <-]${def:?}";}
   fnc_script_outro(){ echo; }
   fnc_nothing_to_do(){ echo -e "${ylw:?} -> no volumes exist${def:?}"; }
-  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE '--${cyn:?}help${YLW:?}' OPTION TO DISPLAY PROPER SYNTAX${def:?} <<"; exit 1; }
+  fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE '--${cyn:?}help${ylw:?}' OPTION TO DISPLAY PROPER SYNTAX${def:?} <<"; exit 1; }
   fnc_docker_volumes_check(){ docker volume ls -qf dangling=true; }
   fnc_docker_volumes_list(){ docker volume ls; }
 

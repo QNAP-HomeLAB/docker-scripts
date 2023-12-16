@@ -1,7 +1,7 @@
 #!/bin/bash
 # external variable sources
   source /opt/docker/scripts/.color_codes.conf
-  source /opt/docker/scripts/.vars_docker.conf
+  source /opt/docker/scripts/.vars_docker.env
 
 # function definitions
   fnc_help(){
@@ -10,20 +10,20 @@
     echo -e " - SYNTAX: # dwlv"
     echo -e " - SYNTAX: # dwlv ${cyn:?}-option${def:?}"
     echo -e " -   VALID OPTIONS:"
-    echo -e " -     ${cyn:?}-a | --all  ${def:?}│ ${YLW:?}CAUTION${def:?}: Removes ${BLD}all${def:?} stacks currently listed with ${cyn:?}'docker stack ls'${def:?} command, then laves the Swarm."
+    echo -e " -     ${cyn:?}-a | --all  ${def:?}│ ${ylw:?}CAUTION${def:?}: Removes ${BLD}all${def:?} stacks currently listed with ${cyn:?}'docker stack ls'${def:?} command, then laves the Swarm."
     echo -e " -     ${cyn:?}-n | --none ${def:?}│ Leaves the Docker Swarm, but Does ${BLD}*NOT*${def:?} remove any currently deployed stacks."
     echo -e " -     ${cyn:?}-h | --help ${def:?}│ Displays this help message."
     echo
     exit 1 # Exit script after printing help
     }
   fnc_script_intro(){ echo -e "${blu:?}[-> LEAVING THE DOCKER SWARM AND REMOVING INDICATED STACKS <-]${def:?}"; }
-  fnc_script_outro(){ echo -e "${GRN:?}[-> DOCKER SWARM LEAVE SCRIPT COMPLETE <-]${def:?}"; echo; }
-  fnc_nothing_to_do(){ echo -e "${YLW:?}[-> THIS NODE IS NOT PART OF A SWARM, CANNOT LEAVE NON-EXISTENT SWARM <-]${def:?}"; echo; }
-  fnc_invalid_input(){ echo -e "${YLW:?}INVALID INPUT${def:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
-  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
-  fnc_remove_all_query(){ echo -e " Do you want to remove all Docker Swarm stacks (${YLW:?}highly recommended${def:?})? "; }
-  fnc_msg_suggest_cleaning(){ echo -e "${YLW:?} >> CLEANING THE DOCKER ENVIRONMENT (${cyn:?}dprn${YLW:?}/${cyn:?}dcln${YLW:?}) AFTER LEAVING A SWARM IS RECOMMENDED <<${def:?}"; echo; }
-  fnc_msg_stack_not_removed(){ echo -e " >> ${YLW:?}DOCKER SWARM STACKS WILL NOT BE REMOVED${def:?} << "; }
+  fnc_script_outro(){ echo -e "${grn:?}[-> DOCKER SWARM LEAVE SCRIPT COMPLETE <-]${def:?}"; echo; }
+  fnc_nothing_to_do(){ echo -e "${ylw:?}[-> THIS NODE IS NOT PART OF A SWARM, CANNOT LEAVE NON-EXISTENT SWARM <-]${def:?}"; echo; }
+  fnc_invalid_input(){ echo -e "${ylw:?}INVALID INPUT${def:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
+  fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE -${cyn:?}help${ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
+  fnc_remove_all_query(){ echo -e " Do you want to remove all Docker Swarm stacks (${ylw:?}highly recommended${def:?})? "; }
+  fnc_msg_suggest_cleaning(){ echo -e "${ylw:?} >> CLEANING THE DOCKER ENVIRONMENT (${cyn:?}dprn${ylw:?}/${cyn:?}dcln${ylw:?}) AFTER LEAVING A SWARM IS RECOMMENDED <<${def:?}"; echo; }
+  fnc_msg_stack_not_removed(){ echo -e " >> ${ylw:?}DOCKER SWARM STACKS WILL NOT BE REMOVED${def:?} << "; }
   fnc_swarm_check(){ if [[ "$(docker swarm leave -f)" == "Error response from daemon: This node is not part of a swarm" ]]; then fnc_nothing_to_do; exit 1; fi; }
   fnc_swarm_leave_force(){ docker swarm leave -f; echo; }
   fnc_docker_stack_stop(){ sh ${docker_scripts}/docker_stack_stop.sh -all; }

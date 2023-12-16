@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Folder heirarchy for Drauku's folder structure, modified from gkoerk's famously awesome folder structure for stacks.
+## Folder hierarchy for Drauku's directory structure, modified from gkoerk's famously awesome folder structure for stacks.
   export docker_folder="/opt/docker"
   export docker_appdata="${docker_folder}/appdata"
   export docker_compose="${docker_folder}/compose"
@@ -11,7 +11,7 @@
 
 ## external variable sources
   source /opt/docker/scripts/.color_codes.conf
-  source /opt/docker/scripts/.vars_docker.conf
+  source /opt/docker/scripts/.vars_docker.env
 
 # function definitions
   fnc_help_docker_commands() {
@@ -45,9 +45,11 @@
 
 # docker_commands_list -- function and alias for this script file
   fnc_docker_commands(){ sh "${docker_scripts}/docker_commands_list.sh" "${@}"; }
-  alias dcmd="fnc_docker_commands -c"
-  alias dlist="fnc_docker_commands";
+  alias dcmd="fnc_docker_commands"
+  alias dlist="fnc_docker_commands -f";
   # alias dscripts='source /opt/docker/scripts/docker_commands_list.sh --create'
+
+  fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
 
 ## docker script definitions
   # filename="/opt/docker/scripts/docker_commands_list.sh"
@@ -85,39 +87,42 @@
     echo
     }
   fnc_list_scripts() {
-    echo -e " ┌────────────────────┬────────────────────────┬──────────────────────────"
-    echo -e " │       ${blu:?}COMMAND${def:?}      │    ${blu:?}SCRIPT FILE NAME${def:?}    │   ${blu:?}COMMAND DESCRIPTION${def:?}"
-    echo -e " ├────────────────────┼────────────────────────┼──────────────────────────"
-    echo -e " │${cyn:?} dcmd / dlist       ${def:?}│ ${ylw:?}docker_commands_list   ${def:?}│ ${cyn:?}lists${def:?} available custom Docker function aliases for use in terminal."
-    echo -e " ├──${blu:?} docker list ${def:?}─────┼────────────────────────┼──────────────────────────"
-    echo -e " │${cyn:?} dlc                ${def:?}│ ${ylw:?}docker_list_container  ${def:?}│ ${cyn:?}lists${def:?} currently deployed ${grn:?}docker containers${def:?} and/or services"
-    echo -e " │${cyn:?} dlg / dcg / dsg    ${def:?}│ ${ylw:?}docker_list_configs    ${def:?}│ ${cyn:?}lists${def:?} ${grn:?}config files${def:?} in the custom QNAP Docker folder structure"
-    echo -e " │${cyn:?} dli / dlimg        ${def:?}│ ${ylw:?}docker_system_image    ${def:?}│ ${cyn:?}lists${def:?} ${grn:?}docker images${def:?} currently stored on this system"
-    echo -e " │${cyn:?} dln                ${def:?}│ ${ylw:?}docker_system_network  ${def:?}│ ${cyn:?}lists${def:?} currently created docker ${grn:?}networks${def:?}"
-    echo -e " │${cyn:?} dls                ${def:?}│ ${ylw:?}docker_list_stack      ${def:?}│ ${cyn:?}lists${def:?} currently deployed ${grn:?}docker swarm stacks${def:?} and services"
-    echo -e " │${cyn:?} dlv                ${def:?}│ ${ylw:?}docker_system_volume   ${def:?}│ ${cyn:?}lists${def:?} currently created docker ${grn:?}volumes${def:?}"
-    echo -e " ├──${blu:?} docker compose ${def:?}──┼────────────────────────┼──────────────────────────"
-    echo -e " │${cyn:?} dcf / dcfolders    ${def:?}│ ${ylw:?}docker_compose_folders ${def:?}│ ${cyn:?}creates ${grn:?}compose folder structure${def:?}" # for (1 - 9 listed) stacks"
-    echo -e " │${cyn:?} dcb / dcbounce     ${def:?}│ ${ylw:?}docker_compose_bounce  ${def:?}│ ${cyn:?}removes${def:?} then ${cyn:?}recreates${def:?} a docker compose container "
-    echo -e " │${cyn:?} dcs / docker_compose_start      ${def:?}│ ${ylw:?}docker_compose_start   ${def:?}│ ${cyn:?}starts${def:?} (brings 'up') a docker compose container"
-    echo -e " │${cyn:?} dcp / dcstop       ${def:?}│ ${ylw:?}docker_compose_stop    ${def:?}│ ${cyn:?}stops${def:?} (brings 'down') a docker compose container"
-    echo -e " ├──${blu:?} docker service ${def:?}──┼────────────────────────┼──────────────────────────"
-    echo -e " │${cyn:?} dve / dverror      ${def:?}│ ${ylw:?}docker_service_error   ${def:?}│ ${cyn:?}lists${def:?} docker services with ${grn:?}last error${def:?}"
-    echo -e " │${cyn:?} dvl / dvlogs       ${def:?}│ ${ylw:?}docker_service_logs    ${def:?}│ ${cyn:?}lists${def:?} docker service and container ${grn:?}logs${def:?}"
-    echo -e " ├──${blu:?} docker stack ${def:?}────┼────────────────────────┼──────────────────────────"
-    echo -e " │${cyn:?} dsf / dwfolder     ${def:?}│ ${ylw:?}docker_stack_folders   ${def:?}│ ${cyn:?}creates ${grn:?}stack folder structure${def:?}" # for (1 - 9 listed) stacks"
-    echo -e " │${cyn:?} dsb / dsbounce     ${def:?}│ ${ylw:?}docker_stack_bounce    ${def:?}│ ${cyn:?}removes${def:?} then ${cyn:?}recreates${def:?} a docker stack container"
-    echo -e " │${cyn:?} dss / dsstart      ${def:?}│ ${ylw:?}docker_stack_start     ${def:?}│ ${cyn:?}deploys ${grn:?}stack${def:?}, or a list of stacks in '${ylw:?}.../${cyn:?}swarm_stacks.conf${def:?}'"
-    echo -e " │${cyn:?} dsp / dsstop       ${def:?}│ ${ylw:?}docker_stack_stop      ${def:?}│ ${cyn:?}removes ${grn:?}stack${def:?}, or ${cyn:?}-all${def:?} stacks listed via 'docker stack ls'"
-    echo -e " ├──${blu:?} docker swarm ${def:?}────┼────────────────────────┼──────────────────────────"
-    echo -e " │${cyn:?} dwin / dwinit      ${def:?}│ ${ylw:?}docker_swarm_init      ${def:?}│ ${grn:?}swarm initialization script${def:?}, does ${ylw:?}NOT${def:?} download new scripts"
-    echo -e " │${cyn:?} dwup / dwsup       ${def:?}│ ${ylw:?}docker_swarm_setup     ${def:?}│ ${grn:?}swarm setup script${def:?}, ${ylw:?}DOES${def:?} download new install scripts"
-    echo -e " │${cyn:?} dwlv / dwclr       ${def:?}│ ${ylw:?}docker_swarm_leave     ${def:?}│ ${red:?}USE WITH CAUTION!${def:?} prunes & clears all docker stacks, ${grn:?}leaves swarm${def:?}"
-    echo -e " ├──${blu:?} docker system ${def:?}───┼────────────────────────┼──────────────────────────"
-    echo -e " │${cyn:?} dcln / dclean      ${def:?}│ ${ylw:?}docker_system_clean    ${def:?}│ ${cyn:?}stops${def:?} and ${cyn:?}removes ${grn:?}ALL containers${def:?}, images, networks, and volumes"
-    echo -e " │${cyn:?} dprn / dprune      ${def:?}│ ${ylw:?}docker_system_prune    ${def:?}│ ${cyn:?}prunes${def:?} ${grn:?}UNUSED containers${def:?}, images, networks, and volumes"
-    echo -e " └────────────────────┴────────────────────────┴──────────────────────────"
-    echo -e "   NOTE: Commands accept '${cyn:?}options${def:?}' which can be listed using the '${cyn:?}--help${def:?}' flag after the command, e.g. ${CYN:?}dls --${cyn:?}help${def:?} "
+    echo -e " ┌────────────────────┬─────────────────────────┬──────────────────────────"
+    echo -e " │       ${blu:?}COMMAND${def:?}      │    ${blu:?}SCRIPT FILE NAME${def:?}     │   ${blu:?}COMMAND DESCRIPTION${def:?}"
+    echo -e " ├────────────────────┼─────────────────────────┼──────────────────────────"
+    echo -e " │${cyn:?} dcmd / dlist       ${def:?}│ ${ylw:?}docker_commands_list    ${def:?}│ ${cyn:?}lists${def:?} available custom Docker function aliases for use in terminal."
+    echo -e " ├──${blu:?} docker list ${def:?}─────┼─────────────────────────┼──────────────────────────"
+    echo -e " │${cyn:?} dlc                ${def:?}│ ${ylw:?}docker_list_container   ${def:?}│ ${cyn:?}lists${def:?} currently deployed ${grn:?}docker containers${def:?} and/or services"
+    echo -e " │${cyn:?} dlg / dcg / dsg    ${def:?}│ ${ylw:?}docker_list_configs     ${def:?}│ ${cyn:?}lists${def:?} ${grn:?}config files${def:?} in the custom QNAP Docker folder structure"
+    echo -e " │${cyn:?} dli / dlimg        ${def:?}│ ${ylw:?}docker_system_image     ${def:?}│ ${cyn:?}lists${def:?} ${grn:?}docker images${def:?} currently stored on this system"
+    echo -e " │${cyn:?} dln                ${def:?}│ ${ylw:?}docker_system_network   ${def:?}│ ${cyn:?}lists${def:?} currently created docker ${grn:?}networks${def:?}"
+    echo -e " │${cyn:?} dls                ${def:?}│ ${ylw:?}docker_list_stack       ${def:?}│ ${cyn:?}lists${def:?} currently deployed ${grn:?}docker swarm stacks${def:?} and services"
+    echo -e " │${cyn:?} dlv                ${def:?}│ ${ylw:?}docker_system_volume    ${def:?}│ ${cyn:?}lists${def:?} currently created docker ${grn:?}volumes${def:?}"
+    echo -e " ├──${blu:?} docker compose ${def:?}──┼─────────────────────────┼──────────────────────────"
+    echo -e " │${cyn:?} dcf / dcfolders    ${def:?}│ ${ylw:?}docker_compose_folders  ${def:?}│ ${cyn:?}creates ${grn:?}compose folder structure${def:?}" # for (1 - 9 listed) stacks"
+    echo -e " │${cyn:?} dcb / dcbounce     ${def:?}│ ${ylw:?}docker_compose_bounce   ${def:?}│ ${cyn:?}removes${def:?} then ${cyn:?}recreates${def:?} a docker compose container "
+    echo -e " │${cyn:?} dcl / dclogs       ${def:?}│ ${ylw:?}docker_compose_logs     ${def:?}│ ${cyn:?}lists${def:?} docker compose ${grn:?}logs${def:?}"
+    echo -e " │${cyn:?} dcn / dcnet        ${def:?}│ ${ylw:?}docker_compose_networks ${def:?}│ ${cyn:?}creates${def:?} docker compose ${grn:?}networks${def:?}"
+    echo -e " │${cyn:?} dcs / dcstart      ${def:?}│ ${ylw:?}docker_compose_start    ${def:?}│ ${cyn:?}starts${def:?} (brings 'up') a docker compose container"
+    echo -e " │${cyn:?} dcp / dcstop       ${def:?}│ ${ylw:?}docker_compose_stop     ${def:?}│ ${cyn:?}stops${def:?} (brings 'down') a docker compose container"
+    echo -e " │${cyn:?} dct / dctest       ${def:?}│ ${ylw:?}docker_compose_test     ${def:?}│ ${cyn:?}tests${def:?} a docker compose file config by displaying all variables villed in"
+    echo -e " ├──${blu:?} docker service ${def:?}──┼─────────────────────────┼──────────────────────────"
+    echo -e " │${cyn:?} dve / dverror      ${def:?}│ ${ylw:?}docker_service_error    ${def:?}│ ${cyn:?}lists${def:?} docker services with ${grn:?}last error${def:?}"
+    echo -e " │${cyn:?} dvl / dvlogs       ${def:?}│ ${ylw:?}docker_service_logs     ${def:?}│ ${cyn:?}lists${def:?} docker service and container ${grn:?}logs${def:?}"
+    echo -e " ├──${blu:?} docker stack ${def:?}────┼─────────────────────────┼──────────────────────────"
+    echo -e " │${cyn:?} dsf / dwfolder     ${def:?}│ ${ylw:?}docker_stack_folders    ${def:?}│ ${cyn:?}creates ${grn:?}stack folder structure${def:?}" # for (1 - 9 listed) stacks"
+    echo -e " │${cyn:?} dsb / dsbounce     ${def:?}│ ${ylw:?}docker_stack_bounce     ${def:?}│ ${cyn:?}removes${def:?} then ${cyn:?}recreates${def:?} a docker stack container"
+    echo -e " │${cyn:?} dss / dsstart      ${def:?}│ ${ylw:?}docker_stack_start      ${def:?}│ ${cyn:?}deploys ${grn:?}stack${def:?}, or a list of stacks in '${ylw:?}.../${cyn:?}swarm_stacks.conf${def:?}'"
+    echo -e " │${cyn:?} dsp / dsstop       ${def:?}│ ${ylw:?}docker_stack_stop       ${def:?}│ ${cyn:?}removes ${grn:?}stack${def:?}, or ${cyn:?}-all${def:?} stacks listed via 'docker stack ls'"
+    echo -e " ├──${blu:?} docker swarm ${def:?}────┼─────────────────────────┼──────────────────────────"
+    echo -e " │${cyn:?} dwin / dwinit      ${def:?}│ ${ylw:?}docker_swarm_init       ${def:?}│ ${grn:?}swarm initialization script${def:?}, does ${ylw:?}NOT${def:?} download new scripts"
+    echo -e " │${cyn:?} dwup / dwsup       ${def:?}│ ${ylw:?}docker_swarm_setup      ${def:?}│ ${grn:?}swarm setup script${def:?}, ${ylw:?}DOES${def:?} download new install scripts"
+    echo -e " │${cyn:?} dwlv / dwclr       ${def:?}│ ${ylw:?}docker_swarm_leave      ${def:?}│ ${red:?}USE WITH CAUTION!${def:?} prunes & clears all docker stacks, ${grn:?}leaves swarm${def:?}"
+    echo -e " ├──${blu:?} docker system ${def:?}───┼─────────────────────────┼──────────────────────────"
+    echo -e " │${cyn:?} dcln / dclean      ${def:?}│ ${ylw:?}docker_system_clean     ${def:?}│ ${cyn:?}stops${def:?} and ${cyn:?}removes ${grn:?}ALL containers${def:?}, images, networks, and volumes"
+    echo -e " │${cyn:?} dprn / dprune      ${def:?}│ ${ylw:?}docker_system_prune     ${def:?}│ ${cyn:?}prunes${def:?} ${grn:?}UNUSED containers${def:?}, images, networks, and volumes"
+    echo -e " └────────────────────┴─────────────────────────┴──────────────────────────"
+    echo -e "   NOTE: Commands accept '${cyn:?}options${def:?}' which can be listed using the '${cyn:?}--help${def:?}' flag after the command, e.g. ${cyn:?}dls --${cyn:?}help${def:?} "
     echo
     }
   fnc_create_aliases(){
@@ -145,8 +150,9 @@
 
     docker_exec(){ docker exec -it "$(docker ps -f name="${1}" --format "{{.ID}}")" /bin/sh; }
     alias dkex="docker_exec"
+    alias dkx="docker_exec"
 
-    ipcheck(){ echo "Container IP: $(docker container exec -it "${*}" wget -qO- ipinfo.io)"; }
+    ipcheck(){ echo "Container IP: $(docker container exec -it "${*}" curl ipinfo.io)"; }
     alias checkip='ipcheck'
     # portcheck(){ curl -sq -b cookies.txt "http://${QIP}:${QPORT}/container-station/api/v1/system/port/tcp/${1}"; }
     # alias checkport='portcheck'
@@ -167,6 +173,10 @@
     docker_compose_folders(){ sh "${docker_scripts}/docker_compose_folders.sh" "${@}"; }
     alias dcf="docker_compose_folders";
 
+    # docker_compose_edit -- opens a ../compose.yml file in nano text editor
+    docker_compose_edit(){ nano "${docker_compose}/$1/compose.yml"; }
+    alias dce="docker_compose_edit"
+
     # docker_compose_start -- starts the entered container using preconfigured docker_compose files
     docker_compose_start(){ sh "${docker_scripts}/docker_compose_start.sh" "${@}"; }
     alias dcu="docker_compose_start"; # "Up"
@@ -175,8 +185,14 @@
     # docker_compose_stop -- stops the entered container
     docker_compose_stop(){ sh "${docker_scripts}/docker_compose_stop.sh" "${@}"; }
     alias dcd="docker_compose_stop"; # "Down"
-    alias dcp="docker_compose_stop"; # "stoP"
-    alias dcr="docker_compose_stop"; # "Remove"
+    alias dcp="docker_compose_stop -p"; # "stoP"
+    alias dcr="docker_compose_stop -r"; # "Remove"
+
+    # docker_compose_test -- displays the indicated compose file with variables/secrets filled in
+    docker_compose_test(){ sh "${docker_scripts}/docker_compose_test.sh" "${@}"; }
+    alias dcc="docker_compose_test";
+    alias dct="docker_compose_test";
+    alias dctest="docker_compose_test";
 
     # docker_compose_logs -- displays 50 log entries for the indicated docker compose container
     docker_compose_logs(){ sh "${docker_scripts}/docker_compose_logs.sh" "${@}"; }
@@ -340,15 +356,15 @@
     ("-s"|"--scripts")
       fnc_list_scripts;
       ;;
-    (""|"-f"|"--functions")
+    ("-f"|"--functions")
       fnc_list_aliases;
       fnc_list_scripts;
       ;;
-    ("-c"|"--create")
+    (""|"-c"|"--create")
       fnc_create_aliases ""; # register docker aliases and custom commands
       # [ ! -e "${docker_scripts}/.profile" ] && ln -s /opt/etc/profile "${docker_scripts}/.profile" # create link to 'entware-std' profile
       ;;
     (*)
-      fnc_help_docker_commands;
+      fnc_invalid_syntax;
       ;;
   esac
