@@ -1,12 +1,24 @@
 #!/bin/bash
 
 # external variables used in this script
-  blu=$'\e[94m'
-  cyn=$'\e[96m'
-  grn=$'\e[92m'
-  red=$'\e[91m'
-  ylw=$'\e[93m'
-  def=$'\e[0m'
+  # blu=$'\e[94m'
+  # cyn=$'\e[96m'
+  # grn=$'\e[92m'
+  # red=$'\e[91m'
+  # ylw=$'\e[93m'
+  # def=$'\e[0m'
+  ## testing a new way to set color variables
+  export red=$'\033[38;2;255;000;000m'
+  export orn=$'\033[38;2;255;075;075m'
+  export ylw=$'\033[38;2;255;255;000m'
+  export grn=$'\033[38;2;000;170;000m'
+  export cyn=$'\033[38;2;085;255;255m'
+  export blu=$'\033[38;2;000;120;255m'
+  export prp=$'\033[38;2;085;085;255m'
+  export mgn=$'\033[38;2;255;085;255m'
+  export wht=$'\033[38;2;255;255;255m'
+  export blk=$'\033[38;2;025;025;025m'
+  export def=$'\033[m'
   # red="$(printf "\033[38;2;255;000;000m")"; export red
   # orn="$(printf "\033[38;2;255;075;075m")"; export orn
   # ylw="$(printf "\033[38;2;255;255;000m")"; export ylw

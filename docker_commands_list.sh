@@ -49,7 +49,7 @@
   alias dlist="fnc_docker_commands";
   # alias dscripts='source /opt/docker/scripts/docker_commands_list.sh --create'
 
-  fnc_invalid_syntax(){ echo -e "${YLW:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${YLW:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
+  fnc_invalid_syntax(){ echo -e "$ylw:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help$ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
 
 ## docker script definitions
   # filename="/opt/docker/scripts/docker_commands_list.sh"
