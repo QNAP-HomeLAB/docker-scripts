@@ -124,7 +124,7 @@
           fnc_remove_cmd_option "${stacks_list[@]}"
           fnc_container_remove "${stacks_list[@]}"
           ;;
-        ("-s"|"--stop")
+        ("-p"|"--stop")
           # unset "stacks_list[0]"
           action="stop"
           fnc_remove_cmd_option "${stacks_list[@]}"
