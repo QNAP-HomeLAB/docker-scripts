@@ -1,45 +1,17 @@
 #!/bin/bash
 
 # external variables used in this script
-  # blu=$'\e[94m'
-  # cyn=$'\e[96m'
-  # grn=$'\e[92m'
-  # red=$'\e[91m'
-  # ylw=$'\e[93m'
-  # def=$'\e[0m'
-  ## testing a new way to set color variables
-  export red=$'\033[38;2;255;000;000m'
-  export orn=$'\033[38;2;255;075;075m'
-  export ylw=$'\033[38;2;255;255;000m'
-  export grn=$'\033[38;2;000;170;000m'
-  export cyn=$'\033[38;2;085;255;255m'
-  export blu=$'\033[38;2;000;120;255m'
-  export prp=$'\033[38;2;085;085;255m'
-  export mgn=$'\033[38;2;255;085;255m'
-  export wht=$'\033[38;2;255;255;255m'
-  export blk=$'\033[38;2;025;025;025m'
-  export def=$'\033[m'
-  # red="$(printf "\033[38;2;255;000;000m")"; export red
-  # orn="$(printf "\033[38;2;255;075;075m")"; export orn
-  # ylw="$(printf "\033[38;2;255;255;000m")"; export ylw
-  # grn="$(printf "\033[38;2;000;170;000m")"; export grn
-  # cyn="$(printf "\033[38;2;085;255;255m")"; export cyn
-  # blu="$(printf "\033[38;2;000;120;255m")"; export blu
-  # prp="$(printf "\033[38;2;085;085;255m")"; export prp
-  # mgn="$(printf "\033[38;2;255;085;255m")"; export mgn
-  # wht="$(printf "\033[38;2;255;255;255m")"; export wht
-  # blk="$(printf "\033[38;2;025;025;025m")"; export blk
-  # def="$(printf "\033[m")"; export def
-
-## default docker folder, updates according to script inputs below
-docker_dir="/opt/docker"
-
-  export docker_folder="${docker_folder:-$docker_dir}"
-  export docker_scripts="${docker_folder}/scripts"
-  export docker_appdata="${docker_folder}/appdata"
-  export docker_compose="${docker_folder}/compose"
-  export docker_secrets="${docker_folder}/secrets"
-  export docker_swarm="${docker_folder}/swarm"
+  red=$'\033[38;2;255;000;000m'; export red
+  orn=$'\033[38;2;255;075;075m'; export orn
+  ylw=$'\033[38;2;255;255;000m'; export ylw
+  grn=$'\033[38;2;000;170;000m'; export grn
+  cyn=$'\033[38;2;085;255;255m'; export cyn
+  blu=$'\033[38;2;000;120;255m'; export blu
+  prp=$'\033[38;2;085;085;255m'; export prp
+  mgn=$'\033[38;2;255;085;255m'; export mgn
+  wht=$'\033[38;2;255;255;255m'; export wht
+  blk=$'\033[38;2;025;025;025m'; export blk
+  def=$'\033[m'; export def
 
 # script help message check and display when called
   fnc_help_scripts_setup(){
@@ -69,58 +41,113 @@ docker_dir="/opt/docker"
     fi;
     }
   fnc_variable_input(){
-    unset docker_uid docker_gid
+    unset docker_uid docker_gid exit_code
+    docker_uid=$(id -u docker 2>/dev/null)
+    docker_gid=$(id -g docker 2>/dev/null)
     ## ask user to input `docker_uid` and `docker_gid` with defaults of 1000
-    echo -e " If User ID: $(id -u) and Group ID: $(id -g) are correct for the docker user, enter them below."
-    echo -e " Otherwise, check the UID and GID manually with the '${mgn:?}id docker${def:?}' command after exiting this script."
-    while read -p " - ${red:?}Exit${def:?} this script so you can look up the proper UID/GID?  (Y)es / [N]o " input; do
+    echo -e " Currently configured 'docker' user ID: ${orn:?}${docker_uid}${def:?} and docker group ID: ${orn:?}${docker_gid}${def}"
+    while read -p " - ${mgn:?}Confirm${def:?} these are the correct UID/GID?  [Y]es - continue / (N)o - exit " input; do
       case "${input}" in
-        ([yY]|[yY][eE][sS])
-          exit 1;
-          ;;
-        ([nN]|[nN][oO]|"")
-          read -p " Enter the UID of the docker user: " docker_uid && docker_uid="${docker_uid:-1000}";
-          read -p " Enter the GID of the docker user: " docker_gid && docker_gid="${docker_gid:-1000}";
+        ([yY]|[yY][eE][sS]|"") return ;;
+        ([nN]|[nN][oO])
+          echo -e "If you want to set the UID and GID manually, enter below, otherwise enter 'n' to exit the script."
+          while read -p " Enter the UID of the docker user [1000]: " input_uid; do
+            case "${input_uid}" in
+              ([nN]|[nN][oO])
+                exit_code=1 ;;
+              (*)
+                if [[ ${input_uid} =~ ^[0-9]+$ ]];
+                then docker_uid="${input_uid:-1000}"
+                else fnc_invalid_input
+                fi ;;
+            esac
+          done
+          while read -p " Enter the GID of the docker user [1000]: " input_gid; do
+            case "${input_gid}" in
+              ([nN]|[nN][oO])
+                exit_code=1 ;;
+              (*)
+                if [[ ${input_gid} =~ ^[0-9]+$ ]];
+                then docker_gid="${input_gid:-1000}"
+                else fnc_invalid_input
+                fi ;;
+            esac
+          done
           ;;
         (*)
           fnc_invalid_input
           ;;
       esac
     done;
-    while read -p " Currently configured Docker directory is ${cyn:?}${docker_folder}${def:?}  Is this correct?  [Y]es / (N)o " input; do
+    if [[ exit_code -eq 1 ]]; then
+      echo -e " Look up the correct UID/GID with the '${mgn:?}id -u docker${def:?}' and '${mgn:?}id -g docker${def:?}' commands.\n"
+      exit 1
+    fi
+
+    ## ask user to confirm the docker path, updates according to user input
+    while read -p "\n Currently configured 'docker' directory is ${cyn:?}${docker_dir}${def:?}  Is this correct?  [Y]es / (N)o " input; do
       case "${input}" in
-        ([yY]|[yY][eE][sS]|"")
-          return;
-          ;;
+        ([yY]|[yY][eE][sS]|"") return ;;
         ([nN]|[nN][oO])
-          read -p " Enter the Docker directory: " docker_folder && docker_folder="${docker_folder:-$docker_dir}";
+          read -p " Enter the Docker directory [${docker_dir}]: " input_dkdir
           ;;
         (*)
           fnc_invalid_input
           ;;
       esac
     done
+    docker_dir="${input_dkdir:-$docker_dir}"; export docker_dir
+    docker_folder="${docker_folder:-$HOME/docker}"; export docker_folder
+    docker_scripts="${docker_folder}/scripts"; export docker_scripts
+    docker_appdata="${docker_folder}/appdata"; export docker_appdata
+    docker_compose="${docker_folder}/compose"; export docker_compose
+    docker_secrets="${docker_folder}/secrets"; export docker_secrets
+    docker_swarm="${docker_folder}/swarm"; export docker_swarm
+
+    ## ask user to confirm media data path, updates according to user input
+    while read -p " Currently configured Media (Data) path is ${cyn:?}${data_dir}${def:?}  Is this correct?  [Y]es / (N)o " input; do
+      case "${input}" in
+        ([yY]|[yY][eE][sS]|"") return ;;
+        ([nN]|[nN][oO])
+          read -p " Enter the Media (Data) path [${data_dir}]: " input_data ;;
+        (*)
+          fnc_invalid_input ;;
+      esac
+    done
+    data_dir="${input_data:-$data_dir}"; export data_dir
     }
   fnc_create_directories(){
     # fnc_check_sudo
     if [[ ! -d "${docker_folder}" ]]; then
       ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_folder}"
       ${var_sudo}chmod g+s "${docker_folder}"
-      ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_folder}"/{appdata,compose,swarm}
-      ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 776 -d "${docker_scripts}"
-      ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 660 -d "${docker_secrets}"
+      if [[ ! -d "${docker_appdata}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_appdata}"; fi
+      if [[ ! -d "${docker_compose}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_compose}"; fi
+      if [[ ! -d "${docker_scripts}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 776 -d "${docker_scripts}"; fi
+      if [[ ! -d "${docker_secrets}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 660 -d "${docker_secrets}"; fi
+      if [[ ! -d "${docker_swarm}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_swarm}"; fi
     fi
     ## create symlink from $HOME/docker to $docker_folder
-    if [[ ! -d "{$HOME}"/docker ]]; then ln -s "${docker_folder}" "${HOME}"/docker; fi
+    if [[ ! -d "{$HOME}/docker" ]]; then ln -s "${docker_folder}" "${HOME}/docker"; fi
     ## update the docker_dir variable in this script
     ${var_sudo}sed -i "s|docker_dir=/opt/docker|docker_dir=${docker_folder}|g" "${docker_scripts}/docker_scripts_setup.sh";
     }
   fnc_download_scripts(){
     # fnc_check_sudo
+    # download all script files from the qnap-homelab repo to the $docker_scripts directory
     ${var_sudo}wget -O - https://api.github.com/repos/qnap-homelab/docker-scripts/tarball/master | ${var_sudo}tar -xzf - -C "${docker_scripts}" --strip=1;
+
+    # copy .vars_docker.conf (example file) to .vars_docker.env
+    ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" "${docker_scripts}/.vars_docker.conf" "${docker_scripts}/.vars_docker.env";
+
+    ## update .vars_docker.env with variables input or changed via user input in this script
+    ${var_sudo}sed -i "s|var_uid=1000|var_uid=${docker_uid}|g" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo}sed -i "s|var_gid=1000|var_gid=${docker_gid}|g" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo}sed -i "s|data_dir=/mnt/data|data_dir=${data_dir}|g" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo}sed -i "s|docker_dir=/opt/docker|docker_dir=${docker_dir}|g" "${docker_scripts}/.vars_docker.env";
+
+    # fix ownership of all files and folders inside $docker_scripts
     ${var_sudo}chown -R "${docker_uid}":"${docker_gid}" -R "${docker_scripts}";
-    ${var_sudo}sed -i "s/var_uid=1000/var_uid=${docker_uid}/g" "${docker_scripts}/.vars_docker.env";
-    ${var_sudo}sed -i "s/var_gid=1000/var_gid=${docker_gid}/g" "${docker_scripts}/.vars_docker.env";
     }
   fnc_distro_specific_tasks(){
     ## get distribution common name
@@ -138,6 +165,8 @@ docker_dir="/opt/docker"
           exit_code=1;
         fi
         if [[ exit_code -eq 1 ]]; then exit 1; fi
+        data_dir=/share/Multimedia
+        docker_dir=/share/docker
         fnc_create_directories
         ## create symlink from docker_folder to /share/docker for qnap nas only
         if [[ -d "/share/docker" ]] && [[ ! -d "${docker_folder}" ]]; then ln -s "/share/docker" "${docker_folder}"; fi
@@ -150,6 +179,8 @@ docker_dir="/opt/docker"
         # ln -s "${file}" "${docker_scripts}"/.profile ## create a symlink to /opt/etc/profile
         ;;
       (*)
+        data_dir=/mnt/data
+        docker_dir=/opt/docker
         fnc_create_directories
         ;;
     esac
