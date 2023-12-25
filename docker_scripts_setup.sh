@@ -28,8 +28,8 @@
   case "$1" in ("-h"|*"help"*) fnc_help_scripts_setup ;; esac
 
 ## function definitions
-  fnc_intro_scripts_setup(){ echo -e "${blu:?}[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION ${ylw:?}STARTING${blu:?} <-]${def:?}"; echo; }
-  fnc_outro_scripts_setup(){ echo -e "${blu:?}[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION ${grn:?}COMPLETE${blu:?} <-]${def:?}"; echo; }
+  fnc_intro_scripts_setup(){ echo; echo -e "${blu:?}[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION ${ylw:?}STARTING${blu:?} <-]${def:?}"; echo; }
+  fnc_outro_scripts_setup(){ echo; echo -e "${blu:?}[-> DOCKER HOMELAB TERMINAL SCRIPT INSTALLATION ${grn:?}COMPLETE${blu:?} <-]${def:?}"; echo; }
   fnc_invalid_input(){ echo -e "${ylw:?}INVALID INPUT${def:?}: Must be any case-insensitive variation of '(Y)es' or '(N)o'."; }
   # fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; exit 1; }
   # fnc_nothing_to_do(){ echo -e " >> ${ylw:?}DOCKER HOMELAB FILES ALREADY EXIST, AND WILL NOT BE OVERWRITTEN${def:?} << "; echo; }
@@ -45,6 +45,7 @@
     docker_uid=$(id -u docker 2>/dev/null)
     docker_gid=$(id -g docker 2>/dev/null)
     ## ask user to input `docker_uid` and `docker_gid` with defaults of 1000
+    # echo -e " Currently configured 'docker' user ID: ${orn:?}${docker_uid}${def:?} and docker group ID: ${orn:?}${docker_gid}${def}"
     while read -p " ${mgn:?}Confirm${def:?} the 'docker' user ID: ${orn:?}${docker_uid:-UNKNOWN}${def:?} and docker group ID: ${orn:?}${docker_gid:-UNKNOWN}${def}?  [Y]es - continue / (N)o - manual entry : " input; do
       case "${input}" in
         [yY]|[yY][eE][sS]|"") break ;;
@@ -96,7 +97,7 @@
     ## ask user to confirm the docker path, updates according to user input
     while read -p " Currently configured 'docker' directory is ${cyn:?}${docker_dir}${def:?}  Is this correct?  [Y]es / (N)o " input; do
       case "${input}" in
-        [yY]|[yY][eE][sS]|"") return ;;
+        [yY]|[yY][eE][sS]|"") break ;;
         [nN]|[nN][oO])
           read -p " Enter the Docker directory [${docker_dir}]: " input_dkdir
           ;;
@@ -114,13 +115,17 @@
     docker_swarm="${docker_folder}/swarm"; export docker_swarm
 
     ## ask user to confirm media data path, updates according to user input
-    while read -p " Currently configured Media (Data) path is ${cyn:?}${data_dir}${def:?}  Is this correct?  [Y]es / (N)o " input; do
+    while read -p " Currently configured Media (Data) path is ${cyn:?}${input_data:-$data_dir}${def:?}  Is this correct?  [Y]es / (N)o " input; do
       case "${input}" in
-        [yY]|[yY][eE][sS]|"") return ;;
+        [yY]|[yY][eE][sS]|"")
+          break
+          ;;
         [nN]|[nN][oO])
-          read -p " Enter the Media (Data) path [${data_dir}]: " input_data ;;
+          read -p " Enter the Media (Data) path [${data_dir}]: " input_data
+          ;;
         *)
-          fnc_invalid_input ;;
+          fnc_invalid_input
+          ;;
       esac
     done
     data_dir="${input_data:-$data_dir}"; export data_dir
@@ -144,7 +149,8 @@
   fnc_download_scripts(){
     # fnc_check_sudo
     # download all script files from the qnap-homelab repo to the $docker_scripts directory
-    ${var_sudo}wget -O - https://api.github.com/repos/qnap-homelab/docker-scripts/tarball/master | ${var_sudo}tar -xzf - -C "${docker_scripts}" --strip=1;
+    ${var_sudo}wget -qO - https://api.github.com/repos/qnap-homelab/docker-scripts/tarball/master | ${var_sudo}tar -xzf - -C "${docker_scripts}" --strip=1
+    echo -e " ${grn:?}Successfully${def:?} downloaded docker helper scripts."
 
     # copy .vars_docker.conf (example file) to .vars_docker.env
     ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" "${docker_scripts}/.vars_docker.conf" "${docker_scripts}/.vars_docker.env";
