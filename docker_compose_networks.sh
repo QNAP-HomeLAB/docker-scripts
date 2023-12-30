@@ -37,8 +37,12 @@
   }
 
 case "${1}" in
-  -c|--create) fnc_create_networks ;;
-  -d|--delete) fnc_delete_networks ;;
-  -l|--list) fnc_list_networks ;;
-  *) fnc_nothing_to_do ;;
+  "-c"|"--create")
+    fnc_create_networks ;;
+  "-d"|"--delete")
+    fnc_delete_networks ;;
+  "-l"|"--list"|"")
+    fnc_list_networks ;;
+  *)
+    fnc_nothing_to_do ;;
 esac

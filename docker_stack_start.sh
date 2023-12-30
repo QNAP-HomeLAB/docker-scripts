@@ -30,7 +30,7 @@
     if [[ ! "${bounce_list[*]}" ]]; then fnc_deploy_all
       for stack in "${!deploy_list[@]}"; do
         if [[ "${deploy_list[stack]}" = "." ]]; then unset deploy_list[stack]; fi
-        if [[ -f "${docker_swarm}"/"${deploy_list[stack]}"/"${deploy_list[stack]}${conftype}.yml" ]]; then config_list="${config_list} ${deploy_list[stack]}"; fi
+        if [[ -f "${docker_swarm}/${deploy_list[stack]}/${deploy_list[stack]}${conftype}.yml" ]]; then config_list="${config_list} ${deploy_list[stack]}"; fi
       done
       unset deploy_list IFS; IFS=$'\n'; deploy_list=("${config_list[@]}"); unset config_list IFS
     else fnc_deploy_bounce
@@ -88,32 +88,32 @@
 # perform stack setup and deployment tasks
   for stack in "${deploy_list[@]}"; do
     # check if indicated stack configuration file exists, otherwise exit
-    if [[ -f "${docker_swarm}"/"${stack}"/"${stack}.yml" ]]; then
+    if [[ -f "${docker_swarm}/${stack}/${conftype}.yml" ]]; then
       # echo -e "${cyn:?} -> DEPLOY '${cyn:?}${stack}${cyn:?}' STACK <-${def:?}"
       # check if required folders exist, create if missing
       if [[ ! -d "${docker_appdata}/${stack}" || ! -d "${docker_swarm}/${stack}" ]]; then
         echo -e "Creating ${ylw:?}Required folders${def:?}"
-        . ${docker_scripts}/docker_stack_folders.sh "${stack}"
+        . "${docker_scripts}/docker_stack_folders.sh" "${stack}"
       fi
       # check for required traefik files, create if missing
       if [[ "${stack}" = [tT][rR][aA][eE][fF][iI][kK] ]]; then
         # create required letsencrypt certificate file if not already made
-        if [[ ! -f ${docker_appdata}/traefik/acme.json ]]; then
+        if [[ ! -f "${docker_appdata}/traefik/acme.json" ]]; then
           echo -e "Creating ${ylw:?}Required cert file${def:?}"
-          mkdir -p ${docker_appdata}/traefik
-          touch ${docker_appdata}/traefik/acme.json
-          chmod 600 ${docker_appdata}/traefik/acme.json
+          mkdir -p "${docker_appdata}/traefik"
+          touch "${docker_appdata}/traefik/acme.json"
+          chmod 600 "${docker_appdata}/traefik/acme.json"
         fi
         # check if required log files exist, create if missing
-        if [[ ! -f "${docker_appdata}"/"${stack}"/access.log || ! -f "${docker_appdata}"/"${stack}"/"${stack}".log ]]; then
+        if [[ ! -f "${docker_appdata}/${stack}/access.log" || ! -f "${docker_appdata}/${stack}/${stack}.log" ]]; then
           echo -e "Creating ${ylw:?}Required log file(s)${def:?}"
-          touch "${docker_appdata}"/"${stack}"/{access.log,"${stack}".log}
-          chmod 600 "${docker_appdata}"/"${stack}"/{access.log,"${stack}".log}
+          touch "${docker_appdata}/${stack}/{access.log,${stack}.log"}
+          chmod 600 "${docker_appdata}/${stack}/{access.log,${stack}.log"}
         fi
       fi
       # deploy the requested stack
-      # docker stack deploy "${stack}" -c "${docker_swarm}"/"${stack}"/"${stack}".yml --prune
-      docker stack deploy "${stack}" -c "${docker_swarm}"/"${stack}"/compose.yml --prune
+      # docker stack deploy "${stack}" -c "${docker_swarm}/${stack}/${conftype}.yml" --prune
+      docker stack deploy "${stack}" -c "${docker_swarm}/${stack}/${conftype}.yml" --prune
       sleep 1
       if [[ ! "$(docker service ls --filter name="${stack}" -q)" ]]; then
         echo -e " ${red:?}ERROR${def:?}: '${cyn:?}${stack}${def:?}' ${ylw:?}*NOT* DEPLOYED${def:?}"; echo

@@ -52,9 +52,9 @@
   fnc_invalid_syntax(){ echo -e "${ylw:?} >> INVALID OPTION SYNTAX, USE THE ${cyn:?}-help${ylw:?} OPTION TO DISPLAY PROPER SYNTAX <<${def:?}"; }
 
 ## docker script definitions
-  # filename="/opt/docker/scripts/docker_commands_list.sh"
-  # . $filename -c && echo " >> '$filename' successfully loaded" || echo " -- ERROR: could not import '$filename'"
-  # [ -e $filename ] && . $filename -c || echo " -- ERROR: '$filename' does not exist"
+  # src="/opt/docker/scripts/docker_commands_list.sh"
+  # . $src && echo " >> '$src' successfully loaded" || echo " -- ERROR: could not import '$src'"
+  # [ -e $src ] && . $src || echo " -- ERROR: '$src' does not exist"
 
   fnc_list_aliases() {
     echo -e " ┌─────────┬──────────────────┬───────────────────────────────────────────"
@@ -143,7 +143,7 @@
     # alias dkmssh='docker-machine ssh'
 
     docker_version(){ docker --version && docker compose version; }
-    alias dkcv="docker_version"
+    alias dkver="docker_version"
 
     docker_compose_info(){ docker ps -f name="${1}"; }
     alias dcinfo="docker_compose_info"
@@ -158,6 +158,38 @@
     # alias checkport='portcheck'
     vpncheck(){ echo "     Host IP: $(wget -qO- ifconfig.me)" && echo "Container IP: $(docker container exec -it "${*}" wget -qO- ipinfo.io/ip)"; }
     alias checkvpn='vpncheck'
+
+    ## folder and file permissions
+    export perms_cert="a-rwx,u=rwX,g=,o=" # 600 # -rw-rw----
+    export perms_conf="a-rwx,u+rwX,g=rwX,o=rX" # 664 # -rw-rw-r--
+    export perms_data="a-rwx,u+rwX,g=rwX,o=" # 660 # -rw-rw----
+    # export docker_dir="a=rwx,o-w" # 775 # -rwxrwxr-x
+
+    docker_file_permissions(){
+        case "${1}" in
+            ("-a"|"--all") files_dir="${docker_folder}" ;;
+            ("-l"|"--local") files_dir="${docker_compose}/${1}" ;;
+            ("-w"|"--swarm") files_dir="${docker_swarm}/${1}" ;;
+            (*)
+              echo "invalid syntax"
+        esac
+        # update restricted access file permissions to 600
+        files_restricted=("acme.json" "*.crt" "*.key" "*.pub" "*.ppk" "*.pem");
+        for file in "${files_restricted[@]}"; do
+            ${var_sudo}find "$files_dir" -iname "$file" -type f -exec chmod "$perms_cert" {} +
+        done
+        # update limited access file permissions to 660
+        files_limited=(".conf" "*.env" ".log" "*.secret");
+        for file in "${files_limited[@]}"; do
+            ${var_sudo}find "$files_dir" -iname "$file" -type f -exec chmod "$perms_data" {} +
+        done
+        # # update general access file permissions to 664
+        # files_general=("*.yml" "*.yaml" "*.toml");
+        # for file in "${files_general[@]}"; do
+        #     ${var_sudo}find "$docker_dir" -iname "$file" -type f -exec chmod "$perms_conf" {} +
+        # done
+        }
+
 
     appdata(){ cd "${docker_appdata}/${1}" || return; }
     compose(){ cd "${docker_compose}/${1}" || return; }
@@ -199,7 +231,7 @@
     alias dcl="docker_compose_logs";
 
     # docker_compose_networks -- creates required networks for docker compose container manipulation via scripts
-    docker_compose_networks(){ sh "${docker_scripts}/docker_compose_networks.sh"; }
+    docker_compose_networks(){ sh "${docker_scripts}/docker_compose_networks.sh" "${@}"; }
     alias dcn="docker_compose_networks";
 
     # # docker_folders_create -- creates the folder structure required for each listed docker container
@@ -230,11 +262,39 @@
     alias dls="docker_list_stack";
     alias dlw="docker_list_stack";
 
+    bounce(){
+      if [[ $1 = "-all" ]]; then
+          IFS=$'\n';
+          list=( $(docker stack ls --format {{.Name}}) );
+        else
+          list="$@"
+      fi
+      for i in "${list[@]}"; do
+        docker stack rm "$i"
+      done
+      for i in "${list[@]}"; do
+        while [ "$(docker service ls --filter label=com.docker.stack.namespace=$i -q)" ] || [ "$(docker network ls --filter label=com.docker.stack.namespace=$i -q)" ]; do sleep 1; done
+      done
+      for i in "${list[@]}"; do
+        docker stack deploy "$i" -c /share/docker/swarm/"$i"/compose.yml
+      done
+      unset list IFS
+      }
     # docker_stack_bounce -- removes then re-deploys the listed stacks or '-all' stacks with config files in the folder structure
     # docker_stack_bounce(){ sh "${docker_scripts}/docker_stack_bounce.sh" "${@}"; }
     docker_stack_bounce(){
+      limit=15
       docker stack rm "${1}"
-      docker stack deploy "${1}" -c "${docker_swarm}/${1}/${1}-stack.yml"
+      until [ -z "$(docker service ls --filter label=com.docker.stack.namespace=$1 -q)" ] || [ "$limit" -lt 0 ]; do
+        sleep 1;
+        ((limit--))
+      done
+      limit=15
+      until [ -z "$(docker network ls --filter label=com.docker.stack.namespace=$1 -q)" ] || [ "$limit" -lt 0 ]; do
+        sleep 1;
+        ((limit--))
+      done
+      docker stack deploy "${1}" -c "${docker_swarm}/${1}/compose.yml"
       }
     alias dsb="docker_stack_bounce";
     alias dwb="docker_stack_bounce";
@@ -251,7 +311,8 @@
 
     # docker_stack_deploy -- deploys a single stack as defind in the configs folder structure
     # docker_stack_start(){ sh "${docker_scripts}/docker_stack_start.sh" "${@}"; }
-    docker_stack_start(){ docker stack deploy "${1}" -c "${docker_swarm}/${1}/${1}-stack.yml"; }
+    # docker_stack_start(){ docker stack deploy "${1}" -c "${docker_swarm}/${1}/compose.yml"; }
+    docker_stack_start(){ docker stack deploy "${1}" -c "${docker_swarm}/${1}/compose.yml"; }
     alias dsd="docker_stack_start"; # "Deploy"
     alias dss="docker_stack_start"; # "Start"
     alias dsu="docker_stack_start"; # "Up"

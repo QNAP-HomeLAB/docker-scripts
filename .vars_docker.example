@@ -27,6 +27,7 @@ var_public_ip="" # OPTIONAL. Be careful using this unless you have a static ip, 
 var_basic_auth="admin:$$apr1$$a0m8c2x6$$NoASfJAKF6lVquLYx0Urh/"
 #
 ## Media storage directory
+data_dir=/mnt/data
 media_folder="/share/Multimedia" # the `/share` prefix is QTS specific for all Shared Folders
 media_audio_books="${media_folder}/audio/books"
 media_audio_music="${media_folder}/audio/music"
@@ -80,8 +81,6 @@ var_net_ingress="ingress"
 var_subnet_ingress="10.21.0.0/16"
 var_gateway_ingress="10.21.0.254"
 #
-data_dir=/mnt/data
-#
 ## Folder heirarchy for Drauku's folder structure, modified from gkoerk's famously awesome folder structure for stacks.
 docker_dir=/opt/docker
 docker_folder="$HOME/docker"
@@ -93,7 +92,7 @@ docker_dkswarm="${docker_folder}/dkswarm"
 docker_runtime="${docker_folder}/runtime" # map this to fast storage on your NAS, such as an SSD cache volume
 docker_scripts="${docker_folder}/scripts" # map this to wherever you store the qnaphomelab-docker-scripts repository
 #
-## Ensure the 'var_script_vars' variable contents exactly references the copy of '.vars_docker.conf' file. Default: '.vars_docker.env'
+## Ensure the 'var_script_vars' variable contents exactly references the copy of '.vars_docker.example' file. Default: '.vars_docker.env'
 var_script_vars="${docker_scripts}/.vars_docker.env"
 #
 ## This is the common name for all your docker compose config files. Default: 'compose.yml'

@@ -61,7 +61,7 @@
     }
   fnc_check_env(){
     if [[ ! -f "${docker_scripts}/.vars_docker.env" ]];
-    then install -o $var_uid -g $var_gid -m $appdata_permissions "${docker_scripts}/.vars_docker.conf" "${docker_scripts}/.vars_docker.env";
+    then install -o $var_uid -g $var_gid -m $appdata_permissions "${docker_scripts}/.vars_docker.example" "${docker_scripts}/.vars_docker.env";
     fi;
     }
   fnc_check_sudo(){
