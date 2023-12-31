@@ -30,6 +30,10 @@
     ## configuration types
     export docker_config_types=("build" "local" "swarm")
 
+    export docker_fnc_file="$docker_dir/docker_functions"
+    export docker_env_file="$docker_dir/.docker.env"
+    export docker_env_example="$docker_dir/docker.env.example"
+
     ## docker secrets path
     export docker_secrets="$docker_dir/secrets"
 
@@ -38,47 +42,41 @@
     export build_appdata="$build_path/appdata"
     export build_configs="$build_path/configs"
     export build_compose="compose.yml"
+    # declare -A build_scope
+    # build_scope[data]="${build_path}/appdata"
+    # build_scope[conf]="${build_path}/configs"
+    # build_scope[file]="compose.yml"
 
     ## docker compose local
     export local_path="$docker_dir/local"
     export local_appdata="$local_path/appdata"
     export local_configs="$local_path/configs"
     export local_compose="compose.yml"
+    # declare -A local_scope
+    # local_scope[data]="${local_path}/appdata"
+    # local_scope[conf]="${local_path}/configs"
+    # local_scope[file]="compose.yml"
 
     ## docker swarm configs folders
     export swarm_path="$docker_dir/swarm"
     export swarm_appdata="$swarm_path/appdata"
     export swarm_configs="$swarm_path/configs"
     export swarm_compose="compose.yml"
+    # declare -A swarm_scope
+    # swarm_scope[data]="${swarm_path}/appdata"
+    # swarm_scope[conf]="${swarm_path}/configs"
+    # swarm_scope[file]="compose.yml"
 
-    export docker_appdata=("${local_appdata}" "${swarm_appdata}")
-    export docker_configs=("${local_configs}" "${swarm_configs}")
-
-    export docker_fnc_file="$docker_dir/docker_functions"
-
-    export docker_env_file="$docker_dir/.docker.env"
-    export docker_env_example="$docker_dir/docker.env.example"
-
-    # declare -A vars
-    # vars[build]=(
-    #     [data]="${build_path}/appdata"
-    #     [conf]="${build_path}/configs"
-    #     [file]="compose.yml"
-    #     )
-    # vars[local]=(
-    #     [data]="${local_path}/appdata"
-    #     [conf]="${local_path}/configs"
-    #     [file]="compose.yml"
-    #     )
-    # vars[swarm]=(
-    #     [data]="${swarm_path}/appdata"
-    #     [conf]="${swarm_path}/configs"
-    #     [file]="compose.yml"
-    #     )
-
-    # declare -A test
-    # test[first]=1
-    # echo "${test[first]}"
+    # export docker_appdata=(
+    #     "${build_scope[data]}"
+    #     "${local_scope[data]}"
+    #     "${swarm_scope[data]}"
+    #     ) #("${build_appdata}" "${local_appdata}" "${swarm_appdata}")
+    # export docker_configs=(
+    #     "${build_scope[conf]}"
+    #     "${local_scope[conf]}"
+    #     "${swarm_scope[conf]}"
+    #     ) #("${build_configs}" "${local_configs}" "${swarm_configs}")
 
     ## assign docker UID and GID variables
     docker_uid=$(id -u "${docker_usr:-docker}") # docker UID (1000)
@@ -91,6 +89,28 @@
     export perms_conf='a-rwx,u+rwX,g=rwX,o=rX' # 664 # -rw-rw-r--
     export perms_data='a-rwx,u+rwX,g=rwX,o=' # 660 # -rw-rw----
     # export docker_dir'a=rwx,o-w' # 775 # -rwxrwxr-x
+
+    # might want to consolidate these with scope config vars above
+    set_scope_vars(){
+        case "$config_type" in
+            ("build")
+                export appdata_path="${build_appdata}"
+                export configs_path="${build_configs}"
+                export compose_file="${build_compose}"
+                ;;
+            ("local")
+                export appdata_path="${local_appdata}"
+                export configs_path="${local_configs}"
+                export compose_file="${local_compose}"
+                ;;
+            ("swarm")
+                export appdata_path="${swarm_appdata}"
+                export configs_path="${swarm_configs}"
+                export compose_file="${swarm_compose}"
+                ;;
+            (*) msg_error "INVALID CONFIG TYPE" "Please inform the script maintainer."; return;;
+        esac
+        }
 
     ## check if sudo is needed for some commands used in these custom docker functions
     if [[ $(id -u) -ne 0 ]]; then var_sudo="$(command -v sudo 2>/dev/null) "; else var_sudo=""; fi; #unset var_sudo; fi;
@@ -179,27 +199,6 @@
 
     ## create blank .docker.env if download fails
     if [[ ! -f "$docker_env_file" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_data}" /dev/null "$docker_env_file"; fi;
-
-    set_scope_vars(){
-        case "$config_type" in
-            ("build")
-                export appdata_path="${build_appdata}"
-                export configs_path="${build_configs}"
-                export compose_file="${build_compose}"
-                ;;
-            ("local")
-                export appdata_path="${local_appdata}"
-                export configs_path="${local_configs}"
-                export compose_file="${local_compose}"
-                ;;
-            ("swarm")
-                export appdata_path="${swarm_appdata}"
-                export configs_path="${swarm_configs}"
-                export compose_file="${swarm_compose}"
-                ;;
-            (*) msg_error "INVALID CONFIG TYPE" "Please inform the script maintainer."; return;;
-        esac
-        }
 
     ## symlink verification function
     fnc_verify_symlink(){ if [[ ! -f "$1" ]]; then ln -s "$2" "$1"; fi; }
