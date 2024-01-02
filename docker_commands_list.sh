@@ -176,12 +176,12 @@
         # update restricted access file permissions to 600
         files_restricted=("acme.json" "*.crt" "*.key" "*.pub" "*.ppk" "*.pem");
         for file in "${files_restricted[@]}"; do
-            ${var_sudo}find "$files_dir" -iname "$file" -type f -exec chmod "$perms_cert" {} +
+            ${var_sudo:-} find "$files_dir" -iname "$file" -type f -exec chmod "$perms_cert" {} +
         done
         # update limited access file permissions to 660
         files_limited=(".conf" "*.env" ".log" "*.secret");
         for file in "${files_limited[@]}"; do
-            ${var_sudo}find "$files_dir" -iname "$file" -type f -exec chmod "$perms_data" {} +
+            ${var_sudo:-} find "$files_dir" -iname "$file" -type f -exec chmod "$perms_data" {} +
         done
         # # update general access file permissions to 664
         # files_general=("*.yml" "*.yaml" "*.toml");
@@ -265,15 +265,15 @@
     bounce(){
       if [[ $1 = "-all" ]]; then
           IFS=$'\n';
-          list=( $(docker stack ls --format {{.Name}}) );
+          list=( "$(docker stack ls --format '{{.Name}}')" );
         else
-          list="$@"
+          list=("$*")
       fi
       for i in "${list[@]}"; do
         docker stack rm "$i"
       done
       for i in "${list[@]}"; do
-        while [ "$(docker service ls --filter label=com.docker.stack.namespace=$i -q)" ] || [ "$(docker network ls --filter label=com.docker.stack.namespace=$i -q)" ]; do sleep 1; done
+        while [ "$(docker service ls --filter label=com.docker.stack.namespace="$i" -q)" ] || [ "$(docker network ls --filter label=com.docker.stack.namespace="$i" -q)" ]; do sleep 1; done
       done
       for i in "${list[@]}"; do
         docker stack deploy "$i" -c /share/docker/swarm/"$i"/compose.yml
@@ -285,12 +285,12 @@
     docker_stack_bounce(){
       limit=15
       docker stack rm "${1}"
-      until [ -z "$(docker service ls --filter label=com.docker.stack.namespace=$1 -q)" ] || [ "$limit" -lt 0 ]; do
+      until [ -z "$(docker service ls --filter label=com.docker.stack.namespace="$1" -q)" ] || [ "$limit" -lt 0 ]; do
         sleep 1;
         ((limit--))
       done
       limit=15
-      until [ -z "$(docker network ls --filter label=com.docker.stack.namespace=$1 -q)" ] || [ "$limit" -lt 0 ]; do
+      until [ -z "$(docker network ls --filter label=com.docker.stack.namespace="$1" -q)" ] || [ "$limit" -lt 0 ]; do
         sleep 1;
         ((limit--))
       done
