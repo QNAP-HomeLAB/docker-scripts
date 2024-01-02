@@ -85,10 +85,10 @@
     export docker_gid #&& echo "DEBUG: docker GID: ${docker_gid}"
 
     ## folder and file permissions
-    export perms_cert='a-rwx,u=rwX,g=,o=' # 600 # -rw-rw----
-    export perms_conf='a-rwx,u+rwX,g=rwX,o=rX' # 664 # -rw-rw-r--
-    export perms_data='a-rwx,u+rwX,g=rwX,o=' # 660 # -rw-rw----
-    # export docker_dir'a=rwx,o-w' # 775 # -rwxrwxr-x
+    perms_cert='a-rwx,u=rwX,g=,o='; export perms_cert # 600 # -rw-rw----
+    perms_conf='a-rwx,u+rwX,g=rwX,o=rX'; export perms_conf # 664 # -rw-rw-r--
+    perms_data='a-rwx,u+rwX,g=rwX,o='; export perms_data # 660 # -rw-rw----
+    perms_main='a=rwX,o-w'; export perms_main # 775 # -rwxrwxr-x
 
     # might want to consolidate these with scope config vars above
     set_scope_vars(){

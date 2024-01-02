@@ -124,20 +124,20 @@ fnc_variable_input(){
     }
 fnc_create_directory(){
     dir_path="${1}";
-    perms="${2:-755}";
+    permissions="${2:-755}";
     if [[ -z "${dir_path}" ]]; then
         echo -e " ${red:?}ERROR${def:?}: Missing required argument for 'fnc_create_directory' function."; return 1;
     fi
-    if [[ ! -d "${dir_path}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m ${perms} -d "${dir_path}"; fi
+    if [[ ! -d "${dir_path}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${permissions}" -d "${dir_path}"; fi
     }
 fnc_docker_dir_setup(){
     # fnc_check_sudo
 
     ## folder and file permissions
-    perms_main='a=rwX,o-w'; export perms_main # 775 # -rwxrwxr-x
     perms_cert='a-rwx,u=rwX,g=,o='; export perms_cert # 600 # -rw-rw----
     perms_conf='a-rwx,u+rwX,g=rwX,o=rX'; export perms_conf # 664 # -rw-rw-r--
     perms_data='a-rwx,u+rwX,g=rwX,o='; export perms_data # 660 # -rw-rw----
+    perms_main='a=rwX,o-w'; export perms_main # 775 # -rwxrwxr-x
 
     # if [[ ! -d "${docker_folder}" ]]; then
     #     ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_folder}"
@@ -148,13 +148,13 @@ fnc_docker_dir_setup(){
     # if [[ ! -d "${docker_scripts}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 776 -d "${docker_scripts}"; fi
     # if [[ ! -d "${docker_secrets}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 660 -d "${docker_secrets}"; fi
     # if [[ ! -d "${docker_swarm}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_swarm}"; fi
-    fnc_create_directory "${docker_folder}" "${perms_main}"
+    fnc_create_directory "${docker_folder}" "${perms_main}" # 755
     ${var_sudo:-} chmod g+s "${docker_folder}"
-    fnc_create_directory "${docker_appdata}" "${perms_data}"
-    fnc_create_directory "${docker_compose}" "${perms_conf}"
-    fnc_create_directory "${docker_swarm}" "${perms_conf}"
-    fnc_create_directory "${docker_scripts}" "${perms_main}"
-    fnc_create_directory "${docker_secrets}" "${perms_data}"
+    fnc_create_directory "${docker_appdata}" "${perms_data}" # 660
+    fnc_create_directory "${docker_compose}" "${perms_conf}" # 664
+    fnc_create_directory "${docker_swarm}" "${perms_conf}" # 664
+    fnc_create_directory "${docker_scripts}" "${perms_main}" # 775
+    fnc_create_directory "${docker_secrets}" "${perms_data}" # 660
     ## create symlink from $HOME/docker to $docker_folder
     if [[ ! -d "$HOME/docker" ]]; then ln -s "${docker_folder}" "$HOME/docker"; fi
     ## update the docker_dir variable in this script
