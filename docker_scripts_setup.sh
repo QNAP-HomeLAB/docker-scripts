@@ -37,14 +37,14 @@ fnc_check_sudo(){
     ## check if user id is 0, if not, set var_sudo
     user_id=$(id -u) || { echo "Error getting user id"; exit 1; }
     if [[ $user_id -ne 0 ]];
-    then var_sudo="$(command -v sudo 2>/dev/null) ";
+    then var_sudo="$(command -v sudo 2>/dev/null)";
     else unset var_sudo;
     fi;
     }
 fnc_variable_input(){
     unset docker_uid docker_gid exit_code
-    docker_uid=$(id -u docker 2>/dev/null)
-    docker_gid=$(id -g docker 2>/dev/null)
+    docker_uid=$(id -u docker 2>/dev/null) || { echo "Error getting docker user id"; return 1; }
+    docker_gid=$(id -g docker 2>/dev/null) || { echo "Error getting docker group id"; return 1; }
     ## ask user to input `docker_uid` and `docker_gid` with defaults of 1000
     # echo -e " Currently configured 'docker' user ID: ${orn:?}${docker_uid}${def:?} and docker group ID: ${orn:?}${docker_gid}${def}"
     while read -p " ${mgn:?}Confirm${def:?} the 'docker' user ID: ${orn:?}${docker_uid:-UNKNOWN}${def:?} and docker group ID: ${orn:?}${docker_gid:-UNKNOWN}${def}?  [Y]es - continue / (N)o - manual entry : " input; do
@@ -99,6 +99,8 @@ fnc_variable_input(){
                 fnc_invalid_input ;;
         esac
     done
+
+    # docker subfolder path variables
     docker_dir="${input_dkdir:-$docker_dir}"; export docker_dir
     docker_folder="${docker_folder:-$HOME/docker}"; export docker_folder
     docker_appdata="${docker_folder}/appdata"; export docker_appdata
@@ -120,39 +122,61 @@ fnc_variable_input(){
     done
     data_dir="${input_data:-$data_dir}"; export data_dir
     }
-fnc_create_directories(){
-    # fnc_check_sudo
-    if [[ ! -d "${docker_folder}" ]]; then
-        ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_folder}"
-        ${var_sudo}chmod g+s "${docker_folder}"
+fnc_create_directory(){
+    dir_path="${1}";
+    perms="${2:-755}";
+    if [[ -z "${dir_path}" ]]; then
+        echo -e " ${red:?}ERROR${def:?}: Missing required argument for 'fnc_create_directory' function."; return 1;
     fi
-    if [[ ! -d "${docker_appdata}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_appdata}"; fi
-    if [[ ! -d "${docker_compose}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_compose}"; fi
-    if [[ ! -d "${docker_scripts}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 776 -d "${docker_scripts}"; fi
-    if [[ ! -d "${docker_secrets}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 660 -d "${docker_secrets}"; fi
-    if [[ ! -d "${docker_swarm}" ]]; then ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_swarm}"; fi
+    if [[ ! -d "${dir_path}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m ${perms} -d "${dir_path}"; fi
+    }
+fnc_docker_dir_setup(){
+    # fnc_check_sudo
+
+    ## folder and file permissions
+    perms_main='a=rwX,o-w'; export perms_main # 775 # -rwxrwxr-x
+    perms_cert='a-rwx,u=rwX,g=,o='; export perms_cert # 600 # -rw-rw----
+    perms_conf='a-rwx,u+rwX,g=rwX,o=rX'; export perms_conf # 664 # -rw-rw-r--
+    perms_data='a-rwx,u+rwX,g=rwX,o='; export perms_data # 660 # -rw-rw----
+
+    # if [[ ! -d "${docker_folder}" ]]; then
+    #     ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_folder}"
+    #     ${var_sudo:-} chmod g+s "${docker_folder}"
+    # fi
+    # if [[ ! -d "${docker_appdata}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_appdata}"; fi
+    # if [[ ! -d "${docker_compose}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_compose}"; fi
+    # if [[ ! -d "${docker_scripts}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 776 -d "${docker_scripts}"; fi
+    # if [[ ! -d "${docker_secrets}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 660 -d "${docker_secrets}"; fi
+    # if [[ ! -d "${docker_swarm}" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 755 -d "${docker_swarm}"; fi
+    fnc_create_directory "${docker_folder}" "${perms_main}"
+    ${var_sudo:-} chmod g+s "${docker_folder}"
+    fnc_create_directory "${docker_appdata}" "${perms_data}"
+    fnc_create_directory "${docker_compose}" "${perms_conf}"
+    fnc_create_directory "${docker_swarm}" "${perms_conf}"
+    fnc_create_directory "${docker_scripts}" "${perms_main}"
+    fnc_create_directory "${docker_secrets}" "${perms_data}"
     ## create symlink from $HOME/docker to $docker_folder
     if [[ ! -d "$HOME/docker" ]]; then ln -s "${docker_folder}" "$HOME/docker"; fi
     ## update the docker_dir variable in this script
-    ${var_sudo}sed -i "s|docker_dir=/opt/docker|docker_dir=${docker_folder}|g" "${docker_scripts}/docker_scripts_setup.sh";
+    ${var_sudo:-} sed -i "s|docker_dir=/opt/docker|docker_dir=${docker_folder}|g" "${docker_scripts}/docker_scripts_setup.sh";
     }
     fnc_download_scripts(){
     # fnc_check_sudo
     # download all script files from the qnap-homelab repo to the $docker_scripts directory
-    ${var_sudo}wget -qO - https://api.github.com/repos/qnap-homelab/docker-scripts/tarball/master | ${var_sudo}tar -xzf - -C "${docker_scripts}" --strip=1
+    ${var_sudo:-} wget -qO - https://api.github.com/repos/qnap-homelab/docker-scripts/tarball/master | ${var_sudo:-} tar -xzf - -C "${docker_scripts}" --strip=1
     echo -e " ${grn:?}Successfully${def:?} downloaded docker helper scripts."
 
     # copy .vars_docker.example to .vars_docker.env
-    ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" "${docker_scripts}/.vars_docker.example" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" "${docker_scripts}/.vars_docker.example" "${docker_scripts}/.vars_docker.env";
 
     ## update .vars_docker.env with variables input or changed via user input in this script
-    ${var_sudo}sed -i "s|var_uid=1000|var_uid=${docker_uid}|g" "${docker_scripts}/.vars_docker.env";
-    ${var_sudo}sed -i "s|var_gid=1000|var_gid=${docker_gid}|g" "${docker_scripts}/.vars_docker.env";
-    ${var_sudo}sed -i "s|data_dir=/mnt/data|data_dir=${data_dir}|g" "${docker_scripts}/.vars_docker.env";
-    ${var_sudo}sed -i "s|docker_dir=/opt/docker|docker_dir=${docker_dir}|g" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo:-} sed -i "s|var_uid=1000|var_uid=${docker_uid}|g" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo:-} sed -i "s|var_gid=1000|var_gid=${docker_gid}|g" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo:-} sed -i "s|data_dir=/mnt/data|data_dir=${data_dir}|g" "${docker_scripts}/.vars_docker.env";
+    ${var_sudo:-} sed -i "s|docker_dir=/opt/docker|docker_dir=${docker_dir}|g" "${docker_scripts}/.vars_docker.env";
 
     # fix ownership of all files and folders inside $docker_scripts
-    ${var_sudo}chown -R "${docker_uid}":"${docker_gid}" -R "${docker_scripts}";
+    ${var_sudo:-} chown -R "${docker_uid}":"${docker_gid}" -R "${docker_scripts}";
     }
     fnc_script_prep(){
     ## get distribution common name
@@ -173,7 +197,7 @@ fnc_create_directories(){
         data_dir=/share/Multimedia
         docker_dir=/share/docker
         fnc_variable_input
-        fnc_create_directories
+        fnc_docker_dir_setup
         ## create symlink from docker_folder to /share/docker for qnap nas only
         if [[ -d "/share/docker" ]] && [[ ! -d "${docker_folder}" ]]; then ln -s "/share/docker" "${docker_folder}"; fi
         # [[ -d "${docker_folder}" ]] && ln -s "/share/docker" "${docker_folder}"
@@ -188,7 +212,7 @@ fnc_create_directories(){
         data_dir=/mnt/data
         docker_dir=/opt/docker
         fnc_variable_input
-        fnc_create_directories
+        fnc_docker_dir_setup
         ;;
     esac
     ## check if ~/.bashrc automatically loads docker scripts
@@ -199,7 +223,7 @@ fnc_create_directories(){
     # create /opt/docker if not present
     if [ ! -d "${docker_folder}" ] ; then
         # fnc_check_sudo
-        ${var_sudo}install -o "${docker_uid}" -g "${docker_gid}" -m 755 "${docker_folder}";
+        ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m 755 "${docker_folder}";
     fi
     # ## create symlink from $HOME/docker to docker_folder
     # if [[ -d "${docker_folder}" ]] && [[ ! -d "$HOME/docker" ]]; then ln -s "${docker_folder}" "$HOME/docker"; fi
