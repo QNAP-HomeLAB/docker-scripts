@@ -22,20 +22,48 @@
 ##################### NOTHING BELOW HERE SHOULD BE CHANGED #####################
 ################################################################################
 
+## docker folder visual tree
+#  $HOME
+#   └── docker
+#       ├── common
+#       │   ├── .docker_env.example
+#       │   ├── docker_functions.sh
+#       │   └── secrets
+#       |       ├── my_secret_password.secret
+#       │       └── ...
+#       ├── local
+#       |   ├── appdata
+#       |   │   ├── appname
+#       |   │   └── ...
+#       |   └── configs
+#       |       ├── appname
+#       |       └── ...
+#       └── swarm
+#           ├── appdata
+#           │   ├── appname
+#           │   └── ...
+#           └── configs
+#               ├── appname
+#               └── ...
+
 ####################### docker uid/gid/directories setup #######################
 
-    ## alias to easily source this file
-    alias dkfnc='. $HOME/.docker_fnc'
 
     ## configuration types
     export docker_config_types=("build" "local" "swarm")
 
-    export docker_fnc_file="$docker_dir/docker_functions"
-    export docker_env_file="$docker_dir/.docker.env"
-    export docker_env_example="$docker_dir/docker.env.example"
+    ## docker common folder
+    export docker_common="$docker_dir/common"
 
     ## docker secrets path
-    export docker_secrets="$docker_dir/secrets"
+    export docker_secrets="$docker_common/secrets"
+
+    export docker_env_example="$docker_common/.vars_docker.example"
+    export docker_env_file="$docker_common/.docker.env"
+
+    ## alias to easily source this file
+    export docker_fnc_file="$docker_common/docker_functions.sh"
+    alias dkfnc='. $docker_fnc_file'
 
     ## docker build folders
     export build_path="$docker_dir/build"
@@ -79,10 +107,8 @@
     #     ) #("${build_configs}" "${local_configs}" "${swarm_configs}")
 
     ## assign docker UID and GID variables
-    docker_uid=$(id -u "${docker_usr:-docker}") # docker UID (1000)
-    export docker_uid #&& echo "DEBUG: docker UID: ${docker_uid}"
-    docker_gid=$(id -g "${docker_usr:-docker}") # docker GID (1000)
-    export docker_gid #&& echo "DEBUG: docker GID: ${docker_gid}"
+    docker_uid=$(id -u "${docker_usr:-docker}"); export docker_uid #; echo "DEBUG: docker UID: ${docker_uid}"
+    docker_gid=$(id -g "${docker_usr:-docker}"); export docker_gid #; echo "DEBUG: docker GID: ${docker_gid}"
 
     ## folder and file permissions
     perms_cert='a-rwx,u=rwX,g=,o='; export perms_cert # 600 # -rw-rw----
@@ -196,8 +222,10 @@
         fi
         }
 
-    fnc_file_download "https://raw.githubusercontent.com/drauku/bash-scripts/master/.bash_env" "$HOME/.bash_env";
-    fnc_file_download "https://raw.githubusercontent.com/drauku/bash-scripts/master/docker.env.example" "$docker_env_example" "$docker_env_file";
+    dkfnc_repo_url="https://raw.githubusercontent.com/qnap-homelab/docker-scripts/master";
+
+    fnc_file_download "$dkfnc_repo_url/.color_codes.conf" "$$HOME/.bash_env";
+    fnc_file_download "$dkfnc_repo_url/.vars_docker.example" "$docker_env_example" "$docker_env_file";
 
         # if [[ ! -f "$filename" ]]; then
         #     if ! wget "$file_url" -O "$filename";
@@ -208,11 +236,15 @@
     ## create blank .docker.env if download fails
     if [[ ! -f "$docker_env_file" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_data}" /dev/null "$docker_env_file"; fi;
 
-    ## symlink verification function
-    fnc_symlink_create(){ if [[ ! -f "$1" ]]; then ln -s "$2" "$1"; fi; }
+    ## symlink verify and create function
+    symlink_create(){ ## USAGE: symlink_create <symlink> <target>
+        local symlink="$1";
+        local target="$2";
+        if [[ ! -f "$symlink" ]]; then ln -s "$target" "$symlink"; fi;
+        }
 
     ## create the $HOME/.docker_fnc symlink if it does not exist
-    fnc_symlink_create "$HOME/.docker_fnc" "$docker_dir/docker_functions"
+    symlink_create "$HOME/.docker_fnc" "$docker_dir/docker_functions"
 
     verify_action(){ ## usage verify_action <message>
         msg_alert "" "$1";
