@@ -202,9 +202,9 @@
     fnc_file_download(){ # USAGE: fnc_file_download <url> <filepath> [symlink]
         # echo -e " DEBUG: 'fnc_file_download' args: $*"
         fnc_extract_option "$@";
-        local file_url="${operands[1]}"; #echo "file_url: $file_url";
-        local filename="${operands[2]}"; #echo "filename: $filename";
-        local filelink="${operands[3]}"; #echo "filelink: $filelink";
+        local file_url="${operands[0]}"; #echo "file_url: $file_url";
+        local filename="${operands[1]}"; #echo "filename: $filename";
+        local filelink="${operands[2]}"; #echo "filelink: $filelink";
         # local file_url="${1}";
         # local filename="${2}";
         # local filelink="${3}";
