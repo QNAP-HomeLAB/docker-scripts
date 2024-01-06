@@ -507,12 +507,12 @@
                 "-d"|"--delete"|"-r"|"--remove") # remove `..configs/$1/.env`
                     ${var_sudo:-} rm -f "${configs_path}/${stack}/.env";
                     ;;
-                *) # symlink .env to .docker.env.example if it does not exist
+                *) # symlink .env to .docker.env if it does not exist
                     echo " DEBUG: 'fnc_env_create' option: '$option' operands: '${stack}' configs_path: '$configs_path' 1: '$1' 2: '$2' *: '$*'"
                     validate_appname "${stack}";
                     if [[ -f "${configs_path}/${stack}/.env" ]];
                     then echo -e " > \`${configs_path}/${stack}/.env\` already exists. Verify the values in the \`.env\` file are correct. <";
-                    else symlink_create "${configs_path}/${stack}/.env" "${docker_env_example}";
+                    else symlink_create "${configs_path}/${stack}/.env" "${docker_env_file}";
                     # ln -s "${docker_env_file}" "${configs_path}/${operands[0]}/.env"; # symlinks .env to .docker.env
                     fi
                     ;;
@@ -556,6 +556,7 @@
         done
         # echo
         }
+    # TODO: fix the deletion of docker_folders and docker_files
     docker_folders_delete(){
         echo " DEBUG: 'docker_folders_delete' operands: '${operands[*]}' 1: '$1' 2: '$2' *: '$*'"
         for stack in "${operands[@]}"; do
