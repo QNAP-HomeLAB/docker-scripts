@@ -347,6 +347,12 @@
     docker_list_networks(){ docker network ls; echo; }
     alias dln="docker_list_networks"
 
+    ## docker common list functions
+    docker_common_list(){ echo "ls ${docker_common}"; /usr/bin/ls "${docker_common}"; echo; }
+    alias dklc="docker_common_list"
+    common(){ cd "${docker_common}/$1" || echo; return; }
+    alias dkc="common"
+    
     ## docker secrets list functions
     docker_secrets_list(){ echo "ls ${docker_secrets}"; /usr/bin/ls "${docker_secrets}"; echo; }
     alias dkls="docker_secrets_list"
