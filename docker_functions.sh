@@ -71,6 +71,7 @@
     export build_path="$docker_dir/build"
     export build_appdata="$build_path/appdata"
     export build_configs="$build_path/configs"
+    export build_runtime="$build_path/runtime"
     export build_compose="compose.yml"
     # declare -A build_scope
     # build_scope[data]="${build_path}/appdata"
@@ -81,6 +82,7 @@
     export local_path="$docker_dir/local"
     export local_appdata="$local_path/appdata"
     export local_configs="$local_path/configs"
+    export build_runtime="$local_path/runtime"
     export local_compose="compose.yml"
     # declare -A local_scope
     # local_scope[data]="${local_path}/appdata"
@@ -91,6 +93,7 @@
     export swarm_path="$docker_dir/swarm"
     export swarm_appdata="$swarm_path/appdata"
     export swarm_configs="$swarm_path/configs"
+    export swarm_runtime="$swarm_path/runtime"
     export swarm_compose="compose.yml"
     # declare -A swarm_scope
     # swarm_scope[data]="${swarm_path}/appdata"
