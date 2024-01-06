@@ -82,7 +82,7 @@
     export local_path="$docker_dir/local"
     export local_appdata="$local_path/appdata"
     export local_configs="$local_path/configs"
-    export build_runtime="$local_path/runtime"
+    export local_runtime="$local_path/runtime"
     export local_compose="compose.yml"
     # declare -A local_scope
     # local_scope[data]="${local_path}/appdata"
