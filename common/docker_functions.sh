@@ -235,8 +235,8 @@ fnc_file_download(){ # USAGE: fnc_file_download <url> <filepath> [symlink]
     }
 
 # initialize(){
-    fnc_file_download "$git_raw_url/.color_codes.conf" "$HOME/.bash_env";
-    fnc_file_download "$git_raw_url/.vars_docker.example" "$docker_env_example" "$docker_env_file";
+    fnc_file_download "$git_raw_url/color_codes.conf" "$HOME/.bash_env";
+    fnc_file_download "$git_raw_url/docker_vars.example" "$docker_env_example" "$docker_env_file";
 
     # if [[ ! -f "$filename" ]]; then
     #     if ! wget "$file_url" -O "$filename";
