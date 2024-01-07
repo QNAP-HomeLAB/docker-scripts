@@ -2,9 +2,9 @@
 ################################################################################
 # Place this file in $HOME/docker/ and name it docker_functions.sh
 # A quick and easy way to do this is to run one of these download commands:
-# git archive --remote=https://github.com/QNAP-HomeLAB/docker-scripts.git HEAD:docker_functions.sh $HOME/docker/common/docker_functions.sh | tar -xvf -
-# wget -qN 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/master/docker_functions.sh' -O $HOME/docker/common/docker_functions.sh
-# curl -s 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/master/docker_functions.sh' > $HOME/docker/common/docker_functions.sh
+# git archive --remote=https://github.com/QNAP-HomeLAB/docker-scripts.git HEAD:docker_functions.sh $HOME/docker/functions/common/docker_functions.sh | tar -xvf -
+# wget -qN 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common/docker_functions.sh' -O $HOME/docker/common/docker_functions.sh
+# curl -s 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common/docker_functions.sh' > $HOME/docker/common/docker_functions.sh
 ################################################################################
 ######### --> **** UPDATE THESE VARIABLES FOR YOUR ENVIRONMENT **** <-- ########
 
@@ -18,7 +18,8 @@ net_prefix_internal_only="172.27.2" ## DO NOT include the 4th octet
 net_prefix_reverse_proxy="172.27.3" ## DO NOT include the 4th octet
 net_prefix_ingress="10.27.0" ## DO NOT include the 4th octet
 
-git_raw_url="https://raw.githubusercontent.com/qnap-homelab/docker-scripts/master";
+git_raw_url="https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common"
+#https://raw.githubusercontent.com/qnap-homelab/docker-scripts/master"
 
 ################################################################################
 ##################### NOTHING BELOW HERE SHOULD BE CHANGED #####################
