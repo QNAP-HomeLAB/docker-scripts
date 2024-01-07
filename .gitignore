@@ -1,4 +1,30 @@
+# Ignore all hidden files
+.*
+
+# But not these files...
+
+!README.md
+!LICENSE
+
+# Ignore these directories
+build/
+local/
+swarm/
+common/secrets/
+
+# Ignore these file types
+*.bak
+*.cert
+*.crt
 *.env
-*profile*
-*shellcheck*
-*template*
+*.key
+*.log
+*.pem
+*.ppk
+*.pub
+*.secret
+
+# Ignore these specific files
+acme.json
+profile
+template
