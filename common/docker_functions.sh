@@ -576,8 +576,6 @@ docker_folders_create(){
                 if validate_appname "${stack}"; then
                     # echo -e " > Creating directories and files for the \` ${configs_path}/${stack} \` container <"; echo;
                     fnc_dir_create "${runtime_path}/${stack}" "${perms_conf}"
-                    fnc_env_create "${stack}";
-                    ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" /dev/null "${runtime_path}/${stack}/${compose_file}";
                     msg_success "CREATED" " \`${runtime_path}/${stack}\` runtime directory.";
                 fi;    
             fi;
