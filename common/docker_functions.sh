@@ -129,16 +129,19 @@ set_scope_vars(){
         ("build")
             export appdata_path="${build_appdata}"
             export configs_path="${build_configs}"
+            export runtime_path="${build_runtime}"
             export compose_file="${build_compose}"
             ;;
         ("local")
             export appdata_path="${local_appdata}"
             export configs_path="${local_configs}"
+            export runtime_path="${local_runtime}"
             export compose_file="${local_compose}"
             ;;
         ("swarm")
             export appdata_path="${swarm_appdata}"
             export configs_path="${swarm_configs}"
+            export runtime_path="${swarm_runtime}"
             export compose_file="${swarm_compose}"
             ;;
         (*)
@@ -566,6 +569,16 @@ docker_folders_create(){
                 msg_success "CREATED" " \`${configs_path}/${stack}\` configs directory and files.";
             fi;
         fi;
+        if [[ -d "${runtime_path}/${stack}" ]]; then
+                msg_info "\`${runtime_path:?}/${stack}\`" "already exists." #"Use option \`--force\` to overwrite."
+                # docheck=$((docheck + 2));
+            else # create docker container config directories and files
+                if validate_appname "${stack}"; then
+                    # echo -e " > Creating directories and files for the \` ${configs_path}/${stack} \` container <"; echo;
+                    fnc_dir_create "${runtime_path}/${stack}" "${perms_conf}"
+                    msg_success "CREATED" " \`${runtime_path}/${stack}\` runtime directory.";
+                fi;    
+            fi;
         # case "$docheck" in
         #     "1") echo " > Docker appdata directory for \`${appdata_path:?}/${stack}\` already exists.";;
         #     "2") echo " > Docker configs directory for \`${configs_path:?}/${stack}\` already exists.";;
