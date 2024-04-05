@@ -13,8 +13,19 @@ username="" #"admin"
 query_docker_paths(){ # Query for the docker config file paths
     echo -e "\nThis script creates a docker folder archive and optionally copies the archive to a remote server."
     echo -e "NOTE: This host must be set up to use SSH keys with the remote host.\n"
-    read -r -p "Enter the path to the docker config directory [~/.docker]: " docker_path
-    docker_path=${docker_path:-~/.docker}
+    read -r -p "Enter the path to the main docker directory [~/docker]: " docker_path
+    docker_path=${docker_path:-"$HOME/docker"}
+    if [ ! -d "$docker_path" ]; then
+        read -r -p ">>> '$docker_path' does not exist. Would you like to create it? [y]es / (n)o " create_answer
+        case "$create_answer" in
+            [yY][eE][sS]|[yY])
+                if ! mkdir -p "$docker_path"; then echo ">>> Failed to create '$docker_path'. Please create it manually. <<<"; fi;
+                ;;
+            *)
+                echo ">>> '$docker_path' does not exist, please create it manually. <<<"
+                ;;
+        esac
+    fi
     }
 
 set_list_of_containers(){ # Set the list of containers to be stopped and backed up
@@ -77,23 +88,24 @@ archive_create(){ # USAGE: archive_create
     # stop all containers and create archive if successful
     if manage_containers stop; then
         # set current backup date
-        backup_date=$(date +'%F')
+        backup_date=$(date +'%F-%H%M')
 
         # compress the files
         # if ! tar -czvf "$backup_path/docker-backup-$backup_date.tar.gz" "$HOME/docker/common" "$HOME/docker/local" "$HOME/docker/swarm"; then
+        # tar -czvf "$HOME/docker_archive/docker-backup-$(date +'%F-%H%M').tar.gz" "$HOME/docker/common" "$HOME/docker/local" "$HOME/docker/swarm"
         if ! tar -czvf "$backup_path/docker-backup-$backup_date.tar.gz" "$docker_path"; then
-            echo ">>> Failed to create archive. Please verify adequate disk space. Starting containers back up. <<<"
+            echo ">>> Failed to create archive. Please verify adequate disk space. Starting containers back up. <<<" >&2
         fi
 
         # start all containers
         if manage_containers start; then
             echo ">>> Successfully restarted containers. <<<"
         else
-            echo -e "\n>>> Failed to restart containers. Please restart containers manually. <<<\n"
+            echo -e "\n>>> Failed to restart containers. Please restart containers manually. <<<\n" >&2
             return 1
         fi
     else
-        echo -e "\n>>> Failed to stop containers. Please stop containers manually. <<<\n"
+        echo -e "\n>>> Failed to stop containers. Please stop containers manually. <<<\n" >&2
         return 1
     fi
     }
@@ -106,7 +118,7 @@ archive_copy_to_server(){ # USAGE: archive_copy_to_server
         rm "$backup_path/docker-backup-$backup_date.tar.gz"
         echo ">>> Successfully copied archive to remote server. <<<"
     else
-        echo -e ">>> Failed to copy archive to remote server. <<<\n"
+        echo -e ">>> Failed to copy archive to remote server. <<<\n" >&2
     fi
     }
 
