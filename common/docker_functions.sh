@@ -2,7 +2,7 @@
 ################################################################################
 # Place this file in $HOME/docker/ and name it docker_functions.sh
 # A quick and easy way to do this is to run one of these download commands:
-# git archive --remote=https://github.com/QNAP-HomeLAB/docker-scripts.git HEAD:docker_functions.sh $HOME/docker/functions/common/docker_functions.sh | tar -xvf -
+# git archive --remote=https://github.com/QNAP-HomeLAB/docker-scripts.git HEAD:common/docker_functions.sh $HOME/docker/functions/common/docker_functions.sh | tar -xvf -
 # wget -qN 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common/docker_functions.sh' -O $HOME/docker/common/docker_functions.sh
 # curl -s 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common/docker_functions.sh' > $HOME/docker/common/docker_functions.sh
 ################################################################################
@@ -18,18 +18,21 @@ net_prefix_internal_only="172.27.2" ## DO NOT include the 4th octet
 net_prefix_reverse_proxy="172.27.3" ## DO NOT include the 4th octet
 net_prefix_ingress="10.27.0" ## DO NOT include the 4th octet
 
-git_raw_url="https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common"
 #https://raw.githubusercontent.com/qnap-homelab/docker-scripts/master"
+git_common_url="https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common"
+git_local_url="https://raw.githubusercontent.com/qnap-homelab/docker-local/master"
+git_swarm_url="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/master"
 
 ################################################################################
 ##################### NOTHING BELOW HERE SHOULD BE CHANGED #####################
 ################################################################################
 
-## docker folder visual tree
+## docker folder schema
 #  $HOME
 #   └── docker
 #       ├── common
-#       │   ├── .docker_env.example
+#       │   ├── color_codes.conf
+#       │   ├── docker_vars.example
 #       │   ├── docker_functions.sh
 #       │   └── secrets
 #       |       ├── my_secret_password.secret
@@ -51,7 +54,6 @@ git_raw_url="https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/funct
 
 ####################### docker uid/gid/directories setup #######################
 
-
 ## configuration types
 export docker_config_types=("build" "local" "swarm")
 
@@ -66,7 +68,7 @@ export docker_env_file="$docker_common/.docker.env"
 
 ## alias to easily source this file
 export docker_fnc_file="$docker_common/docker_functions.sh"
-    alias dkfnc="source $docker_fnc_file"
+    alias dkfnc='source $docker_fnc_file'
 
 ## docker build folders
 export build_path="$docker_dir/build"
@@ -74,10 +76,6 @@ export build_appdata="$build_path/appdata"
 export build_configs="$build_path/configs"
 export build_runtime="$build_path/runtime"
 export build_compose="compose.yml"
-# declare -A build_scope
-# build_scope[data]="${build_path}/appdata"
-# build_scope[conf]="${build_path}/configs"
-# build_scope[file]="compose.yml"
 
 ## docker compose local
 export local_path="$docker_dir/local"
@@ -85,10 +83,6 @@ export local_appdata="$local_path/appdata"
 export local_configs="$local_path/configs"
 export local_runtime="$local_path/runtime"
 export local_compose="compose.yml"
-# declare -A local_scope
-# local_scope[data]="${local_path}/appdata"
-# local_scope[conf]="${local_path}/configs"
-# local_scope[file]="compose.yml"
 
 ## docker swarm configs folders
 export swarm_path="$docker_dir/swarm"
@@ -96,21 +90,6 @@ export swarm_appdata="$swarm_path/appdata"
 export swarm_configs="$swarm_path/configs"
 export swarm_runtime="$swarm_path/runtime"
 export swarm_compose="compose.yml"
-# declare -A swarm_scope
-# swarm_scope[data]="${swarm_path}/appdata"
-# swarm_scope[conf]="${swarm_path}/configs"
-# swarm_scope[file]="compose.yml"
-
-# export docker_appdata=(
-#     "${build_scope[data]}"
-#     "${local_scope[data]}"
-#     "${swarm_scope[data]}"
-#     ) #("${build_appdata}" "${local_appdata}" "${swarm_appdata}")
-# export docker_configs=(
-#     "${build_scope[conf]}"
-#     "${local_scope[conf]}"
-#     "${swarm_scope[conf]}"
-#     ) #("${build_configs}" "${local_configs}" "${swarm_configs}")
 
 ## assign docker UID and GID variables
 docker_uid=$(id -u "${docker_usr:-docker}"); export docker_uid #; echo "DEBUG: docker UID: ${docker_uid}"
@@ -126,32 +105,32 @@ perms_main='a=rwX,o-w'; export perms_main # 775 # -rwxrwxr-x
 set_scope_vars(){
     # echo "DEBUG: set_scope_vars: \`$1\`  config_type: \`$config_type\`"
     case "$config_type" in
-        ("build")
-            export appdata_path="${build_appdata}"
-            export configs_path="${build_configs}"
-            export runtime_path="${build_runtime}"
-            export compose_file="${build_compose}"
+        "build" )
+            appdata_path="${build_appdata}"
+            configs_path="${build_configs}"
+            runtime_path="${build_runtime}"
+            compose_file="${build_compose}"
             ;;
-        ("local")
-            export appdata_path="${local_appdata}"
-            export configs_path="${local_configs}"
-            export runtime_path="${local_runtime}"
-            export compose_file="${local_compose}"
+        "local" )
+            appdata_path="${local_appdata}"
+            configs_path="${local_configs}"
+            runtime_path="${local_runtime}"
+            compose_file="${local_compose}"
             ;;
-        ("swarm")
-            export appdata_path="${swarm_appdata}"
-            export configs_path="${swarm_configs}"
-            export runtime_path="${swarm_runtime}"
-            export compose_file="${swarm_compose}"
+        "swarm" )
+            appdata_path="${swarm_appdata}"
+            configs_path="${swarm_configs}"
+            runtime_path="${swarm_runtime}"
+            compose_file="${swarm_compose}"
             ;;
-        (*)
+        * )
             msg_error "INVALID CONFIG TYPE" "Please inform the script maintainer."
             return ;;
     esac
     }
 
 ## check if sudo is needed for some commands used in these custom docker functions
-if [[ $(id -u) -ne 0 ]]; then var_sudo="$(command -v sudo 2>/dev/null)"; else var_sudo=""; fi; #unset var_sudo; fi;
+if [ $(id -u) -ne 0 ]; then var_sudo="$(command -v sudo 2>/dev/null)"; else var_sudo=""; fi; #unset var_sudo; fi;
 
 ########################## message functions ############################
 
@@ -168,7 +147,7 @@ msg_warning(){ echo -e "${ylw:-} WARNING ${def:-}>> ${mgn:-}${1:-INVALID_ENTRY}$
 ########################## docker functions ############################
 
 ## USAGE: fnc_dir_create <directory> <permissions>
-fnc_dir_create(){ if [[ ! -d "$1" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "$2" -d "$1"; fi; }
+fnc_dir_create(){ if [ ! -d "$1" ]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "$2" -d "$1"; fi; }
 
 fnc_dir_create "${docker_secrets}" "${perms_data}"
 fnc_dir_create "${local_appdata}" "${perms_data}"
@@ -178,6 +157,7 @@ fnc_dir_create "${swarm_configs}" "${perms_conf}"
 
 ## separate option from args
 fnc_extract_option(){ # USAGE: fnc_extract_option $@
+    echo -e " DEBUG: 'fnc_extract_option' args: $*"
     ## initialize arrays
     local args=("$@")
     local opts=()
@@ -186,9 +166,9 @@ fnc_extract_option(){ # USAGE: fnc_extract_option $@
     ## iterate through arguments
     # echo -e "\n fnc_extract_option args: $*"
     for arg in "${args[@]}"; do
-        if [[ $arg = "." ]]; then
+        if [ "$arg" = "." ]; then
             continue;
-        elif [[ $arg == "-*" ]]; then
+        elif [ "$arg" == "-*" ]; then
             opts+=("$arg");
         else
             opds+=("$arg");
@@ -196,13 +176,14 @@ fnc_extract_option(){ # USAGE: fnc_extract_option $@
     done
 
     ## validate option count
-    if [[ ${#opts[@]} -gt 1 ]]; then
+    if [ ${#opts[@]} -gt 1 ]; then
         msg_error "More than one option found." "Check \`--help\` for usage syntax.";
         return 1;
     else ## export arrays
         option="${opts[*]}" ; #echo "option: ${opts[*]}";
         operands=("${opds[@]}"); #echo "operands: ${opds[*]}";
     fi
+    echo -e " DEBUG: 'fnc_extract_option' option: '${option}' operands: '${operands[*]}'"
     }
 
 ## Download file if it doesn't exist already, then optionally create a symlink
@@ -219,43 +200,43 @@ fnc_file_download(){ # USAGE: fnc_file_download <url> <filepath> [symlink]
     # echo -e " DEBUG: 'fnc_file_download' filename: '${filename}'"
     # echo -e " DEBUG: 'fnc_file_download' filelink: '${filelink}'"
 
-    if [[ -f "$filename" ]]; then
+    if [ -f "$filename" ]; then
         case "${option}" in
-            ("-f"|"--force")
+            "-f" | "--force" )
                 var_force="-N ";
                 # wget -N "$file_url" -O "$filename"
                 ;;
-            (*) # msg_info "File \`${filename}\` already exists." "Use option \`--force\` to overwrite.";
+            * ) # msg_info "File \`${filename}\` already exists." "Use option \`--force\` to overwrite.";
                 return;;
         esac
     elif ! wget -qN --show-progress "$var_force""$file_url" -O "$filename"; then
     # elif ! curl "$file_url" -o "$filename" -#; then
         msg_failure "DOWNLOAD FAILED" "check url: $file_url"; return 1;
     fi
-    if [[ -n "$filelink" ]]; then
+    if [ -n "$filelink" ]; then
         ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" "$filename" "$filelink";
     fi
     }
 
 # initialize(){
-    fnc_file_download "$git_raw_url/color_codes.conf" "$HOME/.bash_env";
-    fnc_file_download "$git_raw_url/docker_vars.example" "$docker_env_example" "$docker_env_file";
+    fnc_file_download "$git_common_url/color_codes.conf" "$HOME/.bash_env";
+    fnc_file_download "$git_common_url/docker_vars.example" "$docker_env_example" "$docker_env_file";
 
-    # if [[ ! -f "$filename" ]]; then
+    # if [ ! -f "$filename" ]; then
     #     if ! wget "$file_url" -O "$filename";
     #     then msg_failure "Failed to download" "$file_url"; return 1;
     #     fi;
     # fi
 
     ## create blank .docker.env if download fails
-    if [[ ! -f "$docker_env_file" ]]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_data}" /dev/null "$docker_env_file"; fi;
+    if [ ! -f "$docker_env_file" ]; then ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_data}" /dev/null "$docker_env_file"; fi;
 # }
 
 ## symlink verify and create function
 symlink_create(){ ## USAGE: symlink_create <symlink> <target>
     local symlink="$1";
     local target="$2";
-    if [[ ! -f "$symlink" ]]; then ln -s "$target" "$symlink"; fi;
+    if [ ! -f "$symlink" ]; then ln -s "$target" "$symlink"; fi;
     }
 
 ## create the $HOME/.docker_fnc symlink if it does not exist
@@ -265,9 +246,9 @@ verify_action(){ ## usage verify_action <message>
     msg_alert "" "$1";
     while read -r -p " >> CONTINUE? [y/N] <<" input; do
         case "${input:-N}" in
-            ([yY]|[yY][eE][sS]) return 0 ;;
-            ([nN]|[nN][oO]) break ;;
-            (*) msg_failure "Invalid input" "Please enter 'y' or 'n'";;
+            [yY]|[yY][eE][sS] ) return 0 ;;
+            [nN]|[nN][oO] ) break ;;
+            * ) msg_failure "Invalid input" "Please enter 'y' or 'n'";;
             # echo -e " > invalid input <"; return 1; ;;
         esac
     done
@@ -333,13 +314,17 @@ docker_configs_list(){ ## USAGE: fnc_configs_list <config_type>
     fnc_extract_option "$@";
     ## find config dirs or files
     case "${option}" in
-        "-d"|"--dir*"|"--folder")
-            mapfile -t config_list < <(find "$configs_path" -maxdepth 1 -type d -not -path '*/\.*');;
-        *)
-            mapfile -t config_list < <(find "$configs_path" -maxdepth 2 -type f -name "$compose_file" | sed 's|/[^/]*$||');;
+        "-d" | "--dir*" | "--folder" )
+            config_list=($(find "$configs_path" -maxdepth 1 -type d -not -path '/.*')) # old versions of bash don't support mapfile
+            # mapfile -t config_list < <(find "$configs_path" -maxdepth 1 -type d -not -path '*/\.*')
+            ;;
+        * )
+            config_list=($(find "$configs_path" -maxdepth 2 -type f -name "$compose_file" | sed 's|/[^/]$||')) # old versions of bash don't support mapfile
+            # mapfile -t config_list < <(find "$configs_path" -maxdepth 2 -type f -name "$compose_file" | sed 's|/[^/]*$||')
+            ;;
     esac
     ## print config list
-    if [[ "${#config_list[@]}" -eq 0 ]];
+    if [ "${#config_list[@]}" -eq 0 ];
     then msg_warning "No $config_type configs found." "Use \`dcf/dwf <appname>\` to create one."; return;
     else echo -e " > DOCKER CONFIG LIST FOR \`$config_type\` CONTAINERS <\n ${config_list[*]}";
     fi
@@ -347,7 +332,7 @@ docker_configs_list(){ ## USAGE: fnc_configs_list <config_type>
     alias dwg="docker_configs_list swarm"
     alias dcg="docker_configs_list local"
 
-# #################### general docker functions ####################
+##################### general docker functions ####################
 
 ## docker network list function
 docker_list_networks(){ docker network ls; echo; }
@@ -383,8 +368,8 @@ dkswarm(){ cd "${swarm_configs}/$1" || echo; return; }
 
 # vpn and ip check functions
 dl_cmd_check(){
-    if [[ -n "$(which curl)" ]]; then dl_cmd="curl";
-    elif [[ -n "$(which wget)" ]]; then dl_cmd="wget -qO-";
+    if [ -n "$(which curl)" ]; then dl_cmd="curl";
+    elif [ -n "$(which wget)" ]; then dl_cmd="wget -qO-";
     else echo "Neither curl nor wget found. Exiting."; return 1;
     fi
     }
@@ -420,27 +405,27 @@ verify_url(){ echo " '$1' status code: $(curl -s -o /dev/null --head -w "%{http_
 #     files_list=("${operands[@]}")
 
 #     case "${option}" in
-#         (-*) option="${1}"; shift;
+#         -*) option="${1}"; shift;
 #             case "${option}" in
-#                 ("-a"|"--all") files_dir="${configs_path}" ;;
-#                 (*) msg_error "Invalid option: ${option}"; return 1;;
+#                 "-a" | "--all" ) files_dir="${configs_path}" ;;
+#                 * ) msg_error "Invalid option: ${option}"; return 1;;
 #             esac
 #             ;;
-#         (*) files_dir="${configs_path}/${1}" ;;
+#         * ) files_dir="${configs_path}/${1}" ;;
 #     esac
 #     for file in "${files_list[@]}"; do
 #         ${var_sudo:-} find "$files_dir" -iname "$file" -type f -exec chmod "$perms" {} +
 #     done
 #     }
-# # files_list=("acme.json" "*.crt" "*.key" "*.pub" "*.ppk" "*.pem");
+## files_list=("acme.json" "*.crt" "*.key" "*.pub" "*.ppk" "*.pem");
 # update_file_permissions "$perms_cert" "acme.json" "*.crt" "*.key" "*.pub" "*.ppk" "*.pem";
 
 set_file_permissions(){ ${var_sudo:-} find "${files_dir}" -iname "${2}" -type f -exec chmod "${1}" {} +; }
 
 docker_file_permissions(){
     case "${1}" in
-        ("-a"|"--all") files_dir="${configs_path}" ;;
-        (*) files_dir="${configs_path}/${1}" ;;
+        "-a" | "--all" ) files_dir="${configs_path}" ;;
+        * ) files_dir="${configs_path}/${1}" ;;
     esac
     # update restricted access file permissions to 600
     files_restricted=("acme.json" "*.crt" "*.key" "*.pub" "*.ppk" "*.pem");
@@ -452,7 +437,7 @@ docker_file_permissions(){
     for file in "${files_limited[@]}"; do
         set_file_permissions "${perms_data}" "${file}"
     done
-    # # update general access file permissions to 664
+    ## update general access file permissions to 664
     # files_general=("*.yml" "*.yaml" "*.toml");
     # for file in "${files_general[@]}"; do
     #     set_file_permissions "${perms_conf}" "${file}"
@@ -467,7 +452,7 @@ docker_folder_permissions(){
     fnc_check_app "$1";
     for stack in ${1}; do
         case "${stack}" in
-            ("-a"|"--all")
+            "-a" | "--all" )
                 ## update all docker folder ownership
                 set_owner "${docker_uid}:${docker_gid}" "${docker_dir:?}";
                 ## update appdata folder permissions
@@ -484,10 +469,10 @@ docker_folder_permissions(){
                 docker_file_permissions --all;
                 echo -e " > \`ALL\` docker subdirectory and file permissions updated <"
                 ;;
-            (*) # update specified docker folder permissions
+            * ) # update specified docker folder permissions
                 appdata_dir="${appdata_path:?}/${stack}";
                 appconf_dir="${configs_path:?}/${stack}";
-                if [[ ! -d "${appconf_dir:?}" ]]; then
+                if [ ! -d "${appconf_dir:?}" ]; then
                     echo -e " > \`${appconf_dir:?}\` docker container directory does not exist <"; return;
                 fi;
                 set_owner "${docker_uid}:${docker_gid}" "${appdata_dir:?}";
@@ -519,16 +504,16 @@ fnc_env_create(){
     echo " DEBUG: 'fnc_env_create' option: '$option' operands: '${operands[*]}' configs_path: '$configs_path' 1: '$1' 2: '$2' *: '$*'"
     for stack in "${operands[@]}"; do
         case "${option}" in
-            "-c"|"--copy"|"-f"|"--force") # force copy `.docker.env` to `../configs/$1/.env`
+            "-c" | "--copy" | "-f" | "--force" ) # force copy `.docker.env` to `../configs/$1/.env`
                 ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_data}" "${docker_env_file}" "${configs_path}/${stack}/.env";
                 ;;
-            "-d"|"--delete"|"-r"|"--remove") # remove `..configs/$1/.env`
+            "-d" | "--delete" | "-r" | "--remove" ) # remove `..configs/$1/.env`
                 ${var_sudo:-} rm -f "${configs_path}/${stack}/.env";
                 ;;
-            *) # symlink .env to .docker.env if it does not exist
+            * ) # symlink .env to .docker.env if it does not exist
                 echo " DEBUG: 'fnc_env_create' option: '$option' operands: '${stack}' configs_path: '$configs_path' 1: '$1' 2: '$2' *: '$*'"
                 validate_appname "${stack}";
-                if [[ -f "${configs_path}/${stack}/.env" ]];
+                if [ -f "${configs_path}/${stack}/.env" ];
                 then echo -e " > \`${configs_path}/${stack}/.env\` already exists. Verify the values in the \`.env\` file are correct. <";
                 else symlink_create "${configs_path}/${stack}/.env" "${docker_env_file}";
                 # ln -s "${docker_env_file}" "${configs_path}/${operands[0]}/.env"; # symlinks .env to .docker.env
@@ -547,7 +532,7 @@ docker_folders_create(){
     for stack in "${operands[@]}"; do
         # docheck=0;
         fnc_check_app "$stack";
-        if [[ -d "${appdata_path}/${stack}" ]]; then
+        if [ -d "${appdata_path}/${stack}" ]; then
             msg_info "\`${appdata_path:?}/${stack}\`" "already exists." #"Use option \`--force\` to overwrite."
             # docheck=$((docheck + 1));
         else # create docker container data directory
@@ -557,32 +542,32 @@ docker_folders_create(){
                 msg_success "CREATED" " \`${appdata_path}/${stack}\` data directory.";
             fi;
         fi;
-        if [[ -d "${configs_path}/${stack}" ]]; then
+        if [ -d "${configs_path}/${stack}" ]; then
             msg_info "\`${configs_path:?}/${stack}\`" "already exists." #"Use option \`--force\` to overwrite."
             # docheck=$((docheck + 2));
-        else # create docker container config directories and files
+        else # create docker container config directories
             if validate_appname "${stack}"; then
-                # echo -e " > Creating directories and files for the \` ${configs_path}/${stack} \` container <"; echo;
+                # echo -e " > Creating directories for the \` ${configs_path}/${stack} \` container <"; echo;
                 fnc_dir_create "${configs_path}/${stack}" "${perms_conf}"
-                fnc_env_create "${stack}";
-                ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" /dev/null "${configs_path}/${stack}/${compose_file}";
-                msg_success "CREATED" " \`${configs_path}/${stack}\` configs directory and files.";
+                # fnc_env_create "${stack}";
+                # ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" /dev/null "${configs_path}/${stack}/${compose_file}";
+                msg_success "CREATED" " \`${configs_path}/${stack}\` configs directory.";
             fi;
         fi;
-        if [[ -d "${runtime_path}/${stack}" ]]; then
+        if [ -d "${runtime_path}/${stack}" ]; then
                 msg_info "\`${runtime_path:?}/${stack}\`" "already exists." #"Use option \`--force\` to overwrite."
                 # docheck=$((docheck + 2));
-            else # create docker container config directories and files
+            else # create docker container config directories
                 if validate_appname "${stack}"; then
-                    # echo -e " > Creating directories and files for the \` ${configs_path}/${stack} \` container <"; echo;
+                    # echo -e " > Creating directories for the \` ${configs_path}/${stack} \` container <"; echo;
                     fnc_dir_create "${runtime_path}/${stack}" "${perms_conf}"
                     msg_success "CREATED" " \`${runtime_path}/${stack}\` runtime directory.";
-                fi;    
+                fi;
             fi;
         # case "$docheck" in
-        #     "1") echo " > Docker appdata directory for \`${appdata_path:?}/${stack}\` already exists.";;
-        #     "2") echo " > Docker configs directory for \`${configs_path:?}/${stack}\` already exists.";;
-        #     "3") echo " > Docker appdata and configs directories for the \`${stack}\` application already exist.";;
+        #     "1" ) echo " > Docker appdata directory for \`${appdata_path:?}/${stack}\` already exists.";;
+        #     "2" ) echo " > Docker configs directory for \`${configs_path:?}/${stack}\` already exists.";;
+        #     "3" ) echo " > Docker appdata and configs directories for the \`${stack}\` application already exist.";;
         # esac
     done
     # echo
@@ -594,13 +579,13 @@ docker_folders_delete(){
     for stack in "${operands[@]}"; do
         if ! verify_action " > This will forcefully delete all \`${stack}\` application directories and files."; then return; fi;
         fnc_check_app "${stack}";
-        if [[ -d "${appdata_path:?}/${stack}" ]]; then
+        if [ -d "${appdata_path:?}/${stack}" ]; then
             rm -rf "${appdata_path:?}/${stack}";
             echo " > \`${appdata_path:?}/${stack}\` and contents deleted.";
         else msg_warning "UHOH!" " \`${appdata_path:?}/${stack}\` does not exists. Nothing to remove."
             # echo " > \`${appdata_path:?}/${stack}\` does not exists. Nothing to remove."; echo;
         fi;
-        if [[ -d "${configs_path:?}/${stack}" ]]; then
+        if [ -d "${configs_path:?}/${stack}" ]; then
             rm -rf "${configs_path:?}/${stack}";
             echo " > \`${configs_path:?}/${stack}\` and contents deleted.";
         else msg_warning "UHOH!" " \`${configs_path:?}/${stack}\` does not exists. Nothing to remove."
@@ -615,25 +600,39 @@ docker_folder_actions(){
     set_scope_vars "$config_type";
     fnc_extract_option "$@";
     case "${option}" in
-        (-*) # perform optional action
+        -* ) # perform optional action
             case "${option}" in
-                "-c"|"--create")
-                    docker_folders_create "$@" ;;
-                "-d"|"--delete")
+                "-c" | "--create" )
+                    docker_folders_create "$@"
+                    fnc_env_create "${stack}";
+                    # ${var_sudo:-} install -o "${docker_uid}" -g "${docker_gid}" -m "${perms_conf}" /dev/null "${configs_path}/${stack}/${compose_file}";
+
+                    ;;
+                "-d" | "--delete" )
                     docker_folders_delete "$@" ;;
-                "-r"|"--remove")
+                "-r" | "--remove" )
                     docker_folders_delete "$@" ;;
-                *)
+                * )
                     echo " > Invalid option \`${option}\` used."; echo;
             esac
             ;;
-        (*) docker_folders_create "$@" ;;
+        * ) docker_folders_create "$@" ;;
     esac;
     unset config_type
     }
     alias dcf='docker_folder_actions local'
     alias dwf="docker_folder_actions swarm"
 
+######################### docker download functions #########################
+
+config_example_download(){ # USAGE: config_example_download [config_type] [config_name]
+    local config_type="${1}"; shift;
+    local config_name="${1}"; shift;
+    set_scope_vars "$config_type";
+    if [ ! -d "${configs_path:?}/${config_name}" ]; then fnc_dir_create "${config_name}"; fi
+
+
+    }
 ######################### docker network functions #########################
 
 docker_net_verify(){ docker network ls -q --filter name="$1"; }
@@ -641,24 +640,24 @@ docker_net_verify(){ docker network ls -q --filter name="$1"; }
 docker_net_delete(){
     local net_name="${1}"; shift;
     # verify_action " > This will forcefully delete the \`${net_name}\` docker network. Proceed? (y)es / [n]o";
-    if [[ "$(docker_net_verify "${net_name}")" ]]; then docker network rm "${net_name}"; fi;
+    if [ "$(docker_net_verify "${net_name}")" ]; then docker network rm "${net_name}"; fi;
     }
 docker_net_create(){ # USAGE: docker_net_create [scope] [driver]
-    if [[ "$#" -lt 2 ]]; then msg_error "Invalid options" "Expected syntax: ${cyn:-}docker_net_create [scope] [driver]${def:-}"; return; fi;
+    if [ "$#" -lt 2 ]; then msg_error "Invalid options" "Expected syntax: ${cyn:-}docker_net_create [scope] [driver]${def:-}"; return; fi;
     local scope="${1}";
     local driver="${2}";
-    case "$scope" in
-        ("build")
-            if [[ "$(docker_net_verify "docker_gwbridge")" ]]; then docker_net_delete "docker_gwbridge"; fi;
+    case "${scope}" in
+        "build" )
+            if [ "$(docker_net_verify "docker_gwbridge")" ]; then docker_net_delete "docker_gwbridge"; fi;
             ;;
-        ("local")
-            if [[ "$(docker_net_verify "docker_gwbridge")" ]]; then docker_net_delete "docker_gwbridge"; fi;
+        "local" )
+            if [ "$(docker_net_verify "docker_gwbridge")" ]; then docker_net_delete "docker_gwbridge"; fi;
             ;;
-        ("swarm")
-            if [[ "$(docker_net_verify "ingress")" ]]; then docker_net_delete ingress; fi;
+        "swarm" )
+            if [ "$(docker_net_verify "ingress")" ]; then docker_net_delete ingress; fi;
             docker network create --ingress --opt encrypted --driver overlay --subnet "${net_prefix_ingress}.0/16" --gateway "${net_prefix_ingress}.254" "ingress";
             ;;
-        (*)
+        * )
             msg_error "INVALID NETWORK SCOPE"; return;
             ;;
     esac
@@ -675,20 +674,20 @@ docker_net_create(){ # USAGE: docker_net_create [scope] [driver]
     #     [2]="internal_only"
     #     [3]="reverse_proxy"
     #     )
-    # # network create loop
+    ## network create loop
     # for i in {0..3}; do
     #     net_options="--opt encrypted --scope ${scope} --driver ${driver} --subnet ${net_prefix[$i]}.0/24 --gateway ${net_prefix[$i]}.254 --attachable ${net_name[$i]}";
     #     case "${net_name[$i]}" in
-    #         ("docker_socket")
+    #         "docker_socket" )
     #             net_options="--opt encrypted --scope local --driver bridge --subnet ${net_prefix[$i]}.0/24 --gateway ${net_prefix[$i]}.254 --attachable ${net_name[$i]}";
     #             ;;
-    #         ("external_edge"|"reverse_proxy")
+    #         "external_edge" | "reverse_proxy" )
     #             continue
     #             ;;
-    #         ("internal_only")
+    #         "internal_only" )
     #             net_options="${net_options} --internal";
     #             ;;
-    #         (*)
+    #         * )
     #             msg_error "INVALID NETWORK NAME"; return;
     #             ;;
     #     esac;
@@ -701,12 +700,14 @@ docker_net_create(){ # USAGE: docker_net_create [scope] [driver]
     docker network create --opt "encrypted" --scope "swarm" --driver "overlay" --subnet "172.27.20.0/24" --gateway "172.27.20.254" --attachable "external_edge"
 
     docker network create --opt "encrypted" --scope "local" --driver "bridge" --subnet "${net_prefix_docker_socket}.0/24" --gateway "${net_prefix_docker_socket}.254" --attachable "docker_socket"
-    docker network create --opt "encrypted" --scope "$scope" --driver "$driver" --subnet "${net_prefix_external_edge}.0/24" --gateway "${net_prefix_external_edge}.254" --attachable "external_edge"
-    docker network create --opt "encrypted" --scope "$scope" --driver "$driver" --subnet "${net_prefix_internal_only}.0/24" --gateway "${net_prefix_internal_only}.254" --internal --attachable "internal_only"
-    docker network create --opt "encrypted" --scope "$scope" --driver "$driver" --subnet "${net_prefix_reverse_proxy}.0/24" --gateway "${net_prefix_reverse_proxy}.254" --attachable "reverse_proxy"
+    docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_external_edge}.0/24" --gateway "${net_prefix_external_edge}.254" --attachable "external_edge"
+    docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_internal_only}.0/24" --gateway "${net_prefix_internal_only}.254" --internal --attachable "internal_only"
+    docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_reverse_proxy}.0/24" --gateway "${net_prefix_reverse_proxy}.254" --attachable "reverse_proxy"
 
     echo "The \`docker_socket\`, \`internal_only\`, \`external_edge\`, and \`reverse_proxy\` custom docker networks have been created."; echo
     }
+    alias dcn="docker_net_create local bridge"
+    alias dwn="docker_net_create swarm overlay"
 
 ########################### docker local functions ###########################
 
@@ -714,45 +715,38 @@ docker_list_containers(){
     fnc_extract_option "$@";
     local option="${option:-"-a"}";
     case "$option" in
-        "-a"|"--all")
+        "-a" | "--all" )
             docker container list --all --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.RunningFor}}\t{{.Image}}";;
-        "-l"|"--labels")
+        "-l" | "--labels" )
             docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.Labels}}\t{{.Command}}";;
-        "-n"|"--networks")
+        "-n" | "--networks" )
             docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}\t{{.Ports}}";;
-        "-v"|"--volumes")
+        "-v" | "--volumes" )
             docker container list --no-trunc --format "table {{.Names}}\t{{.Status}}\t{{.LocalVolumes}}\t{{.Mounts}}";;
-        *)
+        * )
             docker container list --format "table {{.ID}}  {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Command}}";;
     esac
     }
     alias dlc="docker_list_containers" # "docker list containers"
-    alias dll="docker_list_containers" # "docker list local apps"
 
 docker_local_edit(){ nano "${local_configs}/$1/${local_compose}"; }
     alias dce="docker_local_edit"
 
 docker_local_config(){ docker compose -f "${local_configs}/$1/${local_compose}" config; }
     alias dcc="docker_local_config"
-    alias dct="docker_local_config"
-
-docker_local_networks(){ docker_net_create "local" "bridge"; }
-    alias dcn="docker_local_networks"
-
-docker_list_networks(){ docker network ls; }
-    alias dln="docker_list_networks"
+    alias dct="docker_local_config" # docker compose "test"
 
 docker_local_logs(){ (cd "${local_configs}/$1" && docker compose logs -f); }
     alias dcl="docker_local_logs"
 
-fnc_strip_option(){ local list="$1[@]"; local apps=( "${!list}" ); apps=( "${apps[@]:1}" ); } # remove first arg
+fnc_strip_option(){ local list="$1[@]"; local apps=("${!list}"); apps=("${apps[@]:1}"); } # remove first arg
 
 docker_local_start(){
-    applist=( "$@" )
+    applist=("$@")
     local configs_path="${local_configs}";
     fnc_compose_start(){
         for app in "${applist[@]}"; do
-            if [[ ! -f "${local_configs}/$app/${local_compose}" ]]; then
+            if [ ! -f "${local_configs}/$app/${local_compose}" ]; then
                 echo " > No docker compose configuration file found for the \`$app\` application."; continue;
             fi
             fnc_env_create "$app";
@@ -763,19 +757,19 @@ docker_local_start(){
         # echo
         }
     case "$1" in
-        -*) # perform optional action
+        -* ) # perform optional action
             case "$1" in
-                "-f"|"--follow"|"-l"|"--logs")
-                    # applist=( $( fnc_strip_option applist ) )
+                "-f" | "--follow" | "-l" | "--logs" )
+                    applist=($(fnc_strip_option applist)) # old bash versions can't use mapfile examples below
                     # read -r -a applist <<< "$(fnc_strip_option applist)"
-                    read -r applist < <( fnc_strip_option applist )
+                    # read -r applist < <( fnc_strip_option applist )
                     fnc_compose_start "${applist[@]}"
                     docker_local_logs "${2:-${applist[1]}}";
                     ;;
-                *) echo "Invalid option: \`$1\`"; echo;
+                * ) echo "Invalid option: \`$1\`"; echo;
             esac
             ;;
-        *)
+        * )
             fnc_compose_start "${applist[@]}"
             ;;
     esac
@@ -784,7 +778,7 @@ docker_local_start(){
     alias dct="docker_local_start"
 
 docker_local_stop(){
-    if [[ -f "${local_configs}/$1/${local_compose}" && -f "${local_configs}/$1/.env" ]]
+    if [ -f "${local_configs}/$1/${local_compose}" ] && [ -f "${local_configs}/$1/.env" ]
     then docker compose -f "${local_configs}/$1/${local_compose}" down;
     else docker stop "$1" && docker container rm "$1"
     fi
@@ -802,18 +796,18 @@ docker_local_bounce(){ docker_local_stop "$1" && docker_local_start "$1" ; }
 
 docker_list_stacks(){
     case "$1" in
-        "-*")
+        "-*" )
             case "$1" in
-                "-a"|"--all")
+                "-a" | "--all" )
                     docker stack ls ;;
-                "-e"|"--error")
+                "-e" | "--error" )
                     docker stack ps --no-trunc --format "{{.Error}}" "${1}" ;;
-                *)
+                * )
                     echo -e "${ylw:-} >> INVALID OPTION SYNTAX, USE THE '${cyn:-}--help${ylw:-}' OPTION TO DISPLAY PROPER SYNTAX <<${def:-}"; ;;
             esac ;;
-        "")
+        "" )
             docker stack ls ;;
-        *)
+        * )
             docker stack services "${1}" --format "table {{.ID}}\t{{.Name}}\t{{.Image}}\t{{.Ports}}" ;;
             # docker stack ps --no-trunc --format "table {{.ID}}\t{{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}" "${1}" ;;
     esac
@@ -827,16 +821,12 @@ docker_swarm_edit(){ nano "${swarm_configs}/$1/${swarm_compose}"; }
 docker_swarm_config(){ docker compose -f "${swarm_configs}/$1/${swarm_compose}" config; }
     alias dwc="docker_swarm_config"
 
-
 docker_swarm_logs(){ (cd "${swarm_configs}/$1" && docker compose logs -f); }
     alias dwl="docker_swarm_logs"
 
-docker_swarm_networks(){ docker_net_create "swarm" "overlay"; }
-    alias dwn="docker_swarm_networks"
-
 docker_swarm_start(){
     export configs_path="${swarm_configs}";
-    if [[ -f "${swarm_configs}/$1/${swarm_compose}" ]]; then
+    if [ -f "${swarm_configs}/$1/${swarm_compose}" ]; then
         fnc_env_create "$1";
         docker stack deploy "${1}" -c "${swarm_configs}/${1}/${swarm_compose}" --prune;
     else echo "No docker swarm configuration file found for the \`$1\` application.";
@@ -846,7 +836,7 @@ docker_swarm_start(){
     alias dwu="docker_swarm_start"
 
 docker_swarm_stop(){
-    if [[ -f "${swarm_configs}/$1/${swarm_compose}" && -f "${swarm_configs}/$1/.env" ]]
+    if [ -f "${swarm_configs}/$1/${swarm_compose}" ] && [ -f "${swarm_configs}/$1/.env" ]
     then docker compose -f "${swarm_configs}/$1/${swarm_compose}" down;
     else docker stop "$1" && docker container rm "$1"
     fi
