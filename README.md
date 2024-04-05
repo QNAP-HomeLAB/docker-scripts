@@ -70,6 +70,17 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
 
 ### 1. Network Port Configuration
 
+   ##### New Ports Settings Overview
+
+   **QTS System UI**
+   `HTTP: 8480 | HTTPS: 8443`
+
+   **Web Server**
+   `HTTP: 9480 | HTTPS: 9443`
+
+   **SSH Terminal**
+   `example: 54545`
+
 1. For ease of configuration, ports 80, 443, and 8080 **must be _unused_ by your NAS.**
    - ***NOTE:*** This step may be unnecessary if you can get 'chained' port-forwards to work when configuring Traefik to recognize your domain and register a certificate. YMMV.
    - **EXPLANATION:** QTS assigns ports 8080 and 443 as the default HTTP and HTTPS ports for the QNAP Web UI, and assigns 80 as the default HTTP port for the native "Web Server" application. A reverse proxy requires 80 and 443 in order to obtain certificates and properly route traffic. Unless you decide not to use a reverse proxy, these must be changed to successfully complete this guide.
@@ -84,31 +95,21 @@ Thanks for checking out this guide. If it ends up being useful for your setup, p
       - `Control Panel >> Applications >> Web Server`
       - Change the default HTTP port to `9480`, and the default HTTPS port to `9443`.
       - **TIP:** Unless currently in use, consider disabling the MySQL application in the QNAP GUI Settings.
-      - **NOTE:** It used to be required to keep the **Web Server** application enabled with the modified ports, otherwise the QTS Web Server would re-acquire the default port when disabled. I have not verified this personally, but apparently this bug was fixed so you can now safely disable the built-in Web Server.
+      - **NOTE:** Prior to version 5.x it is required to keep the **Web Server** application enabled with the modified ports, otherwise the QTS Web Server would re-acquire the default port when disabled.
    - **Change default *SSH* port:** In QNAP Web UI
       - `Control Panel >> Network & File Services >> Telent / SSH`
       - Change the default to a random number somewhere between `49152 - 65535`.
       - See this [list of port numbers](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports) to make sure the one you choose is not already assigned.
 
-1. **Ports 80 and 443 must be forwarded from your router to your NAS**.
+1. In order to use a reverse proxy, ports 80 and 443 must be forwarded from your router to your NAS.
+   - **WARNING:** Only configure this port forward if you are using a reverse proxy such as [Traefik](https://traefik.io/traefik/), [Caddy](https://caddyserver.com/docs/quick-starts/reverse-proxy), or [NXPM](https://nginxproxymanager.com/setup/).
    - *Disable UPnP on you router and manually forward ports 80 and 443 to your NAS.*
-   **NOTE:** There are too many possible routers to cover how to forward ports on each, but there are some good guides here if you don't know how to do it for your router:
+   - **NOTE:** There are too many possible routers to cover how to forward ports on each, but there are some good guides here if you don't know how to do it for your router:
 
       - https://www.howtogeek.com/66214/how-to-forward-ports-on-your-router
 
       - https://portforward.com/router.htm
          - **WARNING:** Do not purchase the port-forwarding program offered from this website, it will not work for this and is a waste of money.
-
-      ##### New Ports Settings Overview
-
-      **QTS System UI**
-      `HTTP: 8480 | HTTPS: 8443`
-
-      **Web Server**
-      `HTTP: 9480 | HTTPS: 9443`
-
-      **SSH Terminal**
-      `example: 54545`
 
 ### 2. Docker User Account Creation
 
