@@ -7,10 +7,10 @@
 !LICENSE
 
 # Ignore these directories
-build/
+archive/
+common/secrets/
 local/
 swarm/
-common/secrets/
 
 # Ignore these file types
 *.bak
