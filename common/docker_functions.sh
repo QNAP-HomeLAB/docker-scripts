@@ -1,7 +1,13 @@
 #!/bin/bash
 ####################################################################################################
-##########
-# Place this file in ${HOME}/docker/ and name it dk_functions.sh
+
+## I'm changing how these scripts are installed. Instead of running the `../docker` folder as a git
+## repo, it is now only the target location of the scripts, to be copied from the git repo directory
+
+## INSTRUCTIONS:
+#    1. Create a `git` folder in your $HOME directory.
+
+# Place this file in ${HOME}/docker/common/ and name it dk_functions.sh
 # A quick and easy way to do this is to run one of these download commands:
 # git archive --remote=https://github.com/QNAP-HomeLAB/docker-scripts.git HEAD:common/dk_functions.sh ${HOME}/docker/functions/common/dk_functions.sh | tar -xvf -
 # wget -qN 'https://raw.githubusercontent.com/QNAP-HomeLAB/docker-scripts/functions/common/dk_functions.sh' -O ${HOME}/docker/common/dk_functions.sh
@@ -31,89 +37,135 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
 ####################################################################################################
 
 ## docker folder schema
-#  $HOME
-#   └── docker
-#       ├── common
-#       │   ├── .docker.env
-#       │   ├── color_codes.conf
-#       │   ├── dk_vars.example
-#       │   ├── dk_functions.sh
-#       │   └── secrets
-#       |       ├── my_secret_password.secret
-#       │       └── ...
-#       ├── local
-#       |   ├── appdata
-#       |   │   ├── appname
-#       |   │   └── ...
-#       |   └── configs
-#       |       ├── appname
-#       |       └── ...
-#       └── swarm
-#           ├── appdata
-#           │   ├── appname
-#           │   └── ...
-#           └── configs
-#               ├── appname
-#               └── ...
+# $HOME/ (or `/share/` on NAS devices)
+#  └── docker/ (symlink to ${dk_dir}, ${dk_dir} must already exist as a shared folder)
+#     ├── common/
+#     │  ├── .docker.env
+#     │  ├── color_codes.conf
+#     │  ├── docker_vars.example
+#     │  ├── docker_functions.sh
+#     │  └── secrets/
+#     |     ├── my_secret_password.secret
+#     │     └── ...
+#     ├── local/
+#     |  ├── appdata/
+#     |  │  ├── appname/
+#     |  │  └── ...
+#     |  └── configs/
+#     |     ├── appname/
+#     |     └── ...
+#     ├── runtime/
+#     │  ├── <appname>/
+#     │  └── ...
+#     └── swarm/
+#        ├── appdata/
+#        │  ├── appname/
+#        │  └── ...
+#        └── configs/
+#           ├── appname/
+#           └── ...
+
+## proposed update to docker folder structure
+# $HOME/ (or `/share/` on NAS devices)
+#  └── docker/ (symlink to ${dk_dir}, ${dk_dir} must already exist as a shared folder)
+#     ├── archive/
+#     │  ├── <appname>/
+#     │  │  ├── .env
+#     │  │  ├── compose.yml
+#     │  │  └── appdata/
+#     │  │     └── <container folders and files>
+#     │  └── ...
+#     ├── common/
+#     │  ├── .docker.env
+#     │  ├── color_codes.conf
+#     │  ├── docker_vars.example
+#     │  ├── .docker_functions.sh
+#     │  └── secrets/
+#     │     ├── my_super_secure_api_key_token.secret
+#     │     └── ...
+#     ├── local/
+#     │  ├── .local.env
+#     │  ├── <appname>/
+#     │  │  ├── .env
+#     │  │  ├── compose.yml
+#     │  │  └── appdata/
+#     │  │     └── <container folders and files>
+#     │  └── ...
+#     ├── runtime/
+#     │  ├── <appname>/
+#     │  └── ...
+#     └── swarm/
+#        ├── .swarm.env
+#        ├── <appname>/
+#        │  ├── .env
+#        │  ├── compose.yml
+#        │  └── appdata/
+#        │     └── <container folders and files>
+#        └── ...
 
 #################### docker directories setup ####################
 
     ## array declarations for docker sub-paths and files
-    declare -Agx dk; dk=(
+    declare -Agx dk
+    dk=(
         [path]="${dk_dir}"
         [file]="compose.yml"
         [build]="${dk_dir}/build"
         [local]="${dk_dir}/local"
         [swarm]="${dk_dir}/swarm"
         [common]="${dk_dir}/common"
+        [archive]="${dk_dir}/common/archive"
         [secrets]="${dk_dir}/common/secrets"
         [example]="${dk_dir}/common/docker-example.env"
         [env]="${dk_dir}/common/.docker.env"
-    )
+        )
     dk_dir="${HOME}/docker"
-    declare -Agx dk_build; dk_build=(
+    declare -Agx dk_build
+    dk_build=(
         [path]="${dk[build]}"
         [data]="${dk[build]}/appdata"
         [conf]="${dk[build]}/configs"
         [fast]="${dk[build]}/runtime"
         [file]="compose.yml"
-    )
-    echo -e "DEBUG: 'dk_build' [00] \n
-        dk_build[path]: '${dk_build[path]}' \n
-        dk_build[conf]: '${dk_build[conf]}' \n
-        dk_build[data]: '${dk_build[data]}' \n
-        dk_build[fast]: '${dk_build[fast]}' \n
-        dk_build[file]: '${dk_build[file]}' \n"
-    declare -Agx dk_local; dk_local=(
+        )
+    declare -Agx dk_local
+    dk_local=(
         [path]="${dk[local]}"
         [data]="${dk[local]}/appdata"
         [conf]="${dk[local]}/configs"
         [fast]="${dk[local]}/runtime"
         [file]="compose.yml"
-    )
-    declare -Agx dk_swarm; dk_swarm=(
+        )
+    declare -Agx dk_swarm
+    dk_swarm=(
         [path]="${dk[swarm]}"
         [data]="${dk[swarm]}/appdata"
         [conf]="${dk[swarm]}/configs"
         [fast]="${dk[swarm]}/runtime"
         [file]="compose.yml"
-    )
+        )
+    echo -e "DEBUG: 'dk_dirs' [00] \n
+        dk_build[path]: '${dk_build[path]}' \n
+        dk_build[conf]: '${dk_build[conf]}' \n
+        dk_build[data]: '${dk_build[data]}' \n
+        dk_build[fast]: '${dk_build[fast]}' \n
+        dk_build[file]: '${dk_build[file]}' \n"
 
     ## configuration types
     dk_scopes=("build" "local" "swarm")
 
     ## docker common path
-    export dk_common="${dk_dir}/common"
+    export dk_common="${dk[common]}"
 
     ## docker secrets path
-    export dk_secrets="${dk_common}/secrets"
+    export dk_secrets="${dk[common]}/secrets"
 
-    export dk_env_example="${dk_common}/docker-example.env"
-    export dk_env_file="${dk_secrets}/.docker.env"
+    export dk_env_example="${dk[common]}/docker-example.env"
+    export dk_env_file="${dk[secrets]}/.docker.env"
     export compose_filename="compose.yml"
 
     ## alias to easily source this file
-    dk_fnc_file="${dk_common}/dk_functions.sh"
+    dk_fnc_file="${dk[common]}/dk_functions.sh"
     dk_script_dir="$(dirname "${dk_fnc_file}")"
     dk_fnc_file="${dk_script_dir}/${dk_fnc_file##*/}"
     # if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
@@ -122,25 +174,25 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     alias dkfnc='source ${dk_fnc_file}'
 
     ## docker build folders
-    export build_path="${dk_dir}/build"
-    export build_appdata="${build_path}/appdata"
-    export build_configs="${build_path}/configs"
-    export build_runtime="${build_path}/runtime"
-    export build_compose="compose.yml"
+    # export build_path="${dk_dir}/build"
+    # export build_appdata="${build_path}/appdata"
+    # export build_configs="${build_path}/configs"
+    # export build_runtime="${build_path}/runtime"
+    # export build_compose="compose.yml"
 
     ## docker compose local
-    export local_path="${dk_dir}/local"
-    export local_appdata="${local_path}/appdata"
-    export local_configs="${local_path}/configs"
-    export local_runtime="${local_path}/runtime"
-    export local_compose="compose.yml"
+    # export local_path="${dk_dir}/local"
+    # export local_appdata="${local_path}/appdata"
+    # export local_configs="${local_path}/configs"
+    # export local_runtime="${local_path}/runtime"
+    # export local_compose="compose.yml"
 
     ## docker swarm configs folders
-    export swarm_path="${dk_dir}/swarm"
-    export swarm_appdata="${swarm_path}/appdata"
-    export swarm_configs="${swarm_path}/configs"
-    export swarm_runtime="${swarm_path}/runtime"
-    export swarm_compose="compose.yml"
+    # export swarm_path="${dk_dir}/swarm"
+    # export swarm_appdata="${swarm_path}/appdata"
+    # export swarm_configs="${swarm_path}/configs"
+    # export swarm_runtime="${swarm_path}/runtime"
+    # export swarm_compose="compose.yml"
 
     # dk_appdata=("${build_appdata}" "${local_appdata}" "${swarm_appdata}")
     # dk_configs=("${build_configs}" "${local_configs}" "${swarm_configs}")
@@ -168,22 +220,22 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         # echo "DEBUG: 'set_scope_vars' [01] <config_type> '${config_type}' <opds> '${opds[*]}'"
         case "${config_type}" in
             "build" )
-                export appdata_path="${build_appdata}"
-                export configs_path="${build_configs}"
-                export runtime_path="${build_runtime}"
-                export compose_file="${build_compose}"
+                export appdata_path="${dk_build[data]}"
+                export configs_path="${dk_build[conf]}"
+                export runtime_path="${dk_build[fast]}"
+                export compose_file="${dk_build[file]}"
                 ;;
             "local" )
-                export appdata_path="${local_appdata}"
-                export configs_path="${local_configs}"
-                export runtime_path="${local_runtime}"
-                export compose_file="${local_compose}"
+                export appdata_path="${dk_local[data]}"
+                export configs_path="${dk_local[conf]}"
+                export runtime_path="${dk_local[fast]}"
+                export compose_file="${dk_local[file]}"
                 ;;
             "swarm" )
-                export appdata_path="${swarm_appdata}"
-                export configs_path="${swarm_configs}"
-                export runtime_path="${swarm_runtime}"
-                export compose_file="${swarm_compose}"
+                export appdata_path="${dk_swarm[data]}"
+                export configs_path="${dk_swarm[conf]}"
+                export runtime_path="${dk_swarm[fast]}"
+                export compose_file="${dk_swarm[file]}"
                 ;;
             * )
                 msg_error "INVALID CONFIG TYPE ${cyn:-}'${config_type}'${def:-}" "Please inform the script maintainer."
@@ -320,15 +372,15 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
             dk_dir="${HOME}/docker"
         fi
         ## create docker data and config directories if they do not exist
-        fnc_dir_create "${dk_common}" "${perms_data}"
-        fnc_dir_create "${dk_secrets}" "${perms_data}"
-        fnc_dir_create "${local_appdata}" "${perms_data}"
-        fnc_dir_create "${local_configs}" "${perms_conf}"
-        fnc_dir_create "${swarm_appdata}" "${perms_data}"
-        fnc_dir_create "${swarm_configs}" "${perms_conf}"
+        fnc_dir_create "${dk[common]}" "${perms_data}"
+        fnc_dir_create "${dk[secrets]}" "${perms_data}"
+        fnc_dir_create "${dk_local[data]}" "${perms_data}"
+        fnc_dir_create "${dk_local[conf]}" "${perms_conf}"
+        fnc_dir_create "${dk_swarm[data]}" "${perms_data}"
+        fnc_dir_create "${dk_swarm[conf]}" "${perms_conf}"
 
         ## move dk_functions.sh to ${HOME}/docker/shared
-        fnc_find_and_move_file "dk_functions.sh" "${dk_common}"
+        fnc_find_and_move_file "dk_functions.sh" "${dk[common]}"
 
         ## download .bash_env if it does not exist
         if [[ ! -f "${HOME}/.bash_env" ]]; then
@@ -362,7 +414,7 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
 
     # initialize(){
         fnc_file_download "${git_url_common}/color_codes.conf" "${HOME}/.bash_env"
-        fnc_file_download "${git_url_common}/dk_vars.example" "${dk_env_example}" "${dk_env_file}"
+        fnc_file_download "${git_url_common}/docker_vars.example" "${dk_env_example}" "${dk_env_file}"
 
     #     # if [ ! -f "$filename" ]; then
     #     #     if ! wget "$file_url" -O "$filename"
@@ -401,14 +453,6 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         done
         }
 
-    fnc_check_dir(){
-        if test ! -d "$1"; then
-            msg_warning "Docker container directory does not exist." "Use \`${cyn:-}dcf $1${def:-}\` / \`${cyn:-}dwf $1${def:-}\` to create."
-            return
-        fi
-        }
-        # echo -e " > \`$1\` docker container directory does not exist <"; return 1; fi; }
-
     fnc_appname_validate(){
         # fnc_appname_validate "$1"
         if test -z "$1"; then
@@ -421,6 +465,23 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
             msg_warning "Invalid application name." "Name used must not be one of the following: \`${cyn:-}${dk_scopes[*]}${def:-}\`."
             return 1
         else return 0 # container name only contains valid name and characters
+        fi
+        }
+
+    fnc_check_dir(){
+        if test ! -d "${dk_dir}/$1"; then
+            msg_warning "Docker container directory does not exist." "Use \`${cyn:-}dcf $1${def:-}\` / \`${cyn:-}dwf $1${def:-}\` to create."
+            return
+        fi
+        }
+        # echo -e " > \`$1\` docker container directory does not exist <"; return 1; fi; }
+
+    fnc_container_exists(){
+        if [[ $(docker ps -a --filter "name=${1}") ]]; then
+            return 0
+        else
+            msg_warning "Docker container does not exist." "Use \`${cyn:-}dlf $1${def:-}\` / \`${cyn:-}dlu $1${def:-}\` or \`${cyn:-}dsf $1${def:-}\` / \`${cyn:-}dsu $1${def:-}\` to create."
+            return 1
         fi
         }
 
@@ -521,7 +582,7 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
             -d|--dir*|--folder)
                 # Use a while loop to read each directory into the array
                 while IFS= read -r -d '' dir; do config_list+=("$dir")
-                done < <(find "${configs_path}" -maxdepth 1 -type d -not -path '/.*' -print0)
+                done < <(find "${configs_path:?}" -maxdepth 1 -type d -not -path '/.*' -print0)
                 # Print the contents of the array for verification
                 printf '%s\n' "${config_list[@]}"
                 ## the below code doesn't work with old versions under bash v4
@@ -531,7 +592,7 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
             * )
                 # Use a while loop to read each file into the array
                 while IFS= read -r -d '' file; do config_list+=("$file")
-                done < <(find "${configs_path}" -maxdepth 2 -type f -name "${compose_file}" -print0)
+                done < <(find "${configs_path:?}" -maxdepth 2 -type f -name "${compose_file}" -print0)
                 # Print the contents of the array for verification
                 printf '%s\n' "${config_list[@]}"
                 ## the below code doesn't work with old versions under bash v4
@@ -550,14 +611,57 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     alias dbg="fnc_configs_list build"
     alias dcg="fnc_configs_list local"
     alias dlg="fnc_configs_list local"
+    alias dsg="fnc_configs_list swarm"
     alias dwg="fnc_configs_list swarm"
+
+    # docker_config_archive(){
+    #     if [ -d "$HOME/docker/appdata/${1}" ]; then
+    #         sudo mv "${HOME}/docker/appdata/${1}" "${HOME}/docker/.archive/local/appdata/${1}-$(date +%Y%m%d\-%H%M)"
+    #         echo "Moved ${HOME}/docker/appdata/${1} to archive \`${HOME}/docker/.archive/local/appdata/${1}-$(date +%Y%m%d\-%H%M)\`"
+    #     else
+    #         echo " ${HOME}/docker/appdata/${1} does not exist, cannot move to archive."
+    #     fi
+    #     if [ -d "$HOME/docker/compose/${1}" ]; then
+    #         sudo mv "${HOME}/docker/compose/${1}" "${HOME}/docker/.archive/local/configs/${1}-$(date +%Y%m%d\-%H%M)"
+    #         echo "Moved ${HOME}/docker/compose/${1} to archive \`${HOME}/docker/.archive/local/configs/${1}-$(date +%Y%m%d\-%H%M)\`"
+    #     else
+    #         echo " ${HOME}/docker/compose/${1} does not exist, cannot move to archive."
+    #     fi
+    #     # if [ -d "${HOME}/docker/appdata/${1}" ] && [ -d "${HOME}/docker/compose/${1}" ]; then
+    #     #   sudo tar -czvf "${HOME}/docker/.archive/local/dca ${1}-$(date +%Y%m%d\-%H%M).tar.gz" "${HOME}/docker/appdata/${1}" "${HOME}/docker/compose/${1}"
+    #     #   if [ -f "${HOME}/docker/.archive/local/${1}-$(date +%Y%m%d\-%H%M).tar.gz" ]; then
+    #     #     echo "Created archive: ${HOME}/docker/.archive/local/${1}-$(date +%Y%m%d\-%H%M).tar.gz"
+    #     #   else
+    #     #     echo "Failed to create archive: ${HOME}/docker/.archive/local/${1}-$(date +%Y%m%d\-%H%M).tar.gz"
+    #     #   fi
+    #     # else
+    #     #   echo "Either ${HOME}/docker/appdata/${1} or ${HOME}/docker/compose/${1} does not exist, cannot create archive."
+    #     # fi
+    #     }
+    #     alias dca="docker_config_archive"
+
+    docker_config_archive(){
+        fnc_extract_option "$@"
+        set_scope_vars "${config_type}"
+        if ! fnc_appname_validate "${opds[0]}"; then return; fi
+        if tar -czf "${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d\-%H%M).tar.gz" "${appdata_path}/${opds[0]}" "${configs_path}/${opds[0]}"; then
+            msg_success "Config archive created at ${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d\-%H%M).tar.gz"
+        else
+            msg_error "Failed to create config archive at ${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d\-%H%M).tar.gz"
+        fi
+        }
+    alias dba="docker_config_archive local"
+    alias dca="docker_config_archive local"
+    alias dla="docker_config_archive local"
+    alias dsa="docker_config_archive swarm"
+    alias dwa="docker_config_archive swarm"
 
     dk_compose_config(){ ## "tests" a compose file and displays the dockerfile with variables inserted
         fnc_extract_option "$@"
         set_scope_vars "${config_type}"
         stack="${opds[0]}"
         if ! fnc_appname_validate "${stack}"; then return; fi
-        docker compose -f "${configs_path}/${stack}/${compose_file}" config
+        docker compose -f "${configs_path:?}/${stack}/${compose_file}" config
         }
     # alias dkconf="dk_compose_config"
     alias dct="dk_compose_config local" # docker compose "test"
@@ -568,7 +672,7 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         set_scope_vars "${config_type}"
         stack="${opds[0]}"
         if ! fnc_appname_validate "${stack}"; then return; fi
-        nano "${configs_path}/${stack}/${compose_file}"
+        nano "${configs_path:?}/${stack}/${compose_file}"
         }
     # alias dkedit="dk_compose_edit"
     alias dce="dk_compose_edit local"
@@ -580,7 +684,7 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         set_scope_vars "${config_type}"
         stack="${opds[0]}"
         # (cd "${configs_path}/${stack}" && docker compose logs -f)
-        (cd "${configs_path}/${stack}" && docker logs -tf --tail="50" "${stack}")
+        (cd "${configs_path:?}/${stack}" && docker logs -tf --tail="50" "${stack}")
         }
     alias dwlogs="dk_compose_logs swarm"
     alias dll="dk_compose_logs local"
@@ -598,49 +702,49 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     alias dkvl="dk_volumes_list"
 
     ## docker common list functions
-    dk_list_common(){ echo "ls ${dk_common}"; /usr/bin/ls "${dk_common}"; echo; }
+    dk_list_common(){ echo "ls ${dk[common]}"; /usr/bin/ls "${dk[common]}"; echo; }
     alias dklc="dk_list_common"
 
-    dk_cd_common(){ cd "${dk_common}/$1" || echo; return; }
+    dk_cd_common(){ cd "${dk[common]}/$1" || echo; return; }
     alias dkc="dk_cd_common"
 
     ## docker secrets list functions
-    dk_list_secrets(){ echo "ls ${dk_secrets}"; /usr/bin/ls "${dk_secrets}"; echo; }
+    dk_list_secrets(){ echo "ls ${dk[secrets]}"; /usr/bin/ls "${dk[secrets]}"; echo; }
     alias dkls="dk_list_secrets"
 
-    dk_cd_secrets(){ cd "${dk_secrets}/$1" || echo; return; }
+    dk_cd_secrets(){ cd "${dk[secrets]}/$1" || echo; return; }
     alias dks="dk_cd_secrets"
 
     ## docker local list functions
     # TODO: copy configs list function from old scripts
-    dk_list_local_appdata(){ echo "ls ${local_appdata}"; /usr/bin/ls "${local_appdata}"; echo; }
+    dk_list_local_appdata(){ echo "ls ${dk_local[data]}"; /usr/bin/ls "${dk_local[data]}"; echo; }
     alias dlca="dk_list_local_appdata"
     alias dlla="dk_list_local_appdata"
 
-    dk_list_local_configs(){ echo "ls ${local_configs}"; /usr/bin/ls "${local_configs}"; echo; }
+    dk_list_local_configs(){ echo "ls ${dk_local[conf]}"; /usr/bin/ls "${dk_local[conf]}"; echo; }
     alias dlcg="dk_list_local_configs"
     alias dllg="dk_list_local_configs"
 
-    # dk_local_appdata(){ cd "${local_appdata}/$1" 2>/dev/null || echo; return; }
-    dk_local_appdata(){ cd "${local_appdata}/$1" || return; }
+    # dk_local_appdata(){ cd "${dk_local[data]}/$1" 2>/dev/null || echo; return; }
+    dk_local_appdata(){ cd "${dk_local[data]}/$1" || return; }
     alias dkla="dk_local_appdata"
 
-    dk_local_configs(){ cd "${local_configs}/$1" || return; }
+    dk_local_configs(){ cd "${dk_local[conf]}/$1" || return; }
     alias dklg="dk_local_configs"
     alias dkl="dk_local_configs"
 
     ## docker swarm list functions
     # TODO: copy configs list function from old scripts
-    dk_list_swarm_appdata(){ echo "ls ${swarm_appdata}"; /usr/bin/ls "${swarm_appdata}"; echo; }
+    dk_list_swarm_appdata(){ echo "ls ${dk_swarm[data]}"; /usr/bin/ls "${dk_swarm[data]}"; echo; }
     alias dlwa="dk_list_swarm_appdata"
 
-    dk_list_swarm_configs(){ echo "ls ${swarm_configs}"; /usr/bin/ls "${swarm_configs}"; echo; }
+    dk_list_swarm_configs(){ echo "ls ${dk_swarm[conf]}"; /usr/bin/ls "${dk_swarm[conf]}"; echo; }
     alias dlwg="dk_list_swarm_configs"
 
-    dk_swarm_appdata(){ cd "${swarm_appdata}/$1" || return; }
+    dk_swarm_appdata(){ cd "${dk_swarm[data]}/$1" || return; }
     alias dkwa="dk_swarm_appdata"
 
-    dk_swarm_configs(){ cd "${swarm_configs}/$1" || return; }
+    dk_swarm_configs(){ cd "${dk_swarm[conf]}/$1" || return; }
     alias dkwg="dk_swarm_configs"
     alias dkw="dk_swarm_configs"
 
@@ -669,6 +773,7 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     alias vpncheckw="check_vpn_wget"
     alias vpncheck="vpncheckw"
 
+    ipcheck(){ if [[ -z "${*}" ]]; then echo "Host IP: $(wget -qO- ipinfo.io/ip)"; else echo "Container IP: $(docker container exec -it "${*}" wget -qO- ipinfo.io)"; fi }
     check_ctip_curl(){ echo "Container IP: $(docker container exec -it "${1}" curl ipinfo.io)"; }
     alias ipcheckc="check_ctip_curl"
     check_ctip_wget(){ echo "Container IP: $(docker container exec -it "${1}" wget -qO- ipinfo.io)"; }
@@ -681,6 +786,10 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     # verify_url(){ if wget --spider "${1}" 2>/dev/null; then echo "Website exists."; else echo "Website is not available."; fi; } ## does not seem to work for local websites
     verify_url(){ echo " '$1' status code: $(curl -s -o /dev/null --head -w "%{http_code}" "$1" --max-time 5)"; }
     alias webcheck="verify_url"
+
+    ## update a container using the watchtower "run-once" function
+    container_update(){ docker run --name "$1-update" -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once "${1:-watchtower}"; }
+    alias ctupdate="container_update"
 
 #################### docker permissions update functions ####################
 
@@ -726,10 +835,10 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
             if ! fnc_appname_validate "${stack}"; then return; fi
             case "${optn[0]}" in
                 "-a" | "--all" )
-                    files_dir="${configs_path}"
+                    files_dir="${configs_path:?}"
                     ;;
                 * )
-                    files_dir="${configs_path}/${stack}"
+                    files_dir="${configs_path:?}/${stack}"
                     ;;
             esac
             # update restricted access file permissions to 600
@@ -763,12 +872,12 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
                 ## update all docker folder ownership
                 set_owner "${dk_uid}:${dk_gid}" "${dk_dir:?}"
                 ## update appdata folder permissions
-                dirs_list=("${local_appdata}" "${swarm_appdata}" "${dk_secrets}")
+                dirs_list=("${dk_local[data]}" "${dk_swarm[data]}" "${dk[secrets]}")
                 for dir in "${dirs_list[@]}"; do
                     set_perms "${perms_data}" "${dir:?}"
                 done # -rwXrwX---
                 ## update config folder permissions
-                dirs_list=("${dk_common}" "${local_configs}" "${swarm_configs}")
+                dirs_list=("${dk[common]}" "${dk_local[conf]}" "${dk_swarm[conf]}")
                 for dir in "${dirs_list[@]}"; do
                     set_perms "${perms_conf}" "${dir:?}"
                 done # -rwXrwXr-X
@@ -809,7 +918,7 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         }
 
     dk_permissions_update(){ ## USAGE: dk_permissions_update <scope>
-        dirs_list=("${local_configs}" "${swarm_configs}")
+        dirs_list=("${dk_local[conf]}" "${dk_swarm[conf]}")
         for dir in "${dirs_list[@]}"; do
             export configs_path="$dir"
             dk_folder_permissions "--all"
@@ -831,18 +940,18 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
             if ! fnc_appname_validate "${stack}"; then return; fi
             case "${optn[0]}" in
                 "-c" | "--copy" )
-                    fnc_install_cmd "-c ${dk_env_file}" "${configs_path}/${stack}/.env"
+                    fnc_install_cmd "-c ${dk_env_file}" "${configs_path:?}/${stack}/.env"
                     # ${var_sudo:-} install -o "${dk_uid}" -g "${dk_gid}" -m "${perms_data}" "${dk_env_file}" "${configs_path}/${stack}/.env"
                     ;;
                 "-d" | "--delete" | "-r" | "--remove" )
-                    ${var_sudo:-} rm -f "${configs_path}/${stack}/.env"
+                    ${var_sudo:-} rm -f "${configs_path:?}/${stack}/.env"
                     ;;
                 "-f" | "--force" )
                     # fnc_symlink_create will not create the symlink if it already exists
-                    ln -s -f "${dk_env_file}" "${configs_path}/$stack/.env"
+                    ln -s -f "${dk_env_file}" "${configs_path:?}/${stack}/.env"
                     ;;
                 * )
-                    fnc_symlink_create "${configs_path}/$stack/.env" "${dk_env_file}"
+                    fnc_symlink_create "${configs_path:?}/${stack}/.env" "${dk_env_file}"
                     # if [[ ! -f "${configs_path}/$1/.env" ]]; then
                     #     ln -s "$dk_env_file" "${configs_path}/$1/.env" # symlinks .env to .docker.env
                     # fi
@@ -860,16 +969,16 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
             if ! fnc_appname_validate "${stack}"; then return; fi
             if [ ! -d "${appdata_path}/${stack}" ]; then
                 fnc_dir_create "${appdata_path}/${stack}" "${perms_data}"
-                msg_success "CREATED" " ${cyn:-}\`${appdata_path}/${stack}\`${def:-} appdata directory."
+                msg_success "CREATED" " ${cyn:-}\`${appdata_path:?}/${stack}\`${def:-} appdata directory."
             else
                 msg_info "FYI" " Folder ${cyn:-}\`${appdata_path:?}/${stack}}\`${def:-} already exists."
             fi
-            if [ ! -d "${configs_path}/${stack}" ]; then
-                fnc_dir_create "${configs_path}/${stack}" "${perms_conf}"
+            if [ ! -d "${configs_path:?}/${stack}" ]; then
+                fnc_dir_create "${configs_path:?}/${stack}" "${perms_conf}"
                 fnc_env_create "${stack}"
-                fnc_install_cmd "/dev/null" "${configs_path}/${stack}/${compose_file}"
+                fnc_install_cmd "/dev/null" "${configs_path:?}/${stack}/${compose_file}"
                 # ${var_sudo:-} install -o "${dk_uid}" -g "${dk_gid}" -m "${perms_conf}" /dev/null "${configs_path}/${stack}/${compose_file}"
-                msg_success "CREATED" " ${cyn:-}\`${configs_path}/${stack}\`${def:-} configs directory and files."
+                msg_success "CREATED" " ${cyn:-}\`${configs_path:?}/${stack}\`${def:-} configs directory and files."
             else
                 msg_info "FYI" " Folder ${cyn:-}\`${configs_path:?}/${stack}}\`${def:-} already exists."
             fi
@@ -946,10 +1055,10 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         fi
         case ${config_type} in
             "local" )
-                git clone "${git_url_local}/${stack}" "${configs_path}/${stack}"
+                git clone "${git_url_local}/${stack}" "${configs_path:?}/${stack}"
                 ;;
             "swarm" )
-                git clone "${git_url_swarm}/${stack}" "${configs_path}/${stack}"
+                git clone "${git_url_swarm}/${stack}" "${configs_path:?}/${stack}"
                 ;;
             * )
                 msg_failure "INVALID OPTION '${config_type}' USED" "Only 'local' or 'swarm' options are allowed"
@@ -988,22 +1097,22 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     dk_net_setup(){ ## USAGE: dk_net_setup [scope]
         # if [ "$#" -lt 1 ]; then msg_error "Invalid options" "Expected syntax: ${cyn:-}dk_net_setup <scope>${def:-}"; return; fi
         local scope="${1}"
-        declare -gx net_docker_socket; net_docker_socket=(
-            [0]="docker_socket"  # name
-            [1]="${scope}"       # scope
-            [2]="${driver}"      # driver
-            [3]="172.27.20.0/24" # subnet
-            [4]="172.27.20.254"  # gateway
-            [5]="--attachable --internal"   # options
-        )
-        declare -gx net_internal_only; net_internal_only=(
-            [0]="internal_only"  # name
-            [1]="${scope}"       # scope
-            [2]="${driver}"      # driver
-            [3]="172.27.21.0/24" # subnet
-            [4]="172.27.21.254"  # gateway
-            [5]="--attachable --internal"   # options
-        )
+        # declare -gx net_docker_socket; net_docker_socket=(
+        #     [0]="docker_socket"  # name
+        #     [1]="${scope}"       # scope
+        #     [2]="${driver}"      # driver
+        #     [3]="172.27.20.0/24" # subnet
+        #     [4]="172.27.20.254"  # gateway
+        #     [5]="--attachable --internal"   # options
+        # )
+        # declare -gx net_internal_only; net_internal_only=(
+        #     [0]="internal_only"  # name
+        #     [1]="${scope}"       # scope
+        #     [2]="${driver}"      # driver
+        #     [3]="172.27.21.0/24" # subnet
+        #     [4]="172.27.21.254"  # gateway
+        #     [5]="--attachable --internal"   # options
+        # )
         local net_name=(
             [0]="docker_socket"
             [1]="internal_only"
@@ -1020,13 +1129,69 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         #     [6]="10.27.21" # swarm "ingress" network
         #     [7]="10.27.22" # swarm "gwbridge" network
         #     )
-        # local net_prefix=(
-        #     [0]="${net_prefix_docker_socket}"
-        #     [1]="${net_prefix_internal_only}"
-        #     [2]="${net_prefix_reverse_proxy}"
-        #     [3]="${net_prefix_external_edge}"
-        #     )
-
+        declare -gx network_details
+        case "${network_name}" in
+            "docker_socket" )
+                network_details=(
+                    [0]="docker_socket"  # name
+                    [1]="${scope}"       # scope
+                    [2]="${driver}"      # driver
+                    [3]="172.27.20.0/24" # subnet
+                    [4]="172.27.20.254"  # gateway
+                    [5]="--attachable --internal"   # options
+                    )
+                ;;
+            "internal_only" )
+                network_details=(
+                    [0]="internal_only"  # name
+                    [1]="${scope}"       # scope
+                    [2]="${driver}"      # driver
+                    [3]="172.27.21.0/24" # subnet
+                    [4]="172.27.21.254"  # gateway
+                    [5]="--attachable --internal"   # options
+                    )
+                ;;
+            "external_edge" )
+                network_details=(
+                    [0]="external_edge"  # name
+                    [1]="${scope}"       # scope
+                    [2]="${driver}"      # driver
+                    [3]="172.27.22.0/24" # subnet
+                    [4]="172.27.22.254"  # gateway
+                    [5]="--attachable"   # options
+                    )
+                ;;
+            "reverse_proxy" )
+                network_details=(
+                    [0]="reverse_proxy"  # name
+                    [1]="${scope}"       # scope
+                    [2]="${driver}"      # driver
+                    [3]="172.27.23.0/24" # subnet
+                    [4]="172.27.23.254"  # gateway
+                    [5]="--attachable"   # options
+                    )
+                ;;
+            "ingress" )
+                network_details=(
+                    [0]="ingress"  # name
+                    [1]="${scope}" # scope
+                    [2]="overlay" # driver
+                    [3]="10.27.21.0/24" # subnet
+                    [4]="10.27.21.254"  # gateway
+                    [5]=""   # options
+                    )
+                ;;
+            "gwbridge" )
+                network_details=(
+                    [0]="gwbridge"  # name
+                    [1]="${scope}" # scope
+                    [2]="${driver}" # driver
+                    [3]="10.27.22.0/24" # subnet
+                    [4]="10.27.22.254"  # gateway
+                    [5]="--attachable"   # options
+                    )
+                ;;
+        esac
         # set scope specific net names and perform scope specific network creation
         case "${scope}" in
             "build" | "local" )
@@ -1093,10 +1258,15 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         dk_net_create "swarm" "overlay" "reverse_proxy"
         # docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_reverse_proxy}.0/24" --gateway "${net_prefix_reverse_proxy}.254" --attachable "reverse_proxy"
 
+        # ```
         # docker network create --opt "encrypted" --scope "local" --driver "bridge" --subnet "172.27.21.0/24" --attachable --internal "internal_only"
-        # docker network create --opt "encrypted" --scope "swarm" --driver "overlay" --subnet "172.27.30.0/24" --gateway "172.27.30.254" --attachable "external_edge"
-        # docker network create --opt "encrypted" --scope "swarm" --driver "overlay" --subnet "172.27.20.0/24" --gateway "172.27.20.254" --attachable "reverse_proxy"
-
+        # ```
+        # ```
+        # docker network create --opt "encrypted" --scope "local" --driver "bridge" --subnet "172.27.22.0/24" --gateway "172.27.22.254" --attachable "external_edge"
+        # ```
+        # ```
+        # docker network create --opt "encrypted" --scope "local" --driver "bridge" --subnet "172.27.23.0/24" --gateway "172.27.23.254" --attachable "reverse_proxy"
+        # ```
         echo "The \`docker_socket\`, \`internal_only\`, \`external_edge\`, and \`reverse_proxy\` custom docker networks already exist or have been created."; echo
         }
 
@@ -1137,9 +1307,9 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     #     # echo "DEBUG: 'dk_local_start' [02] <config_type> '${config_type}' <configs_path> '${configs_path}'"
     #     dk_compose_up(){
     #         for stack in "${stackslist[@]}"; do
-    #             if [ -f "${local_configs}/${stack}/${local_compose}" ]; then
+    #             if [ -f "${dk_local[conf]}/${stack}/${dk_local[file]}" ]; then
     #                 fnc_env_create "${config_type}" "${stack}"
-    #                 docker compose -f "${local_configs}/${stack}/${local_compose}" up -d --remove-orphans
+    #                 docker compose -f "${dk_local[conf]}/${stack}/${dk_local[file]}" up -d --remove-orphans
     #             else
     #                 echo " > No docker compose configuration file found for the \`${stack}\` application."
     #             fi
@@ -1167,9 +1337,9 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     #     }
 
     dk_compose_up(){ ## USAGE: dk_compose_up <stackname1>
-        if [ -f "${configs_path}/${1}/${compose_file}" ]; then
+        if [ -f "${configs_path:?}/${1}/${compose_file}" ]; then
             fnc_env_create "${config_type}" "${1}"
-            docker compose -f "${configs_path}/${1}/${compose_file}" up -d --remove-orphans
+            docker compose -f "${configs_path:?}/${1}/${compose_file}" up -d --remove-orphans
             return $?
         else
             msg_warning "WARNING" "No docker compose configuration file found for the \`${1}\` application."
@@ -1217,8 +1387,8 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     alias dlu="dk_local_start"
 
     dk_compose_dn(){ ## USAGE: dk_compose_dn <stack_name>
-        if [[ -f "${configs_path}/${1}/${compose_file}" && -f "${configs_path}/${1}/.env" ]]; then
-            docker compose -f "${configs_path}/${1}/${compose_file}" down
+        if [[ -f "${configs_path:?}/${1}/${compose_file}" && -f "${configs_path:?}/${1}/.env" ]]; then
+            docker compose -f "${configs_path:?}/${1}/${compose_file}" down
             return $?
         elif [[ $(docker ps -a --filter "name=${1}") ]]; then
             docker stop "${1}" && docker container rm "${1}"
@@ -1290,9 +1460,9 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     # alias dwl="dk_list_stacks" # "docker list swarm apps"
 
     dk_stack_deploy(){ ## USAGE: dk_stack_deploy <stack_name>
-        if [ -f "${configs_path}/${1}/${compose_file}" ]; then
+        if [ -f "${configs_path:?}/${1}/${compose_file}" ]; then
             fnc_env_create "${config_type}" "${1}"
-            docker stack deploy "${1}" -c "${configs_path}/${1}/${compose_file}" --prune
+            docker stack deploy "${1}" -c "${configs_path:?}/${1}/${compose_file}" --prune
             return $?
         else
             msg_warning "WARNING" "No docker stack config found for the \`${1}\` application."
@@ -1317,8 +1487,8 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
     alias dwt="dk_swarm_start"
 
     dk_stack_remove(){ ## USAGE: dk_compose_up <stackname1>
-        if [[ -f "${configs_path}/${1}/${compose_file}" && -f "${configs_path}/${1}/.env" ]]; then
-            docker stack rm "${1}" -c "${configs_path}/${1}/${compose_file}"
+        if [[ -f "${configs_path:?}/${1}/${compose_file}" && -f "${configs_path:?}/${1}/.env" ]]; then
+            docker stack rm "${1}" -c "${configs_path:?}/${1}/${compose_file}"
             return $?
         elif [[ $(docker ps -a --filter "name=${1}") ]]; then
             docker stop "${1}" && docker container rm "${1}"
