@@ -645,9 +645,9 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         set_scope_vars "${config_type}"
         if ! fnc_appname_validate "${opds[0]}"; then return; fi
         if tar -czf "${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d\-%H%M).tar.gz" "${appdata_path}/${opds[0]}" "${configs_path}/${opds[0]}"; then
-            msg_success "Config archive created at ${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d\-%H%M).tar.gz"
+            msg_success "Config archive created at ${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d_%H%M).tar.gz"
         else
-            msg_error "Failed to create config archive at ${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d\-%H%M).tar.gz"
+            msg_error "Failed to create config archive at ${dk[archive]}/${config_type}/${opds[0]}-$(date +%Y%m%d_%H%M).tar.gz"
         fi
         }
     alias dba="docker_config_archive local"
@@ -1081,127 +1081,134 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         fi
         }
 
-    # TODO: verify the scope is handled correctly
-    dk_net_create(){ ## USAGE: dk_net_create [scope] [driver] [network_name] (options)
-        if [ "$#" -lt 3 ]; then msg_error "Invalid options" "Expected syntax: ${cyn:-}dk_net_create <scope> <driver> <network_name> [options]${def:-}"; return; fi
-        local scope="${1}"; shift
-        local driver="${1}"; shift
-        local network_name="${1}"; shift
-        local net_options="${*}"
-        docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_docker_socket}.0/24" --gateway "${net_prefix_docker_socket}.254" --attachable "${net_options}" "${network_name}"
+    dk_net_create(){ ## USAGE: dk_net_create [scope] [driver] [net_name] (options)
+        docker network create --opt "encrypted" --scope "${dknet[1]}" --driver "${dknet[2]}" --subnet "${dknet[3]}" --gateway "${dknet[4]}" "${dknet[5]}" "${dknet[0]}"
         }
-    alias dkln="dk_net_create local bridge"
-    alias dkwn="dk_net_create swarm overlay"
+
+    # TODO: verify the scope is handled correctly
+    # dk_net_create(){ ## USAGE: dk_net_create [scope] [driver] [net_name] (options)
+    #     if [ "$#" -lt 3 ]; then msg_error "Invalid options" "Expected syntax: ${cyn:-}dk_net_create <scope> <driver> <net_name> [options]${def:-}"; return; fi
+    #     local scope="${1}"; shift
+    #     local driver="${1}"; shift
+    #     local net_name="${1}"; shift
+    #     local net_options="${*}"
+    #     docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_docker_socket}.0/24" --gateway "${net_prefix_docker_socket}.254" --attachable "${net_options}" "${net_name}"
+    #     }
+    # alias dkln="dk_net_create local bridge"
+    # alias dkwn="dk_net_create swarm overlay"
+
+    dk_net_info(){ ## USAGE: dk_net_info [net_name] [scope] [driver]
+        local net_name="${1}"
+        local scope="${2}"
+        local driver="${3}"
+        declare -gx dknet
+        case "${net_name}" in
+            "docker_socket" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="${scope}"          # scope
+                    [2]="bridge"            # driver
+                    [3]="172.27.20.0/24"    # subnet
+                    [4]="172.27.20.254"     # gateway
+                    [5]="--attachable --internal"   # options
+                    )
+                ;;
+            "internal_only" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="${scope}"          # scope
+                    [2]="${driver}"         # driver
+                    [3]="172.27.21.0/24"    # subnet
+                    [4]="172.27.21.254"     # gateway
+                    [5]="--attachable --internal"   # options
+                    )
+                ;;
+            "external_edge" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="${scope}"          # scope
+                    [2]="${driver}"         # driver
+                    [3]="172.27.22.0/24"    # subnet
+                    [4]="172.27.22.254"     # gateway
+                    [5]="--attachable"      # options
+                    )
+                ;;
+            "reverse_proxy" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="${scope}"          # scope
+                    [2]="${driver}"         # driver
+                    [3]="172.27.23.0/24"    # subnet
+                    [4]="172.27.23.254"     # gateway
+                    [5]="--attachable"      # options
+                    )
+                ;;
+            "docker_ipvlan" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="${scope}"          # scope
+                    [2]="ipvlan"            # driver
+                    [3]="172.27.24.0/24"    # subnet
+                    [4]="172.27.24.254"     # gateway
+                    [5]="--attachable"      # options
+                )
+                ;;
+            "docker_macvlan" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="${scope}"          # scope
+                    [2]="macvlan"           # driver
+                    [3]="172.27.25.0/24"    # subnet
+                    [4]="172.27.25.254"     # gateway
+                    [5]="--attachable"      # options
+                )
+                ;;
+            "gwbridge" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="${scope}"          # scope
+                    [2]="${driver}"         # driver
+                    [3]="10.27.22.0/24"     # subnet
+                    [4]="10.27.22.254"      # gateway
+                    [5]="--attachable"      # options
+                    )
+                ;;
+            "ingress" )
+                dknet=(
+                    [0]="${net_name}"       # name
+                    [1]="swarm"             # scope
+                    [2]="overlay"           # driver
+                    [3]="10.27.21.0/24"     # subnet
+                    [4]="10.27.21.254"      # gateway
+                    [5]=""                  # options
+                    )
+                ;;
+        esac
+        }
 
     # TODO: re-write to create network based on passed vars instead of scope only
-    dk_net_setup(){ ## USAGE: dk_net_setup [scope]
-        # if [ "$#" -lt 1 ]; then msg_error "Invalid options" "Expected syntax: ${cyn:-}dk_net_setup <scope>${def:-}"; return; fi
+    dk_net_setup(){ ## USAGE: dk_net_setup [scope] [net_name]
+        if [ "$#" -lt 2 ]; then msg_error "Invalid options" "Expected syntax: ${cyn:-}dk_net_setup <scope> <net_name>${def:-}"; return; fi
+        fnc_extract_option "$@"
         local scope="${1}"
-        # declare -gx net_docker_socket; net_docker_socket=(
-        #     [0]="docker_socket"  # name
-        #     [1]="${scope}"       # scope
-        #     [2]="${driver}"      # driver
-        #     [3]="172.27.20.0/24" # subnet
-        #     [4]="172.27.20.254"  # gateway
-        #     [5]="--attachable --internal"   # options
-        # )
-        # declare -gx net_internal_only; net_internal_only=(
-        #     [0]="internal_only"  # name
-        #     [1]="${scope}"       # scope
-        #     [2]="${driver}"      # driver
-        #     [3]="172.27.21.0/24" # subnet
-        #     [4]="172.27.21.254"  # gateway
-        #     [5]="--attachable --internal"   # options
-        # )
-        local net_name=(
+        # set scope specific net names and perform scope specific network creation
+        declare -gx net_name; net_name=(
             [0]="docker_socket"
             [1]="internal_only"
             [2]="reverse_proxy"
             [3]="external_edge"
             )
-        # local net_prefix=(
-        #     [0]="172.27.20" # docker_socket network
-        #     [1]="172.27.21" # internal_only network
-        #     [2]="172.27.22" # external_edge network
-        #     [3]="172.27.23"
-        #     [4]="172.27.24" # reverse_proxy network
-        #     [5]="172.27.25"
-        #     [6]="10.27.21" # swarm "ingress" network
-        #     [7]="10.27.22" # swarm "gwbridge" network
-        #     )
-        declare -gx network_details
-        case "${network_name}" in
-            "docker_socket" )
-                network_details=(
-                    [0]="docker_socket"  # name
-                    [1]="${scope}"       # scope
-                    [2]="${driver}"      # driver
-                    [3]="172.27.20.0/24" # subnet
-                    [4]="172.27.20.254"  # gateway
-                    [5]="--attachable --internal"   # options
-                    )
-                ;;
-            "internal_only" )
-                network_details=(
-                    [0]="internal_only"  # name
-                    [1]="${scope}"       # scope
-                    [2]="${driver}"      # driver
-                    [3]="172.27.21.0/24" # subnet
-                    [4]="172.27.21.254"  # gateway
-                    [5]="--attachable --internal"   # options
-                    )
-                ;;
-            "external_edge" )
-                network_details=(
-                    [0]="external_edge"  # name
-                    [1]="${scope}"       # scope
-                    [2]="${driver}"      # driver
-                    [3]="172.27.22.0/24" # subnet
-                    [4]="172.27.22.254"  # gateway
-                    [5]="--attachable"   # options
-                    )
-                ;;
-            "reverse_proxy" )
-                network_details=(
-                    [0]="reverse_proxy"  # name
-                    [1]="${scope}"       # scope
-                    [2]="${driver}"      # driver
-                    [3]="172.27.23.0/24" # subnet
-                    [4]="172.27.23.254"  # gateway
-                    [5]="--attachable"   # options
-                    )
-                ;;
-            "ingress" )
-                network_details=(
-                    [0]="ingress"  # name
-                    [1]="${scope}" # scope
-                    [2]="overlay" # driver
-                    [3]="10.27.21.0/24" # subnet
-                    [4]="10.27.21.254"  # gateway
-                    [5]=""   # options
-                    )
-                ;;
-            "gwbridge" )
-                network_details=(
-                    [0]="gwbridge"  # name
-                    [1]="${scope}" # scope
-                    [2]="${driver}" # driver
-                    [3]="10.27.22.0/24" # subnet
-                    [4]="10.27.22.254"  # gateway
-                    [5]="--attachable"   # options
-                    )
-                ;;
-        esac
-        # set scope specific net names and perform scope specific network creation
         case "${scope}" in
             "build" | "local" )
                 scope="local"
+                driver="bridge"
                 local net_name=(
                     [4]="docker_ipvlan"
                     [5]="docker_maclan"
                     )
                 ;;
             "swarm" )
+                driver="overlay"
                 local net_name=(
                     [4]="docker_gwbridge"
                     [5]="ingress"
@@ -1223,6 +1230,48 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
                 return
                 ;;
         esac
+
+        for name in "${net_name[@]}"; do
+            dk_net_info "${name}" "${scope}" "${driver}"
+            if [ "$(dk_net_verify "${name}")" ]; then
+                if [ "${optn[0]}" == "--force" ]; then
+                    dk_net_delete "${name}"
+                else
+                    msg_info "NETWORK ALREADY EXISTS" "${name}"
+                    return
+                fi
+            fi
+            if [ "$(dk_net_create "${scope}" "${driver}" "${name}")" ]; then
+                msg_info "NETWORK CREATED" "${name}"
+            fi
+        done
+
+        # declare -gx net_docker_socket; net_docker_socket=(
+        #     [0]="docker_socket"  # name
+        #     [1]="${scope}"       # scope
+        #     [2]="${driver}"      # driver
+        #     [3]="172.27.20.0/24" # subnet
+        #     [4]="172.27.20.254"  # gateway
+        #     [5]="--attachable --internal"   # options
+        # )
+        # declare -gx net_internal_only; net_internal_only=(
+        #     [0]="internal_only"  # name
+        #     [1]="${scope}"       # scope
+        #     [2]="${driver}"      # driver
+        #     [3]="172.27.21.0/24" # subnet
+        #     [4]="172.27.21.254"  # gateway
+        #     [5]="--attachable --internal"   # options
+        # )
+        # local net_prefix=(
+        #     [0]="172.27.20" # docker_socket network
+        #     [1]="172.27.21" # internal_only network
+        #     [2]="172.27.22" # external_edge network
+        #     [3]="172.27.23"
+        #     [4]="172.27.24" # reverse_proxy network
+        #     [5]="172.27.25"
+        #     [6]="10.27.21" # swarm "ingress" network
+        #     [7]="10.27.22" # swarm "gwbridge" network
+        #     )
 
         ## network create loop
         # for i in {0..3}; do
@@ -1249,14 +1298,14 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
         # done
 
         # TODO: rewrite to use dk_net_create instead of individual functions
-        dk_net_create "local" "bridge" "docker_socket" "--internal"
         # docker network create --opt "encrypted" --scope "local" --driver "bridge" --subnet "${net_prefix_docker_socket}.0/24" --gateway "${net_prefix_docker_socket}.254" --attachable --internal "docker_socket"
-        dk_net_create "swarm" "overlay" "internal_only" "--internal"
+        # dk_net_create "local" "bridge" "docker_socket" "--internal"
         # docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_internal_only}.0/24" --gateway "${net_prefix_internal_only}.254" --attachable --internal "internal_only"
-        dk_net_create "swarm" "overlay" "external_edge"
+        # dk_net_create "swarm" "overlay" "internal_only" "--internal"
         # docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_external_edge}.0/24" --gateway "${net_prefix_external_edge}.254" --attachable "external_edge"
-        dk_net_create "swarm" "overlay" "reverse_proxy"
+        # dk_net_create "swarm" "overlay" "external_edge"
         # docker network create --opt "encrypted" --scope "${scope}" --driver "${driver}" --subnet "${net_prefix_reverse_proxy}.0/24" --gateway "${net_prefix_reverse_proxy}.254" --attachable "reverse_proxy"
+        # dk_net_create "swarm" "overlay" "reverse_proxy"
 
         # ```
         # docker network create --opt "encrypted" --scope "local" --driver "bridge" --subnet "172.27.21.0/24" --attachable --internal "internal_only"
@@ -1532,4 +1581,3 @@ git_url_swarm="https://raw.githubusercontent.com/qnap-homelab/docker-swarm/maste
 ####################################################################################################
 
 echo -e " >> ${blu:-}docker aliases and functions ${grn:-}created${def:-} <<\n"
-
